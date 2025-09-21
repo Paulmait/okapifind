@@ -1,0 +1,74 @@
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
+
+// Get config values from app.config.js extra field
+const {
+  firebaseApiKey,
+  firebaseAuthDomain,
+  firebaseProjectId,
+  firebaseStorageBucket,
+  firebaseMessagingSenderId,
+  firebaseAppId,
+  firebaseMeasurementId,
+} = Constants.expoConfig?.extra || {};
+
+// Firebase configuration using values from app.config.js
+const firebaseConfig = {
+  apiKey: firebaseApiKey || process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: firebaseAuthDomain || process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: firebaseProjectId || process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: firebaseStorageBucket || process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: firebaseMessagingSenderId || process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: firebaseAppId || process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: firebaseMeasurementId || process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
+};
+
+// Initialize Firebase App (check if already initialized to prevent errors)
+let firebaseApp;
+if (getApps().length === 0) {
+  firebaseApp = initializeApp(firebaseConfig);
+} else {
+  firebaseApp = getApp();
+}
+
+// Initialize Firebase Auth with proper persistence for React Native
+let firebaseAuth;
+try {
+  if (Platform.OS === 'web') {
+    // For web platform, use standard getAuth
+    firebaseAuth = getAuth(firebaseApp);
+  } else {
+    // For iOS and Android, use initializeAuth with AsyncStorage persistence
+    firebaseAuth = initializeAuth(firebaseApp, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  }
+} catch (error) {
+  // If auth is already initialized, just get the existing instance
+  firebaseAuth = getAuth(firebaseApp);
+}
+
+// Log initialization status in development
+if (__DEV__) {
+  console.log('Firebase initialized:', {
+    platform: Platform.OS,
+    projectId: firebaseConfig.projectId,
+    authDomain: firebaseConfig.authDomain,
+  });
+}
+
+// Export configured instances
+export { firebaseApp, firebaseAuth };
+
+// Also export config for use in other parts of the app
+export const firebaseConfigExport = firebaseConfig;
+
+// Export Google OAuth client IDs from app.config.js
+export const GOOGLE_OAUTH_CONFIG = {
+  webClientId: Constants.expoConfig?.extra?.googleWebClientId || process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  iosClientId: Constants.expoConfig?.extra?.googleIosClientId || process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId || process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+};
