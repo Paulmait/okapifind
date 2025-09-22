@@ -18,10 +18,10 @@ export const SUPABASE_CONFIG = {
 
   // Edge Function endpoints
   functions: {
-    revenuecatWebhook: 'https://kmobwbqdtmbzdyysdxjx.supabase.co/functions/v1/revenuecat-webhook',
-    signedUpload: 'https://kmobwbqdtmbzdyysdxjx.supabase.co/functions/v1/signed-upload',
-    startShare: 'https://kmobwbqdtmbzdyysdxjx.supabase.co/functions/v1/start-share',
-    cronReminders: 'https://kmobwbqdtmbzdyysdxjx.supabase.co/functions/v1/cron-reminders',
+    revenuecatWebhook: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/revenuecat-webhook`,
+    signedUpload: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/signed-upload`,
+    startShare: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/start-share`,
+    cronReminders: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/cron-reminders`,
   },
 
   // Storage buckets

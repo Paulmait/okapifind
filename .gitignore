@@ -1,0 +1,160 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Node modules
+node_modules/
+*/node_modules/
+
+# Build directories
+dist/
+build/
+out/
+.expo/
+.expo-shared/
+web-build/
+ios/build/
+android/build/
+android/app/build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.iml
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+
+# Keys and certificates
+*.pem
+*.p12
+*.p8
+*.key
+*.crt
+*.cer
+*.jks
+*.keystore
+certificates/
+keys/
+secrets/
+
+# Private configuration
+config/private/
+config/secrets/
+*.private.*
+*.secret.*
+private/
+secrets/
+
+# Firebase
+firebase-admin-sdk.json
+google-services.json
+GoogleService-Info.plist
+firebase-config.json
+.firebaserc
+
+# Apple
+*.mobileprovision
+*.xcworkspace
+*.xcuserdata
+*.xcscheme
+
+# Android
+local.properties
+*.apk
+*.aab
+*.hprof
+/android/.gradle/
+/android/captures/
+/android/.cxx/
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+.cache/
+tmp/
+temp/
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Documentation with secrets
+**/COMPLETE_ENV_VARIABLES.md
+ENV_VARIABLES_WITH_VALUES.md
+.env.production
+.env.staging
+.env.development
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+
+# Miscellaneous
+.npm
+.yarn-integrity
+.eslintcache
+.parcel-cache
+.next/
+.nuxt/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

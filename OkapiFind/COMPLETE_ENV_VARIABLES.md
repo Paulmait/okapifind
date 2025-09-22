@@ -138,14 +138,14 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=your-redis-password
 REDIS_DB=0
-REDIS_URL=redis://user:pass@host:6379/0
+REDIS_URL=redis://[username]:[password]@[host]:6379/[db]
 
 # PostgreSQL
-DATABASE_URL=postgresql://user:pass@host:5432/okapifind
+DATABASE_URL=postgresql://[username]:[password]@[host]:5432/[database]
 DB_PASSWORD=your-db-password
 
 # MongoDB (Alternative)
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/okapifind
+MONGODB_URI=mongodb+srv://[username]:[password]@[cluster].mongodb.net/[database]
 
 # Kafka
 KAFKA_BROKER=localhost:9092
