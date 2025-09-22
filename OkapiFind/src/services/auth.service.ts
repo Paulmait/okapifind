@@ -7,16 +7,12 @@ import {
   User,
   AuthCredential,
 } from 'firebase/auth';
-import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
-import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
-import { auth, GOOGLE_WEB_CLIENT_ID, GOOGLE_IOS_CLIENT_ID, GOOGLE_ANDROID_CLIENT_ID } from '../config/firebase.config';
+import { firebaseAuth, GOOGLE_OAUTH_CONFIG } from '../config/firebase';
 import { analytics } from './analytics';
 
-// Complete web browser auth session
-WebBrowser.maybeCompleteAuthSession();
 
 export interface AuthUser {
   uid: string;
@@ -31,7 +27,7 @@ class AuthService {
 
   constructor() {
     // Listen for auth state changes
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(firebaseAuth, (user) => {
       this.currentUser = user;
       if (user) {
         analytics.setUserId(user.uid);
@@ -65,39 +61,21 @@ class AuthService {
 
   /**
    * Sign in with Google
+   * Note: This method should be called from a component that handles the auth flow
+   * The component should pass the credential to this method
    */
-  async signInWithGoogle(): Promise<AuthUser | null> {
+  async signInWithGoogleCredential(credential: AuthCredential): Promise<AuthUser | null> {
     try {
       analytics.logEvent('auth_google_started');
 
-      // Configure Google Auth
-      const config = {
-        webClientId: GOOGLE_WEB_CLIENT_ID,
-        iosClientId: GOOGLE_IOS_CLIENT_ID,
-        androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-      };
+      // Sign in with Firebase
+      const result = await signInWithCredential(firebaseAuth, credential);
 
-      // Use expo-auth-session for Google Sign-In
-      const [request, response, promptAsync] = Google.useAuthRequest(config);
+      analytics.logEvent('auth_google_success', {
+        user_id: result.user.uid,
+      });
 
-      if (response?.type === 'success') {
-        const { id_token } = response.params;
-
-        // Create Firebase credential
-        const credential = GoogleAuthProvider.credential(id_token);
-
-        // Sign in with Firebase
-        const result = await signInWithCredential(auth, credential);
-
-        analytics.logEvent('auth_google_success', {
-          user_id: result.user.uid,
-        });
-
-        return this.getCurrentUser();
-      }
-
-      analytics.logEvent('auth_google_cancelled');
-      return null;
+      return this.getCurrentUser();
     } catch (error: any) {
       console.error('Google Sign-In Error:', error);
       analytics.logEvent('auth_google_failed', {
@@ -118,8 +96,9 @@ class AuthService {
     try {
       analytics.logEvent('auth_apple_started');
 
-      // Generate nonce for security
-      const nonce = Math.random().toString(36).substring(2, 10);
+      // Generate secure nonce for security
+      const nonceBytes = await Crypto.getRandomBytesAsync(32);
+      const nonce = Array.from(nonceBytes, byte => byte.toString(16).padStart(2, '0')).join('');
       const hashedNonce = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
         nonce
@@ -142,7 +121,7 @@ class AuthService {
       });
 
       // Sign in with Firebase
-      const result = await signInWithCredential(auth, credential);
+      const result = await signInWithCredential(firebaseAuth, credential);
 
       // Update user profile if name is provided
       if (appleCredential.fullName?.givenName || appleCredential.fullName?.familyName) {
@@ -175,7 +154,7 @@ class AuthService {
   async signOut(): Promise<void> {
     try {
       analytics.logEvent('auth_sign_out');
-      await signOut(auth);
+      await signOut(firebaseAuth);
     } catch (error: any) {
       console.error('Sign Out Error:', error);
       throw new Error(`Sign out failed: ${error.message}`);
@@ -194,7 +173,7 @@ class AuthService {
    * Subscribe to auth state changes
    */
   onAuthStateChanged(callback: (user: AuthUser | null) => void): () => void {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
       if (user) {
         callback({
           uid: user.uid,

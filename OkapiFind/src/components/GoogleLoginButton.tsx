@@ -13,6 +13,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { firebaseAuth, GOOGLE_OAUTH_CONFIG } from '../config/firebase';
 import { analytics } from '../services/analytics';
+import { authService } from '../services/auth.service';
 import { Colors } from '../constants/colors';
 
 // Complete auth session for web browsers
@@ -39,10 +40,9 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
 
   // Configure Google Auth with proper client IDs for each platform
   const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: GOOGLE_OAUTH_CONFIG.webClientId,
+    clientId: GOOGLE_OAUTH_CONFIG.webClientId,
     iosClientId: GOOGLE_OAUTH_CONFIG.iosClientId,
     androidClientId: GOOGLE_OAUTH_CONFIG.androidClientId,
-    webClientId: GOOGLE_OAUTH_CONFIG.webClientId,
     scopes: ['profile', 'email'],
   });
 
@@ -68,16 +68,13 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
             authentication.accessToken
           );
 
-          // Sign in with Firebase
-          const userCredential = await signInWithCredential(firebaseAuth, credential);
+          // Sign in with Firebase using auth service
+          const user = await authService.signInWithGoogleCredential(credential);
 
-          // Log success
-          analytics.logEvent('google_login_success', {
-            user_id: userCredential.user.uid,
-          });
-
-          // Call success callback
-          onSuccess?.(userCredential.user);
+          // Call success callback if user was returned
+          if (user) {
+            onSuccess?.(user);
+          }
         } catch (error: any) {
           console.error('Firebase sign-in error:', error);
           analytics.logEvent('google_login_firebase_error', {
@@ -96,9 +93,10 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
       onCancel?.();
     } else if (response?.type === 'error') {
       analytics.logEvent('google_login_error', {
-        error: response.error,
+        error: response.error?.description || response.error || 'Unknown error',
       });
-      const error = new Error(response.error || 'Google sign-in failed');
+      const errorMessage = typeof response.error === 'string' ? response.error : response.error?.description || 'Google sign-in failed';
+      const error = new Error(errorMessage);
       Alert.alert('Sign In Error', error.message);
       onError?.(error);
     }

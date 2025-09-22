@@ -140,7 +140,6 @@ export class GoogleApiService {
       // Use Expo AuthSession for OAuth 2.0 flow
       const redirectUri = AuthSession.makeRedirectUri({
         scheme: 'okapifind', // Must match app.json scheme
-        useProxy: __DEV__, // Use Expo proxy in development
       });
 
       const discovery = {

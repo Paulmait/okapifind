@@ -9,6 +9,9 @@ import {
 } from 'firebase/firestore';
 import { firebaseAuth, firebaseApp } from '../config/firebase';
 import { analytics } from '../services/analytics';
+import { authService } from '../services/auth.service';
+import { Platform } from 'react-native';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -39,6 +42,10 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   signOutUser: () => Promise<void>;
+  signInWithGoogle: () => Promise<any>;
+  signInWithApple: () => Promise<any>;
+  appleSignInAvailable: boolean;
+  setAppleSignInAvailable: (available: boolean) => void;
 }
 
 // Create auth store with persistence
@@ -50,6 +57,7 @@ const useAuthStore = create<AuthState>()(
       isLoading: true,
       isAuthenticated: false,
       error: null,
+      appleSignInAvailable: false,
 
       setCurrentUser: (user) => set({
         currentUser: user,
@@ -66,6 +74,10 @@ const useAuthStore = create<AuthState>()(
 
       setError: (error) => set({
         error
+      }),
+
+      setAppleSignInAvailable: (available) => set({
+        appleSignInAvailable: available
       }),
 
       signOutUser: async () => {
@@ -87,6 +99,15 @@ const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
         }
       },
+
+      signInWithGoogle: async () => {
+        // This will be implemented by components using the GoogleLoginButton
+        throw new Error('Use GoogleLoginButton component for Google Sign-In');
+      },
+
+      signInWithApple: async () => {
+        return await authService.signInWithApple();
+      },
     }),
     {
       name: 'auth-storage',
@@ -106,14 +127,25 @@ export const useAuth = () => {
     isLoading,
     isAuthenticated,
     error,
+    appleSignInAvailable,
     setCurrentUser,
     setUserProfile,
     setLoading,
     setError,
+    setAppleSignInAvailable,
     signOutUser,
+    signInWithGoogle,
+    signInWithApple,
   } = useAuthStore();
 
   const [authInitialized, setAuthInitialized] = useState(false);
+
+  // Check Apple Sign-In availability
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      AppleAuthentication.isAvailableAsync().then(setAppleSignInAvailable);
+    }
+  }, []);
 
   useEffect(() => {
     // Listen to Firebase auth state changes
@@ -273,12 +305,15 @@ export const useAuth = () => {
 
     // Methods
     signOut: signOutUser,
+    signInWithGoogle,
+    signInWithApple,
     updatePremiumStatus,
     refreshUserProfile,
 
     // Computed values
     isReady: authInitialized,
     isPremium: userProfile?.premium || false,
+    appleSignInAvailable,
     userEmail: currentUser?.email || userProfile?.email,
     userName: currentUser?.displayName || userProfile?.displayName,
     userPhoto: currentUser?.photoURL || userProfile?.photoURL,

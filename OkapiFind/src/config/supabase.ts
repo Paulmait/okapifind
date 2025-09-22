@@ -10,7 +10,7 @@ export const SUPABASE_CONFIG = {
   // Main project URL and key
   url: Constants.expoConfig?.extra?.supabaseUrl ||
        process.env.EXPO_PUBLIC_SUPABASE_URL ||
-       'https://kmobwbqdtmbzdyysdxjx.supabase.co',
+       '',
 
   anonKey: Constants.expoConfig?.extra?.supabaseAnonKey ||
            process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||

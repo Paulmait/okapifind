@@ -93,8 +93,8 @@ export default {
       firebaseMeasurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 
       // Supabase Configuration
-      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://kmobwbqdtmbzdyysdxjx.supabase.co',
-      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2J3YnFkdG1iemR5eXNkeGp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0Nzk0NzEsImV4cCI6MjA3NDA1NTQ3MX0.8RsGnae-OGpGUZmtEc2aiP6ICU4WctqefhSHav4SibQ',
+      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
 
       // Google OAuth Configuration
       googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,

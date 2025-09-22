@@ -53,8 +53,9 @@ export const AppleLoginButton: React.FC<AppleLoginButtonProps> = ({
       setIsLoading(true);
       analytics.logEvent('apple_login_button_pressed');
 
-      // Generate a nonce for security
-      const nonce = Math.random().toString(36).substring(2, 10);
+      // Generate secure nonce for security
+      const nonceBytes = await Crypto.getRandomBytesAsync(32);
+      const nonce = Array.from(nonceBytes, byte => byte.toString(16).padStart(2, '0')).join('');
       const hashedNonce = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
         nonce

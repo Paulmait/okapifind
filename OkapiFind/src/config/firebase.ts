@@ -1,5 +1,5 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getAuth, initializeAuth, Auth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
@@ -27,7 +27,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase App (check if already initialized to prevent errors)
-let firebaseApp;
+let firebaseApp: FirebaseApp;
 if (getApps().length === 0) {
   firebaseApp = initializeApp(firebaseConfig);
 } else {
@@ -35,16 +35,14 @@ if (getApps().length === 0) {
 }
 
 // Initialize Firebase Auth with proper persistence for React Native
-let firebaseAuth;
+let firebaseAuth: Auth;
 try {
   if (Platform.OS === 'web') {
     // For web platform, use standard getAuth
     firebaseAuth = getAuth(firebaseApp);
   } else {
-    // For iOS and Android, use initializeAuth with AsyncStorage persistence
-    firebaseAuth = initializeAuth(firebaseApp, {
-      persistence: getReactNativePersistence(AsyncStorage),
-    });
+    // For iOS and Android, use getAuth - persistence is handled automatically
+    firebaseAuth = getAuth(firebaseApp);
   }
 } catch (error) {
   // If auth is already initialized, just get the existing instance
