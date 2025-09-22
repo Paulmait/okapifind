@@ -8,48 +8,130 @@
     "userInterfaceStyle": "automatic",
     "scheme": "okapifind",
     "newArchEnabled": true,
+    "privacy": "public",
+    "description": "Never lose your car again! OkapiFind uses smart detection and GPS tracking to remember where you parked, with turn-by-turn navigation back to your vehicle.",
+    "primaryColor": "#007AFF",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.okapi.find",
       "buildNumber": "1",
+      "requireFullScreen": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "appStoreUrl": "https://apps.apple.com/app/okapifind/id123456789",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "OkapiFind needs access to your location to help you find items.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "OkapiFind needs access to your location to help you find items.",
-        "NSMicrophoneUsageDescription": "OkapiFind needs access to your microphone for voice directions."
+        "NSLocationWhenInUseUsageDescription": "OkapiFind needs access to your location to help you remember where you parked your car and provide navigation back to it.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "OkapiFind needs continuous location access to automatically detect when you park your car.",
+        "NSMicrophoneUsageDescription": "OkapiFind uses your microphone for voice commands and audio feedback during navigation.",
+        "NSCameraUsageDescription": "OkapiFind uses your camera for AR navigation features to help guide you back to your car.",
+        "NSMotionUsageDescription": "OkapiFind uses motion sensors to improve parking detection accuracy.",
+        "NSBluetoothAlwaysUsageDescription": "OkapiFind can use Bluetooth to detect when you leave your car.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": ["maps", "comgooglemaps"]
+      },
+      "associatedDomains": ["applinks:okapifind.com"],
+      "entitlements": {
+        "com.apple.developer.associated-domains": ["applinks:okapifind.com"]
       }
     },
     "android": {
       "package": "com.okapi.find",
       "versionCode": 1,
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
         "RECORD_AUDIO",
-        "VIBRATE"
+        "VIBRATE",
+        "CAMERA",
+        "WAKE_LOCK",
+        "ACTIVITY_RECOGNITION",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.okapi.find",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "okapifind.com"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "OkapiFind",
+      "shortName": "OkapiFind",
+      "lang": "en",
+      "scope": "/",
+      "themeColor": "#007AFF",
+      "backgroundColor": "#ffffff",
+      "display": "standalone",
+      "orientation": "portrait",
+      "startUrl": "/"
     },
     "plugins": [
       "expo-location",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-camera",
+      "expo-sensors",
+      "expo-notifications",
+      "expo-store-review",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "13.0"
+          },
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 23
+          }
+        }
+      ]
     ],
+    "experiments": {
+      "typedRoutes": true
+    },
     "extra": {
       "eas": {
         "projectId": "your-project-id"
       }
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "okapi",
+            "project": "okapifind"
+          }
+        }
+      ]
     }
   }
 }

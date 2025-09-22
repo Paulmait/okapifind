@@ -5,16 +5,23 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TouchableOpacity, Text, Platform, View, ActivityIndicator, StyleSheet } from 'react-native';
 
-import MapScreen from './src/screens/MapScreen';
-import GuidanceScreen from './src/screens/GuidanceScreen';
-import SettingsScreen from './src/screens/SettingsScreen';
-import LegalScreen from './src/screens/LegalScreen';
-import PaywallScreen from './src/screens/PaywallScreen';
-import AuthScreen from './src/screens/AuthScreen';
+import {
+  MapScreen,
+  GuidanceScreen,
+  SettingsScreen,
+  LegalScreen,
+  PaywallScreen,
+  AuthScreen,
+} from './src/utils/lazyComponents';
 import { RootStackParamList } from './src/types/navigation';
 import { Colors } from './src/constants/colors';
 import { analytics } from './src/services/analytics';
 import { useAuth } from './src/hooks/useAuth';
+import { performance } from './src/services/performance';
+import { ErrorBoundary } from './src/services/errorBoundary';
+import { featureFlagService } from './src/services/featureFlags';
+import { offlineModeService } from './src/services/offlineMode';
+import './src/i18n'; // Initialize i18n
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -121,8 +128,23 @@ export default function App() {
   const { isLoading, isAuthenticated, isReady } = useAuth();
 
   useEffect(() => {
-    // Initialize analytics on app start
+    // Initialize all services on app start
     analytics.initialize();
+
+    // Initialize performance monitoring
+    performance.logBundleInfo();
+    performance.startFPSMonitoring();
+    performance.startTimer('App_initialization');
+
+    // Initialize feature flags
+    featureFlagService.fetchRemoteConfig();
+
+    // Initialize offline mode
+    offlineModeService.getNetworkState();
+
+    return () => {
+      performance.endTimer('App_initialization');
+    };
   }, []);
 
   // Show loading screen while auth is initializing
@@ -136,12 +158,14 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="auto" />
-        {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <StatusBar style="auto" />
+          {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 

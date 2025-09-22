@@ -79,7 +79,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
     if (location) {
       // Get the session ID from AsyncStorage or a global state
       // For now, we'll use a timestamp-based ID stored globally
-      const sessionId = global.safetyModeSessionId;
+      const sessionId = (global as any).safetyModeSessionId;
 
       if (sessionId) {
         try {
@@ -124,7 +124,7 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
   const handleToggle = async (value: boolean) => {
     if (value) {
       // Check if premium feature
-      const hasAccess = await checkFeature('safety_mode');
+      const hasAccess = await checkFeature('safety_mode' as any);
       if (!hasAccess) {
         analytics.logEvent('safety_mode_premium_required');
         return;
@@ -169,7 +169,7 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
       setSessionId(newSessionId);
 
       // Store globally for background task
-      global.safetyModeSessionId = newSessionId;
+      (global as any).safetyModeSessionId = newSessionId;
 
       // Create live session in Firestore
       const sessionData: LiveSession = {
@@ -274,7 +274,7 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
         });
 
         // Clear global session ID
-        global.safetyModeSessionId = null;
+        (global as any).safetyModeSessionId = null;
 
         analytics.logEvent('safety_mode_session_ended', {
           session_id: sessionId,

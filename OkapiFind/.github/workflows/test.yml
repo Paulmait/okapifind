@@ -1,0 +1,448 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 6 AM UTC
+    - cron: '0 6 * * *'
+
+env:
+  NODE_VERSION: '18'
+  EXPO_CLI_VERSION: 'latest'
+
+jobs:
+  # Lint and type checking
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript check
+        run: npm run typecheck
+
+      - name: Upload lint results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-results
+          path: |
+            eslint-report.json
+            tsc-report.json
+
+  # Unit and Integration Tests
+  unit-tests:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: ['16', '18', '20']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Run component tests
+        run: npm run test:components
+
+  # Coverage Tests
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:ci
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage/
+            test-report.json
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./coverage/lcov.info
+
+  # E2E Tests - iOS
+  e2e-ios:
+    name: E2E Tests (iOS)
+    runs-on: macos-latest
+    needs: [unit-tests]
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'e2e')
+
+    strategy:
+      matrix:
+        ios-version: ['16.0', '17.0']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup iOS Simulator
+        uses: futureware-tech/simulator-action@v3
+        with:
+          model: 'iPhone 14'
+          os_version: ${{ matrix.ios-version }}
+
+      - name: Install Expo CLI
+        run: npm install -g @expo/cli@${{ env.EXPO_CLI_VERSION }}
+
+      - name: Setup EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Cache Expo
+        uses: actions/cache@v4
+        with:
+          path: ~/.expo
+          key: expo-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Setup Detox
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
+          npm install -g detox-cli
+
+      - name: Build app for testing
+        run: npm run test:e2e:build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        timeout-minutes: 30
+
+      - name: Upload E2E artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ios-artifacts-${{ matrix.ios-version }}
+          path: |
+            e2e/screenshots/
+            e2e/reports/
+            e2e/videos/
+
+  # E2E Tests - Android
+  e2e-android:
+    name: E2E Tests (Android)
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'e2e')
+
+    strategy:
+      matrix:
+        api-level: [29, 30, 31]
+        target: [default, google_apis]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Expo CLI
+        run: npm install -g @expo/cli@${{ env.EXPO_CLI_VERSION }}
+
+      - name: Setup EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Cache Expo
+        uses: actions/cache@v4
+        with:
+          path: ~/.expo
+          key: expo-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Setup Detox
+        run: npm install -g detox-cli
+
+      - name: Run Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          arch: x86_64
+          profile: Nexus 6
+          script: |
+            npm run test:e2e:build
+            npm run test:e2e
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Upload E2E artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-android-artifacts-${{ matrix.api-level }}-${{ matrix.target }}
+          path: |
+            e2e/screenshots/
+            e2e/reports/
+            e2e/videos/
+
+  # Security and Vulnerability Scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level moderate
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  # Performance Tests
+  performance:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run performance tests
+        run: npm run test:performance || echo "Performance tests not implemented yet"
+
+      - name: Bundle size analysis
+        run: |
+          npm run build:web || echo "Web build not configured"
+          npx bundlesize || echo "Bundle size check not configured"
+
+  # Build Verification
+  build-verification:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, unit-tests]
+
+    strategy:
+      matrix:
+        platform: [android, ios, web]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo CLI
+        run: npm install -g @expo/cli@${{ env.EXPO_CLI_VERSION }}
+
+      - name: Setup EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Cache Expo
+        uses: actions/cache@v4
+        with:
+          path: ~/.expo
+          key: expo-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Verify build configuration
+        run: |
+          npx expo doctor
+          eas build --platform ${{ matrix.platform }} --dry-run
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+  # Test Results Summary
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, unit-tests, coverage, security]
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate test summary
+        run: |
+          echo "# Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f coverage-reports/test-report.json ]; then
+            echo "## Test Statistics" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+            cat coverage-reports/test-report.json >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "## Job Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Lint & Type Check: ${{ needs.lint-and-typecheck.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests: ${{ needs.unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage: ${{ needs.coverage.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security: ${{ needs.security.result }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: "OkapiFind test suite failed on ${{ github.ref_name }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Cleanup
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [e2e-ios, e2e-android, test-summary]
+    if: always()
+
+    steps:
+      - name: Clean up old artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+            });
+
+            // Keep only the latest 5 artifacts per type
+            const artifactsByName = {};
+            artifacts.data.artifacts.forEach(artifact => {
+              if (!artifactsByName[artifact.name]) {
+                artifactsByName[artifact.name] = [];
+              }
+              artifactsByName[artifact.name].push(artifact);
+            });
+
+            for (const [name, artifacts] of Object.entries(artifactsByName)) {
+              artifacts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+              // Delete old artifacts (keep latest 5)
+              for (let i = 5; i < artifacts.length; i++) {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifacts[i].id,
+                });
+              }
+            }

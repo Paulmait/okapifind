@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -21,6 +21,7 @@ import { calculateDistance, formatDistance } from '../utils';
 import { RootStackParamList } from '../types/navigation';
 import { parkingDetection } from '../services/ParkingDetectionService';
 import { Colors } from '../constants/colors';
+import { performance, withPerformanceMonitoring } from '../services/performance';
 
 type MapScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Map'>;
 
@@ -30,6 +31,16 @@ const MapScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [locationPermission, setLocationPermission] = useState(false);
   const [showDetectionCard, setShowDetectionCard] = useState(false);
+
+  // Performance monitoring
+  useEffect(() => {
+    performance.startTimer('MapScreen_mount');
+    performance.logMemoryUsage('MapScreen');
+
+    return () => {
+      performance.endTimer('MapScreen_mount');
+    };
+  }, []);
 
   // Use the car location hook
   const {
@@ -114,29 +125,31 @@ const MapScreen: React.FC = () => {
     }
   }, [lastDetectedParking]);
 
-  const handleSaveCarLocation = async () => {
+  const handleSaveCarLocation = useCallback(async () => {
     if (!userLocation) {
       Alert.alert('Location Not Available', 'Please wait for your location to be determined.');
       return;
     }
 
     try {
-      await saveCarLocation(
-        userLocation.coords.latitude,
-        userLocation.coords.longitude,
-        {
-          notes: 'Manually saved',
-        }
-      );
+      await performance.measureAsync('save_car_location', async () => {
+        await saveCarLocation(
+          userLocation.coords.latitude,
+          userLocation.coords.longitude,
+          {
+            notes: 'Manually saved',
+          }
+        );
 
-      // Also save to parking detection service
-      await parkingDetection.manualSaveParking(
-        {
-          latitude: userLocation.coords.latitude,
-          longitude: userLocation.coords.longitude,
-        },
-        'Manually saved from map'
-      );
+        // Also save to parking detection service
+        await parkingDetection.manualSaveParking(
+          {
+            latitude: userLocation.coords.latitude,
+            longitude: userLocation.coords.longitude,
+          },
+          'Manually saved from map'
+        );
+      });
 
       // Haptic feedback on save
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -149,9 +162,9 @@ const MapScreen: React.FC = () => {
     } catch (error) {
       Alert.alert('Error', 'Failed to save car location. Please try again.');
     }
-  };
+  }, [userLocation, saveCarLocation]);
 
-  const handleGuideMe = () => {
+  const handleGuideMe = useCallback(() => {
     if (!userLocation) {
       Alert.alert('Location Not Available', 'Please wait for your location to be determined.');
       return;
@@ -172,29 +185,35 @@ const MapScreen: React.FC = () => {
         longitude: carLocation.longitude,
       },
     });
-  };
+  }, [navigation, userLocation, carLocation]);
 
-  const toggleAutoDetection = async () => {
-    if (isTracking) {
-      await stopDetection();
-    } else {
-      await startDetection();
+  const toggleAutoDetection = useCallback(async () => {
+    try {
+      await performance.measureAsync('toggle_auto_detection', async () => {
+        if (isTracking) {
+          await stopDetection();
+        } else {
+          await startDetection();
+        }
+      });
+    } catch (error) {
+      console.error('Error toggling auto detection:', error);
     }
-  };
+  }, [isTracking, startDetection, stopDetection]);
 
-  const handleConfirmDetectedParking = async () => {
+  const handleConfirmDetectedParking = useCallback(async () => {
     if (lastDetectedParking) {
       await confirmParking(lastDetectedParking);
       setShowDetectionCard(false);
     }
-  };
+  }, [lastDetectedParking, confirmParking]);
 
-  const handleDismissDetectedParking = async () => {
+  const handleDismissDetectedParking = useCallback(async () => {
     if (lastDetectedParking) {
       await dismissParking(lastDetectedParking.id);
       setShowDetectionCard(false);
     }
-  };
+  }, [lastDetectedParking, dismissParking]);
 
   if (loading || carLocationLoading) {
     return (
@@ -214,35 +233,48 @@ const MapScreen: React.FC = () => {
     );
   }
 
-  const initialRegion = userLocation
-    ? {
+  // Memoized calculations
+  const initialRegion = useMemo(() => {
+    if (userLocation) {
+      return {
         latitude: userLocation.coords.latitude,
         longitude: userLocation.coords.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
-      }
-    : carLocation
-    ? {
+      };
+    }
+    if (carLocation) {
+      return {
         latitude: carLocation.latitude,
         longitude: carLocation.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
-      }
-    : {
-        latitude: 37.78825,
-        longitude: -122.4324,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
       };
+    }
+    return {
+      latitude: 37.78825,
+      longitude: -122.4324,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    };
+  }, [userLocation, carLocation]);
 
-  const distance = userLocation && carLocation
-    ? calculateDistance(
+  const distance = useMemo(() => {
+    if (!userLocation || !carLocation) return 0;
+
+    return performance.measureSync('calculate_distance', () =>
+      calculateDistance(
         userLocation.coords.latitude,
         userLocation.coords.longitude,
         carLocation.latitude,
         carLocation.longitude
       )
-    : 0;
+    );
+  }, [userLocation, carLocation]);
+
+  const formattedDistance = useMemo(() => {
+    return formatDistance(distance, false);
+  }, [distance]);
 
   return (
     <View style={styles.container}>
@@ -368,7 +400,7 @@ const MapScreen: React.FC = () => {
               <Text style={styles.cardSubtitle}>Parked {getFormattedTime()}</Text>
               {userLocation && (
                 <Text style={styles.distanceText}>
-                  {formatDistance(distance, false)}
+                  {formattedDistance}
                 </Text>
               )}
             </View>
@@ -589,4 +621,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MapScreen;
+export default withPerformanceMonitoring(React.memo(MapScreen), 'MapScreen');

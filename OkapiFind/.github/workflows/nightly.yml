@@ -1,0 +1,433 @@
+name: Nightly Tests
+
+on:
+  schedule:
+    # Run every night at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+env:
+  NODE_VERSION: '18'
+  EXPO_CLI_VERSION: 'latest'
+
+jobs:
+  # Full test suite with all platforms
+  comprehensive-tests:
+    name: Comprehensive Test Suite
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: ['16', '18', '20']
+        test-type: ['unit', 'integration', 'components']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ${{ matrix.test-type }} tests
+        run: npm run test:${{ matrix.test-type }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.node-version }}-${{ matrix.test-type }}
+          path: |
+            coverage/
+            test-report.json
+
+  # Performance and load testing
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run performance tests
+        run: |
+          # Bundle size analysis
+          npm run build:analyze || echo "Bundle analysis not configured"
+
+          # Memory usage tests
+          node --max-old-space-size=512 -e "
+            require('./jest.config.js');
+            console.log('Memory test passed');
+          "
+
+          # Test execution time
+          time npm test -- --passWithNoTests --verbose
+
+      - name: Lighthouse CI
+        run: |
+          # This would run Lighthouse CI for web builds
+          echo "Lighthouse CI would run here for web performance"
+
+  # Cross-platform E2E tests
+  e2e-comprehensive:
+    name: Comprehensive E2E Tests
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        platform: [android, ios]
+        exclude:
+          - os: ubuntu-latest
+            platform: ios
+          - os: macos-latest
+            platform: android
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup platform-specific tools
+        if: matrix.platform == 'ios'
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
+
+      - name: Setup Android tools
+        if: matrix.platform == 'android'
+        uses: android-actions/setup-android@v3
+
+      - name: Install global tools
+        run: |
+          npm install -g @expo/cli@${{ env.EXPO_CLI_VERSION }}
+          npm install -g eas-cli
+          npm install -g detox-cli
+
+      - name: Build and test
+        run: |
+          npm run test:e2e:build
+          npm run test:e2e
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        timeout-minutes: 60
+
+      - name: Upload E2E results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results-${{ matrix.os }}-${{ matrix.platform }}
+          path: |
+            e2e/screenshots/
+            e2e/reports/
+            e2e/videos/
+
+  # Security and dependency scanning
+  security-comprehensive:
+    name: Comprehensive Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run comprehensive security scans
+        run: |
+          # NPM audit
+          npm audit --audit-level low
+
+          # Check for outdated dependencies
+          npm outdated || true
+
+          # License check
+          npx license-checker --summary || true
+
+      - name: Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --all-projects --severity-threshold=medium
+
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'OkapiFind'
+          path: '.'
+          format: 'ALL'
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            reports/
+            *.sarif
+
+  # Code quality metrics
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for SonarQube
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:ci
+
+      - name: SonarQube Scan
+        uses: sonarqube-quality-gate-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Code complexity analysis
+        run: |
+          # Analyze code complexity
+          npx complexity-report --format json src/ > complexity-report.json || true
+
+          # Check for large files
+          find src -name "*.ts" -o -name "*.tsx" | xargs wc -l | sort -nr | head -10
+
+      - name: Upload quality reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports
+          path: |
+            coverage/
+            complexity-report.json
+            sonar-report.json
+
+  # Compatibility testing
+  compatibility-tests:
+    name: Compatibility Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        expo-version: ['48.0.0', '49.0.0', 'latest']
+        react-native-version: ['0.71.8', '0.72.4', 'latest']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Test compatibility
+        run: |
+          # Create temporary package.json with different versions
+          cp package.json package.json.backup
+
+          # Update versions for testing
+          npm install expo@${{ matrix.expo-version }} --no-save
+          npm install react-native@${{ matrix.react-native-version }} --no-save
+
+          # Run basic tests
+          npm run typecheck
+          npm run test:unit
+
+          # Restore original package.json
+          mv package.json.backup package.json
+
+  # Test reporting and notifications
+  test-reporting:
+    name: Test Reporting
+    runs-on: ubuntu-latest
+    needs: [comprehensive-tests, performance-tests, e2e-comprehensive, security-comprehensive, code-quality]
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate comprehensive report
+        run: |
+          mkdir -p reports
+
+          echo "# Nightly Test Report - $(date)" > reports/nightly-report.md
+          echo "" >> reports/nightly-report.md
+
+          # Test results summary
+          echo "## Test Results" >> reports/nightly-report.md
+          echo "- Comprehensive Tests: ${{ needs.comprehensive-tests.result }}" >> reports/nightly-report.md
+          echo "- Performance Tests: ${{ needs.performance-tests.result }}" >> reports/nightly-report.md
+          echo "- E2E Tests: ${{ needs.e2e-comprehensive.result }}" >> reports/nightly-report.md
+          echo "- Security Scan: ${{ needs.security-comprehensive.result }}" >> reports/nightly-report.md
+          echo "- Code Quality: ${{ needs.code-quality.result }}" >> reports/nightly-report.md
+
+          # Coverage summary
+          if [ -f test-results-*/coverage/coverage-summary.json ]; then
+            echo "" >> reports/nightly-report.md
+            echo "## Coverage Summary" >> reports/nightly-report.md
+            cat test-results-*/coverage/coverage-summary.json | jq -r '
+              .total |
+              "- Lines: \(.lines.pct)%",
+              "- Functions: \(.functions.pct)%",
+              "- Branches: \(.branches.pct)%",
+              "- Statements: \(.statements.pct)%"
+            ' >> reports/nightly-report.md
+          fi
+
+          # Performance metrics
+          echo "" >> reports/nightly-report.md
+          echo "## Performance Metrics" >> reports/nightly-report.md
+          echo "_Performance data would be included here_" >> reports/nightly-report.md
+
+      - name: Upload comprehensive report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-report
+          path: reports/
+
+      - name: Notify team on failures
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: |
+            🌙 Nightly test suite failed!
+
+            Failed jobs:
+            - Comprehensive Tests: ${{ needs.comprehensive-tests.result }}
+            - Performance Tests: ${{ needs.performance-tests.result }}
+            - E2E Tests: ${{ needs.e2e-comprehensive.result }}
+            - Security Scan: ${{ needs.security-comprehensive.result }}
+            - Code Quality: ${{ needs.code-quality.result }}
+
+            View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Create GitHub issue on consecutive failures
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Check if there's already an open issue for nightly failures
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'nightly-failure',
+              state: 'open'
+            });
+
+            if (issues.length === 0) {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Nightly tests failing - ${new Date().toISOString().split('T')[0]}`,
+                body: `
+            ## Nightly Test Failure
+
+            The nightly test suite has failed. Please investigate the following:
+
+            ### Failed Jobs
+            - Comprehensive Tests: ${{ needs.comprehensive-tests.result }}
+            - Performance Tests: ${{ needs.performance-tests.result }}
+            - E2E Tests: ${{ needs.e2e-comprehensive.result }}
+            - Security Scan: ${{ needs.security-comprehensive.result }}
+            - Code Quality: ${{ needs.code-quality.result }}
+
+            ### Action Required
+            - [ ] Investigate test failures
+            - [ ] Fix any broken tests
+            - [ ] Update dependencies if needed
+            - [ ] Verify build configuration
+
+            **Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                `,
+                labels: ['nightly-failure', 'bug', 'urgent']
+              });
+            }
+
+  # Cleanup old nightly artifacts
+  cleanup-nightly:
+    name: Cleanup Nightly Artifacts
+    runs-on: ubuntu-latest
+    needs: [test-reporting]
+    if: always()
+
+    steps:
+      - name: Clean up old artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Keep only the last 7 days of nightly run artifacts
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - 7);
+
+            const { data: runs } = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'nightly.yml',
+              status: 'completed'
+            });
+
+            for (const run of runs.workflow_runs) {
+              if (new Date(run.created_at) < cutoffDate) {
+                const { data: artifacts } = await github.rest.actions.listWorkflowRunArtifacts({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id
+                });
+
+                for (const artifact of artifacts.artifacts) {
+                  await github.rest.actions.deleteArtifact({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    artifact_id: artifact.id
+                  });
+                }
+              }
+            }

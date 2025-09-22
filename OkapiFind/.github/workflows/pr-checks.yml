@@ -1,0 +1,421 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Fast feedback for PR checks
+  quick-checks:
+    name: Quick Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for better diffs
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for package-lock changes
+        run: |
+          if git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -q package-lock.json; then
+            echo "package-lock.json was modified"
+            echo "::notice::Dependencies were modified in this PR"
+          fi
+
+      - name: Run lint on changed files
+        run: |
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -E '\.(js|jsx|ts|tsx)$' | tr '\n' ' ')
+          if [ ! -z "$CHANGED_FILES" ]; then
+            npx eslint $CHANGED_FILES
+          else
+            echo "No JavaScript/TypeScript files changed"
+          fi
+
+      - name: Run TypeScript check
+        run: npm run typecheck
+
+      - name: Check for test files
+        run: |
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -E '\.(js|jsx|ts|tsx)$' | grep -v '\.test\.' | grep -v '__tests__')
+          TEST_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -E '\.(test|spec)\.(js|jsx|ts|tsx)$')
+
+          if [ ! -z "$CHANGED_FILES" ] && [ -z "$TEST_FILES" ]; then
+            echo "::warning::Code changes detected but no test files were modified. Consider adding tests."
+          fi
+
+  # Test only changed areas
+  focused-tests:
+    name: Focused Tests
+    runs-on: ubuntu-latest
+    needs: [quick-checks]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests for changed files
+        run: |
+          # Get list of changed source files
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -E 'src/.*\.(js|jsx|ts|tsx)$' | grep -v '\.test\.' | grep -v '__tests__')
+
+          if [ ! -z "$CHANGED_FILES" ]; then
+            echo "Running tests for changed files:"
+            echo "$CHANGED_FILES"
+
+            # Run tests related to changed files
+            npm test -- --findRelatedTests $CHANGED_FILES --coverage --coverageReporters=text
+          else
+            echo "No source files changed, running minimal test suite"
+            npm run test:unit -- --passWithNoTests
+          fi
+
+      - name: Comment test results
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let comment = '## 🧪 Test Results\n\n';
+
+            if (fs.existsSync('coverage/coverage-summary.json')) {
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const total = coverage.total;
+
+              comment += '### Coverage Summary\n';
+              comment += `- **Lines:** ${total.lines.pct}% (${total.lines.covered}/${total.lines.total})\n`;
+              comment += `- **Functions:** ${total.functions.pct}% (${total.functions.covered}/${total.functions.total})\n`;
+              comment += `- **Branches:** ${total.branches.pct}% (${total.branches.covered}/${total.branches.total})\n`;
+              comment += `- **Statements:** ${total.statements.pct}% (${total.statements.covered}/${total.statements.total})\n\n`;
+            }
+
+            comment += '_Tests run on changed files only for faster feedback._';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Security checks for PR
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependencies
+        run: |
+          npm audit --audit-level moderate --json > audit-results.json || true
+
+          # Check if there are any vulnerabilities
+          VULN_COUNT=$(cat audit-results.json | jq '.metadata.vulnerabilities.total // 0')
+
+          if [ "$VULN_COUNT" -gt 0 ]; then
+            echo "::warning::Found $VULN_COUNT vulnerabilities in dependencies"
+            npm audit --audit-level moderate
+          else
+            echo "No vulnerabilities found"
+          fi
+
+      - name: Check for sensitive data
+        run: |
+          # Check for potential secrets or sensitive data
+          git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs grep -l -i -E "(password|secret|key|token|api)" || true
+
+          # Check for hardcoded URLs, emails, etc.
+          SENSITIVE_PATTERNS="password|secret|api.?key|private.?key|access.?token|auth.?token"
+
+          if git diff ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -i -E "$SENSITIVE_PATTERNS"; then
+            echo "::warning::Potential sensitive data found in changes. Please review."
+          fi
+
+  # Bundle size check
+  bundle-size:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and check bundle size
+        run: |
+          # This would typically build the app and check bundle size
+          # Implementation depends on your build setup
+          echo "Bundle size check would run here"
+
+          # Example: Check if bundle would be too large
+          # npm run build:analyze
+
+  # PR labeling
+  label-pr:
+    name: Label PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Label PR based on changes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+
+            // Get changed files
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner,
+              repo,
+              pull_number: prNumber,
+            });
+
+            const changedFiles = files.map(file => file.filename);
+            const labels = [];
+
+            // Determine labels based on changed files
+            if (changedFiles.some(file => file.includes('test') || file.includes('spec'))) {
+              labels.push('tests');
+            }
+
+            if (changedFiles.some(file => file.includes('src/services/'))) {
+              labels.push('services');
+            }
+
+            if (changedFiles.some(file => file.includes('src/components/') || file.includes('src/screens/'))) {
+              labels.push('ui');
+            }
+
+            if (changedFiles.some(file => file.includes('src/hooks/'))) {
+              labels.push('hooks');
+            }
+
+            if (changedFiles.some(file => file.includes('package.json') || file.includes('package-lock.json'))) {
+              labels.push('dependencies');
+            }
+
+            if (changedFiles.some(file => file.includes('.github/workflows/'))) {
+              labels.push('ci/cd');
+            }
+
+            if (changedFiles.some(file => file.includes('README') || file.includes('.md'))) {
+              labels.push('documentation');
+            }
+
+            // Check size of PR
+            const additions = files.reduce((sum, file) => sum + file.additions, 0);
+            const deletions = files.reduce((sum, file) => sum + file.deletions, 0);
+            const totalChanges = additions + deletions;
+
+            if (totalChanges < 50) {
+              labels.push('size/small');
+            } else if (totalChanges < 200) {
+              labels.push('size/medium');
+            } else {
+              labels.push('size/large');
+            }
+
+            // Apply labels
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prNumber,
+                labels,
+              });
+            }
+
+  # Require reviews for certain changes
+  require-review:
+    name: Require Review
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for critical changes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+
+            // Get changed files
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner,
+              repo,
+              pull_number: prNumber,
+            });
+
+            const changedFiles = files.map(file => file.filename);
+
+            // Critical areas that require review
+            const criticalPaths = [
+              'src/services/auth',
+              'src/services/payment',
+              '.github/workflows/',
+              'package.json',
+              'jest.config.js',
+              'tsconfig.json'
+            ];
+
+            const hasCriticalChanges = changedFiles.some(file =>
+              criticalPaths.some(path => file.includes(path))
+            );
+
+            if (hasCriticalChanges) {
+              // Add comment requesting review
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: '⚠️ **This PR modifies critical areas and requires review from a maintainer.**\n\nCritical changes detected in:\n' +
+                      changedFiles.filter(file => criticalPaths.some(path => file.includes(path)))
+                                 .map(file => `- \`${file}\``)
+                                 .join('\n')
+              });
+
+              // Request review from code owners
+              try {
+                await github.rest.pulls.requestReviewers({
+                  owner,
+                  repo,
+                  pull_number: prNumber,
+                  team_reviewers: ['maintainers'], // Adjust team name as needed
+                });
+              } catch (error) {
+                console.log('Could not request review from team:', error.message);
+              }
+            }
+
+  # Check for conflicts
+  conflict-check:
+    name: Conflict Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for merge conflicts
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+
+          if git merge-tree $(git merge-base HEAD origin/${{ github.event.pull_request.base.ref }}) HEAD origin/${{ github.event.pull_request.base.ref }} | grep -q '<<<<<<< '; then
+            echo "::error::Merge conflicts detected"
+            exit 1
+          else
+            echo "No merge conflicts detected"
+          fi
+
+  # Summary comment
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [quick-checks, focused-tests, security-check, bundle-size]
+    if: always()
+
+    steps:
+      - name: Create summary comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+
+            const checkResults = {
+              'Quick Checks': '${{ needs.quick-checks.result }}',
+              'Focused Tests': '${{ needs.focused-tests.result }}',
+              'Security Check': '${{ needs.security-check.result }}',
+              'Bundle Size': '${{ needs.bundle-size.result }}'
+            };
+
+            let summary = '## 🔍 PR Check Summary\n\n';
+
+            for (const [check, result] of Object.entries(checkResults)) {
+              const emoji = result === 'success' ? '✅' : result === 'failure' ? '❌' : '⏸️';
+              summary += `${emoji} **${check}**: ${result}\n`;
+            }
+
+            summary += '\n---\n';
+            summary += '_Automated checks completed. Please review the results above._';
+
+            // Update or create summary comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: prNumber,
+            });
+
+            const existingSummary = comments.find(comment =>
+              comment.user.login === 'github-actions[bot]' &&
+              comment.body.includes('PR Check Summary')
+            );
+
+            if (existingSummary) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingSummary.id,
+                body: summary
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: summary
+              });
+            }

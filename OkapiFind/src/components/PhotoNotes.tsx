@@ -17,7 +17,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { Camera, CameraType } from 'expo-camera';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Colors } from '../constants/colors';
@@ -53,8 +53,8 @@ export const PhotoNotes: React.FC<PhotoNotesProps> = ({
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [noteText, setNoteText] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
-  const cameraRef = useRef<Camera>(null);
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
 
   React.useEffect(() => {
     checkPermissions();
@@ -62,8 +62,9 @@ export const PhotoNotes: React.FC<PhotoNotesProps> = ({
   }, [sessionId]);
 
   const checkPermissions = async () => {
-    const { status } = await Camera.requestCameraPermissionsAsync();
-    setCameraPermission(status === 'granted');
+    if (!permission?.granted) {
+      await requestPermission();
+    }
   };
 
   const loadExistingPhotos = async () => {
@@ -275,11 +276,10 @@ export const PhotoNotes: React.FC<PhotoNotesProps> = ({
   if (showCamera) {
     return (
       <View style={styles.cameraContainer}>
-        <Camera
+        <CameraView
           ref={cameraRef}
           style={styles.camera}
-          type={CameraType.back}
-          ratio="4:3"
+          facing="back"
         >
           <View style={styles.cameraOverlay}>
             <TouchableOpacity
@@ -300,7 +300,7 @@ export const PhotoNotes: React.FC<PhotoNotesProps> = ({
               <View style={styles.captureButtonInner} />
             </TouchableOpacity>
           </View>
-        </Camera>
+        </CameraView>
       </View>
     );
   }
