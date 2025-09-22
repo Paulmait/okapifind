@@ -18,8 +18,20 @@ export const Colors = {
   cardBorder: '#E0E0E0',
   success: '#00C851',
   danger: '#FF4444',
+  error: '#FF4444', // Alias for danger
   warning: '#FFD700',
   info: '#33B5E5',
+  surface: '#F5F5F5', // Surface color for cards and overlays
+  border: '#E0E0E0', // Default border color
+
+  // Additional colors
+  white: '#FFFFFF',
+  black: '#000000',
+  gray: '#9E9E9E',
+  lightGray: '#F5F5F5',
+  darkGray: '#616161',
+  disabled: '#B0B0B0',
+  separator: '#E0E0E0',
 
   // Button colors
   buttonPrimary: '#FFD700',
