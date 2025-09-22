@@ -110,24 +110,79 @@ export const useRevenueCat = () => {
     }
   };
 
-  const restorePurchases = async (): Promise<boolean> => {
+  const restorePurchases = async (showSuccessAlert: boolean = true): Promise<boolean> => {
     try {
+      setState(prev => ({ ...prev, loading: true }));
+
+      // First, try to get the latest customer info
       const customerInfo = await Purchases.restorePurchases();
-      const isPremium = customerInfo.entitlements.active['premium'] !== undefined;
+
+      // Check all possible entitlements, not just 'premium'
+      const activeEntitlements = Object.keys(customerInfo.entitlements.active);
+      const isPremium = activeEntitlements.includes('premium') ||
+                       activeEntitlements.includes('pro') ||
+                       activeEntitlements.length > 0;
 
       setState(prev => ({
         ...prev,
         customerInfo,
         isPremium,
+        loading: false,
+        error: null,
       }));
 
-      if (!isPremium) {
-        Alert.alert('No Purchases Found', 'No previous purchases were found to restore.');
+      if (isPremium && showSuccessAlert) {
+        Alert.alert(
+          'Purchases Restored',
+          'Your previous purchases have been successfully restored.',
+          [{ text: 'OK' }]
+        );
+      } else if (!isPremium) {
+        Alert.alert(
+          'No Purchases Found',
+          'No previous purchases were found to restore. If you believe this is an error, please contact support.',
+          [
+            { text: 'OK', style: 'default' },
+            {
+              text: 'Contact Support',
+              onPress: () => {
+                // You can implement support contact here
+                console.log('Contact support requested');
+              }
+            }
+          ]
+        );
       }
 
       return isPremium;
-    } catch (error) {
-      Alert.alert('Restore Failed', 'Unable to restore purchases. Please try again.');
+    } catch (error: any) {
+      console.error('Restore purchases error:', error);
+
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: error.message || 'Failed to restore purchases',
+      }));
+
+      // Provide more specific error messages
+      let errorMessage = 'Unable to restore purchases. Please try again.';
+
+      if (error.code === 'NETWORK_ERROR') {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.code === 'INVALID_CREDENTIALS') {
+        errorMessage = 'Authentication error. Please sign in to your app store account.';
+      } else if (error.code === 'STORE_PROBLEM') {
+        errorMessage = 'App store is temporarily unavailable. Please try again later.';
+      }
+
+      Alert.alert('Restore Failed', errorMessage, [
+        { text: 'OK', style: 'default' },
+        {
+          text: 'Try Again',
+          onPress: () => restorePurchases(showSuccessAlert)
+        }
+      ]);
+
       return false;
     }
   };
@@ -184,6 +239,100 @@ export const useRevenueCat = () => {
     }
   };
 
+  const getSubscriptionInfo = () => {
+    if (!state.customerInfo) return null;
+
+    const entitlements = state.customerInfo.entitlements.active;
+    const allSubscriptions = state.customerInfo.allPurchaseDates;
+
+    return {
+      hasActiveSubscription: Object.keys(entitlements).length > 0,
+      activeEntitlements: Object.keys(entitlements),
+      subscriptionHistory: allSubscriptions,
+      managementURL: state.customerInfo.managementURL,
+      firstSeen: state.customerInfo.firstSeen,
+      originalAppUserId: state.customerInfo.originalAppUserId,
+    };
+  };
+
+  const syncPurchases = async (): Promise<boolean> => {
+    try {
+      setState(prev => ({ ...prev, loading: true }));
+
+      await Purchases.syncPurchases();
+      const customerInfo = await Purchases.getCustomerInfo();
+      const isPremium = customerInfo.entitlements.active['premium'] !== undefined;
+
+      setState(prev => ({
+        ...prev,
+        customerInfo,
+        isPremium,
+        loading: false,
+        error: null,
+      }));
+
+      return true;
+    } catch (error) {
+      console.error('Error syncing purchases:', error);
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Failed to sync purchases',
+      }));
+      return false;
+    }
+  };
+
+  const validateEntitlement = async (entitlementId: string): Promise<boolean> => {
+    try {
+      // Force refresh customer info from the server
+      const customerInfo = await Purchases.getCustomerInfo();
+      return customerInfo.entitlements.active[entitlementId] !== undefined;
+    } catch (error) {
+      console.error('Error validating entitlement:', error);
+      return false;
+    }
+  };
+
+  const getReceiptData = () => {
+    if (!state.customerInfo) return null;
+
+    return {
+      latestExpirationDate: state.customerInfo.latestExpirationDate,
+      allExpirationDates: state.customerInfo.allExpirationDates,
+      allPurchaseDates: state.customerInfo.allPurchaseDates,
+      requestDate: state.customerInfo.requestDate,
+    };
+  };
+
+  const handleRestoreWithRetry = async (maxRetries: number = 3): Promise<boolean> => {
+    let attempts = 0;
+
+    while (attempts < maxRetries) {
+      try {
+        const result = await restorePurchases(attempts === 0);
+        return result;
+      } catch (error) {
+        attempts++;
+        console.log(`Restore attempt ${attempts} failed:`, error);
+
+        if (attempts >= maxRetries) {
+          Alert.alert(
+            'Restore Failed',
+            'We tried multiple times but could not restore your purchases. Please try again later or contact support.',
+            [{ text: 'OK' }]
+          );
+          return false;
+        }
+
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+      }
+    }
+
+    return false;
+  };
+
   return {
     ...state,
     purchasePackage,
@@ -192,6 +341,11 @@ export const useRevenueCat = () => {
     getEntitlement,
     logOut,
     setUserId,
+    getSubscriptionInfo,
+    syncPurchases,
+    validateEntitlement,
+    getReceiptData,
+    handleRestoreWithRetry,
   };
 };
 
