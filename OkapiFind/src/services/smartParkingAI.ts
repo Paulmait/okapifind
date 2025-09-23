@@ -7,6 +7,7 @@
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { analytics } from './analytics';
+import GeminiAI from './geminiAI';
 
 interface ParkingPattern {
   id: string;
@@ -223,7 +224,7 @@ class SmartParkingAI {
   }
 
   /**
-   * Get personalized parking recommendations
+   * Get personalized parking recommendations with Gemini AI enhancement
    */
   async getParkingRecommendations(
     location: { latitude: number; longitude: number },
@@ -236,6 +237,7 @@ class SmartParkingAI {
     confidence: number;
   }>> {
     try {
+      // Get traditional ML recommendations
       const clusters = this.findNearbyClusters(location, radius);
       const patterns = this.patterns.filter(p =>
         this.calculateDistance(p.location, location) <= radius
@@ -258,6 +260,35 @@ class SmartParkingAI {
           confidence: cluster.successRate,
         };
       });
+
+      // Enhance with Gemini AI predictions
+      try {
+        await GeminiAI.initialize();
+        const geminiPrediction = await GeminiAI.getParkingSuggestion({
+          location,
+          time: new Date(),
+          userHistory: this.patterns.slice(0, 5).map(p =>
+            `${p.venue || 'Unknown'} at ${p.location.latitude},${p.location.longitude}`
+          ),
+        });
+
+        // Merge AI suggestions with ML recommendations
+        if (geminiPrediction.confidence > 0.7) {
+          geminiPrediction.alternativeSpots.forEach((spot, idx) => {
+            if (idx < 3) { // Add top 3 AI suggestions
+              recommendations.push({
+                location: spot.location,
+                score: spot.confidence * 100,
+                reasons: [`AI predicted ${(spot.confidence * 100).toFixed(0)}% success rate`],
+                walkTime: this.estimateWalkTime(spot.location, location),
+                confidence: spot.confidence,
+              });
+            }
+          });
+        }
+      } catch (aiError) {
+        console.log('Gemini AI enhancement unavailable, using ML only:', aiError);
+      }
 
       // Sort by score descending
       recommendations.sort((a, b) => b.score - a.score);

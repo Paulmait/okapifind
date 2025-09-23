@@ -23,6 +23,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { Colors } from '../constants/colors';
 import { supabase } from '../lib/supabase-client';
 import { analytics } from '../services/analytics';
+import GeminiAI from '../services/geminiAI';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -33,6 +34,12 @@ interface Photo {
   note?: string;
   timestamp: Date;
   type: 'spot' | 'sign' | 'landmark' | 'receipt';
+  signAnalysis?: {
+    restrictions: string[];
+    allowedHours: string;
+    rate: string | null;
+    warnings: string[];
+  };
 }
 
 interface PhotoNotesProps {
@@ -154,6 +161,48 @@ export const PhotoNotes: React.FC<PhotoNotesProps> = ({
         type,
       };
 
+      // If it's a parking sign, analyze it with Gemini AI
+      if (type === 'sign') {
+        try {
+          setUploading(true);
+          await GeminiAI.initialize();
+
+          // Convert image to base64 for analysis
+          const response = await fetch(uri);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          const base64 = await new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+
+          const signAnalysis = await GeminiAI.analyzeParkingSign(base64);
+          newPhoto.signAnalysis = signAnalysis;
+
+          // Show analysis results
+          Alert.alert(
+            '🚦 Parking Sign Analyzed',
+            `Restrictions: ${signAnalysis.restrictions.join(', ')}\n` +
+            `Allowed Hours: ${signAnalysis.allowedHours}\n` +
+            `Rate: ${signAnalysis.rate || 'Free'}\n` +
+            `${signAnalysis.warnings.length > 0 ? `⚠️ ${signAnalysis.warnings.join(', ')}` : ''}`,
+            [{ text: 'OK' }]
+          );
+
+          analytics.logEvent('parking_sign_analyzed', {
+            session_id: sessionId,
+            has_restrictions: signAnalysis.restrictions.length > 0,
+            has_rate: !!signAnalysis.rate,
+          });
+        } catch (aiError) {
+          console.log('Sign analysis failed:', aiError);
+          // Continue without analysis
+        } finally {
+          setUploading(false);
+        }
+      }
+
       setPhotos(prev => [...prev, newPhoto]);
       setSelectedPhoto(newPhoto);
 
@@ -161,6 +210,7 @@ export const PhotoNotes: React.FC<PhotoNotesProps> = ({
         session_id: sessionId,
         type,
         has_note: false,
+        has_ai_analysis: !!newPhoto.signAnalysis,
       });
     } catch (error) {
       console.error('Failed to process photo:', error);
