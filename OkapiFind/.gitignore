@@ -67,3 +67,94 @@ config/*.local.js
 # generated native folders
 /ios
 /android
+
+# ============================================
+# PROPRIETARY & CONFIDENTIAL FILES
+# ============================================
+
+# Proprietary algorithms and trade secrets
+PROPRIETARY_ALGORITHMS.md
+PROPRIETARY_*.md
+*_PROPRIETARY.*
+*_SECRET.*
+*_CONFIDENTIAL.*
+
+# Internal documentation
+TRADE_SECRETS.md
+PATENT_APPLICATIONS.md
+COMPETITIVE_ANALYSIS_INTERNAL.md
+REVENUE_STRATEGIES_CONFIDENTIAL.md
+
+# Algorithm implementations
+/src/algorithms/proprietary/
+/src/core/secret/
+/src/ml/models/
+*.model
+*.weights
+*.pkl
+
+# Research and development
+/research/
+/r&d/
+/experiments/
+/notebooks/
+*.ipynb
+
+# Business sensitive
+FINANCIAL_PROJECTIONS.md
+INVESTOR_DECK.pdf
+ACQUISITION_STRATEGY.md
+PARTNERSHIP_AGREEMENTS/
+
+# Legal documents (keep only templates)
+/legal/contracts/
+/legal/nda/
+*.docx
+*.doc
+
+# Customer data
+/data/customers/
+/data/analytics/
+*.csv
+*.xlsx
+
+# Internal tools and scripts
+/internal-tools/
+/scripts/proprietary/
+deployment-secrets.sh
+
+# Compiled algorithms (if any)
+*.wasm
+*.so
+*.dll
+*.dylib
+
+# ML model files
+*.h5
+*.onnx
+*.tflite
+*.mlmodel
+
+# Encryption keys
+*.pem
+*.der
+*.crt
+*.cer
+*.pfx
+*.p12
+
+# Backup files that might contain secrets
+*.backup
+*.bak
+*.old
+*.orig
+*~
+
+# IDE configurations that might expose paths
+.idea/
+.vscode/settings.json
+*.sublime-workspace
+
+# Test data that might be sensitive
+/test-data/production/
+/fixtures/real/
