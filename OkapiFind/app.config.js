@@ -50,24 +50,12 @@ export default {
     },
     plugins: [
       "expo-location",
-      "expo-task-manager",
-      "expo-speech",
-      "expo-haptics",
-      "expo-sensors",
       "expo-web-browser",
-      "expo-apple-authentication",
-      "expo-notifications",
       [
         "expo-notifications",
         {
           icon: "./assets/notification-icon.png",
           color: "#FFD700"
-        }
-      ],
-      [
-        "expo-auth-session",
-        {
-          "providers": ["google"]
         }
       ],
       "sentry-expo"

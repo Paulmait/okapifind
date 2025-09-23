@@ -4,7 +4,7 @@
 
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { Platform, Alert } from 'react-native';
-import Purchases from 'react-native-purchases';
+// import Purchases from 'react-native-purchases';
 import { useRevenueCat, initializeRevenueCat } from '../../hooks/useRevenueCat';
 import {
   mockCustomerInfo,
@@ -136,7 +136,10 @@ describe('useRevenueCat', () => {
     });
 
     it('should handle missing offerings', async () => {
-      mockPurchases.getOfferings.mockResolvedValue({ current: null });
+      mockPurchases.getOfferings.mockResolvedValue({
+        current: null as any,
+        all: {}
+      });
 
       const { result } = renderHook(() => useRevenueCat());
 
@@ -170,7 +173,7 @@ describe('useRevenueCat', () => {
     });
 
     it('should handle purchase cancellation', async () => {
-      const cancelError = new Error('User cancelled');
+      const cancelError = new Error('User cancelled') as CustomError;
       cancelError.userCancelled = true;
       mockPurchases.purchasePackage.mockRejectedValue(cancelError);
 
@@ -260,7 +263,7 @@ describe('useRevenueCat', () => {
     });
 
     it('should handle restore error with network error code', async () => {
-      const error = new Error('Network error');
+      const error = new Error('Network error') as CustomError;
       error.code = 'NETWORK_ERROR';
       mockPurchases.restorePurchases.mockRejectedValue(error);
 
@@ -630,10 +633,10 @@ describe('initializeRevenueCat', () => {
     const consoleError = jest.spyOn(console, 'error').mockImplementation();
 
     // Mock with valid API keys by temporarily changing the function
-    const originalInit = initializeRevenueCat;
+    // const originalInit = initializeRevenueCat;
     const mockInit = jest.fn(async () => {
       try {
-        await Purchases.configure({ apiKey: 'valid-api-key' });
+        await mockPurchases.configure({ apiKey: 'valid-api-key' });
       } catch (error) {
         console.error('Failed to initialize RevenueCat:', error);
       }

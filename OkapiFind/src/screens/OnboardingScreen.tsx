@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Speech from 'expo-speech';
+import Tts from 'react-native-tts';
 import * as Haptics from 'expo-haptics';
 import { Accelerometer } from 'expo-sensors';
 import { useNavigation } from '@react-navigation/native';
@@ -163,19 +163,20 @@ export default function OnboardingScreen() {
     };
   }, [currentSlide]);
 
-  const demonstrateVoice = () => {
-    if (Platform.OS === 'ios') {
-      Speech.speak('Say "Hey Siri, where is my car?" to find your parking spot', {
-        language: 'en-US',
-        pitch: 1.0,
-        rate: 0.9,
-      });
-    } else {
-      Speech.speak('Say "OK Google, save my parking spot" to quickly save your location', {
-        language: 'en-US',
-        pitch: 1.0,
-        rate: 0.9,
-      });
+  const demonstrateVoice = async () => {
+    try {
+      // Configure TTS settings
+      Tts.setDefaultLanguage('en-US');
+      Tts.setDefaultPitch(1.0);
+      Tts.setDefaultRate(0.9);
+
+      if (Platform.OS === 'ios') {
+        await Tts.speak('Say "Hey Siri, where is my car?" to find your parking spot');
+      } else {
+        await Tts.speak('Say "OK Google, save my parking spot" to quickly save your location');
+      }
+    } catch (error) {
+      console.error('TTS error in onboarding:', error);
     }
   };
 

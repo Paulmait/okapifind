@@ -166,6 +166,8 @@ export const mockPurchases = {
   invalidateCustomerInfoCache: jest.fn(),
   addCustomerInfoUpdateListener: jest.fn(),
   removeCustomerInfoUpdateListener: jest.fn(),
+  logIn: jest.fn(),
+  logOut: jest.fn(),
   LOG_LEVEL: {
     VERBOSE: 'VERBOSE',
     DEBUG: 'DEBUG',

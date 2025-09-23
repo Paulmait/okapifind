@@ -3,7 +3,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { mockSupabaseClient, mockSupabaseResponse } from '../../../__tests__/mocks/supabase.mock';
+import { mockSupabaseClient } from '../../../__tests__/mocks/supabase.mock';
 import '../utils/setupTests';
 
 describe('Supabase Integration Tests', () => {

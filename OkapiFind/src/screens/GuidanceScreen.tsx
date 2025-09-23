@@ -15,7 +15,7 @@ import {
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as Location from 'expo-location';
-import * as Speech from 'expo-speech';
+import Tts from 'react-native-tts';
 import * as Haptics from 'expo-haptics';
 import { Magnetometer } from 'expo-sensors';
 import { Subscription } from 'expo-sensors/build/Pedometer';
@@ -72,7 +72,7 @@ const GuidanceScreen: React.FC = () => {
       if (magnetometerSubscription.current) {
         magnetometerSubscription.current.remove();
       }
-      Speech.stop();
+      Tts.stop();
     };
   }, []);
 
@@ -107,11 +107,11 @@ const GuidanceScreen: React.FC = () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setHasTriggeredNearbyHaptic(true);
       if (voiceEnabled) {
-        Speech.speak('You are very close to your car!', {
-          language: 'en-US',
-          pitch: 1.0,
-          rate: 1.0,
-        });
+        // Configure and speak TTS message
+        Tts.setDefaultLanguage('en-US');
+        Tts.setDefaultPitch(1.0);
+        Tts.setDefaultRate(1.0);
+        Tts.speak('You are very close to your car!');
       }
     } else if (calculatedDistance > NEAR_THRESHOLD_METERS) {
       setHasTriggeredNearbyHaptic(false);
@@ -185,11 +185,11 @@ const GuidanceScreen: React.FC = () => {
     }
 
     const message = `Your car is ${distanceText} ${direction}`;
-    Speech.speak(message, {
-      language: 'en-US',
-      pitch: 1.0,
-      rate: 0.9,
-    });
+    // Configure and speak TTS message
+    Tts.setDefaultLanguage('en-US');
+    Tts.setDefaultPitch(1.0);
+    Tts.setDefaultRate(0.9);
+    Tts.speak(message);
   };
 
   const toggleVoiceGuidance = () => {
@@ -197,21 +197,21 @@ const GuidanceScreen: React.FC = () => {
     setVoiceEnabled(newValue);
 
     if (newValue) {
-      Speech.speak('Voice guidance enabled', {
-        language: 'en-US',
-        pitch: 1.0,
-        rate: 1.0,
-      });
+      // Configure and speak TTS message
+      Tts.setDefaultLanguage('en-US');
+      Tts.setDefaultPitch(1.0);
+      Tts.setDefaultRate(1.0);
+      Tts.speak('Voice guidance enabled');
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } else {
-      Speech.stop();
+      Tts.stop();
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   };
 
 
   const handleBackToMap = () => {
-    Speech.stop();
+    Tts.stop();
     navigation.goBack();
   };
 

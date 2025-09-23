@@ -3,10 +3,15 @@
  * Handles all user-related business logic
  */
 
-import { auth, db } from '../config/firebase.config';
-import { collection, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, limit, offset, getDocs } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, limit, getDocs, getFirestore, Timestamp, serverTimestamp } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { firebaseApp } from '../config/firebase';
 import { User, UserPreferences, UserStats } from '../graphql/types/User';
 import { supabase } from '../lib/supabase-client';
+
+// Initialize Firebase services
+const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
 
 class UserService {
   private usersCollection = 'users';
@@ -92,7 +97,7 @@ class UserService {
     try {
       const updateData: any = {
         ...updates,
-        updatedAt: new Date(),
+        updatedAt: serverTimestamp(),
       };
 
       await updateDoc(doc(db, this.usersCollection, userId), updateData);
@@ -114,7 +119,7 @@ class UserService {
     try {
       await updateDoc(doc(db, this.usersCollection, userId), {
         preferences,
-        updatedAt: new Date(),
+        updatedAt: serverTimestamp(),
       });
 
       const user = await this.getUserById(userId);
@@ -248,17 +253,17 @@ class UserService {
         // Update existing user
         await updateDoc(userRef, {
           ...userData,
-          updatedAt: new Date(),
-          lastActive: new Date(),
+          updatedAt: serverTimestamp(),
+          lastActive: serverTimestamp(),
         });
       } else {
         // Create new user
         await setDoc(userRef, {
           ...userData,
           preferences: this.getDefaultPreferences(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          lastActive: new Date(),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          lastActive: serverTimestamp(),
           isPremium: false,
         });
       }

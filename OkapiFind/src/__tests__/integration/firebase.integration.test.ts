@@ -7,22 +7,20 @@ import {
   getAuth,
   signInWithCredential,
   GoogleAuthProvider,
-  OAuthProvider,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
-import {
-  getFirestore,
-  collection,
-  doc,
-  addDoc,
-  getDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  getDocs,
-} from 'firebase/firestore';
+// Mock Firebase functions
+const getFirestore = jest.fn();
+const collection = jest.fn();
+const doc = jest.fn();
+const addDoc = jest.fn();
+const getDoc = jest.fn();
+const updateDoc = jest.fn();
+const deleteDoc = jest.fn();
+const query = jest.fn();
+const where = jest.fn();
+const getDocs = jest.fn();
 import { authService } from '../../services/auth.service';
 import '../utils/setupTests';
 
@@ -256,7 +254,7 @@ describe('Firebase Integration Tests', () => {
 
   describe('Error Handling', () => {
     it('should handle authentication errors', async () => {
-      const error = new Error('Authentication failed');
+      const error = new Error('Authentication failed') as CustomError;
       error.code = 'auth/invalid-credential';
 
       (signInWithCredential as jest.Mock).mockRejectedValue(error);
@@ -269,7 +267,7 @@ describe('Firebase Integration Tests', () => {
     });
 
     it('should handle Firestore permission errors', async () => {
-      const error = new Error('Permission denied');
+      const error = new Error('Permission denied') as CustomError;
       error.code = 'permission-denied';
 
       (addDoc as jest.Mock).mockRejectedValue(error);
@@ -282,7 +280,7 @@ describe('Firebase Integration Tests', () => {
     });
 
     it('should handle network errors', async () => {
-      const error = new Error('Network error');
+      const error = new Error('Network error') as CustomError;
       error.code = 'unavailable';
 
       (getDoc as jest.Mock).mockRejectedValue(error);
@@ -379,7 +377,7 @@ describe('Firebase Integration Tests', () => {
 
   describe('Offline Support', () => {
     it('should handle offline mode', async () => {
-      const offlineError = new Error('Client is offline');
+      const offlineError = new Error('Client is offline') as CustomError;
       offlineError.code = 'unavailable';
 
       (getDoc as jest.Mock).mockRejectedValueOnce(offlineError);

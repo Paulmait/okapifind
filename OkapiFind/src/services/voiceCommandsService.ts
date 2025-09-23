@@ -4,7 +4,7 @@
  */
 
 import { Platform, Linking, Alert } from 'react-native';
-import * as Speech from 'expo-speech';
+import Tts from 'react-native-tts';
 import * as IntentLauncher from 'expo-intent-launcher';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
@@ -56,6 +56,7 @@ class VoiceCommandsService {
   constructor() {
     this.setupAudioSession();
     this.registerShortcuts();
+    this.initializeTTS();
   }
 
   /**
@@ -70,6 +71,35 @@ class VoiceCommandsService {
       });
     } catch (error) {
       console.error('Failed to setup audio session:', error);
+    }
+  }
+
+  /**
+   * Initialize TTS engine
+   */
+  private async initializeTTS() {
+    try {
+      // Set default TTS configuration
+      Tts.setDefaultLanguage('en-US');
+      Tts.setDefaultPitch(1.0);
+      Tts.setDefaultRate(Platform.OS === 'ios' ? 0.9 : 1.0);
+
+      // Set event listeners for TTS
+      Tts.addEventListener('tts-start', () => {
+        console.log('TTS started');
+      });
+
+      Tts.addEventListener('tts-finish', () => {
+        console.log('TTS finished');
+      });
+
+      Tts.addEventListener('tts-error', (error) => {
+        console.error('TTS error:', error);
+      });
+
+      console.log('TTS initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize TTS:', error);
     }
   }
 
@@ -258,11 +288,8 @@ class VoiceCommandsService {
    */
   private async speakResponse(text: string): Promise<void> {
     try {
-      await Speech.speak(text, {
-        language: 'en-US',
-        pitch: 1.0,
-        rate: Platform.OS === 'ios' ? 0.9 : 1.0,
-      });
+      // Speak the text using configured TTS settings
+      await Tts.speak(text);
     } catch (error) {
       console.error('Speech failed:', error);
     }

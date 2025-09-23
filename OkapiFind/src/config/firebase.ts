@@ -1,5 +1,8 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, initializeAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getDatabase, Database } from 'firebase/database';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
@@ -49,6 +52,42 @@ try {
   firebaseAuth = getAuth(firebaseApp);
 }
 
+// Initialize Firebase Firestore
+let firebaseFirestore: Firestore;
+try {
+  firebaseFirestore = getFirestore(firebaseApp);
+  if (__DEV__) {
+    console.log('Firebase Firestore initialized successfully');
+  }
+} catch (error) {
+  console.error('Failed to initialize Firebase Firestore:', error);
+  throw error;
+}
+
+// Initialize Firebase Realtime Database
+let firebaseDatabase: Database;
+try {
+  firebaseDatabase = getDatabase(firebaseApp);
+  if (__DEV__) {
+    console.log('Firebase Realtime Database initialized successfully');
+  }
+} catch (error) {
+  console.error('Failed to initialize Firebase Realtime Database:', error);
+  throw error;
+}
+
+// Initialize Firebase Storage
+let firebaseStorage: FirebaseStorage;
+try {
+  firebaseStorage = getStorage(firebaseApp);
+  if (__DEV__) {
+    console.log('Firebase Storage initialized successfully');
+  }
+} catch (error) {
+  console.error('Failed to initialize Firebase Storage:', error);
+  throw error;
+}
+
 // Log initialization status in development
 if (__DEV__) {
   console.log('Firebase initialized:', {
@@ -59,7 +98,7 @@ if (__DEV__) {
 }
 
 // Export configured instances
-export { firebaseApp, firebaseAuth };
+export { firebaseApp, firebaseAuth, firebaseFirestore, firebaseDatabase, firebaseStorage };
 
 // Also export config for use in other parts of the app
 export const firebaseConfigExport = firebaseConfig;

@@ -17,6 +17,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -274,6 +276,7 @@ class PushNotificationService {
           badge: 1,
         },
         trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
           seconds: secondsUntilNotification,
         },
       });
@@ -324,10 +327,13 @@ class PushNotificationService {
    */
   async sendImmediateNotification(config: NotificationConfig): Promise<void> {
     try {
-      await Notifications.presentNotificationAsync({
-        title: config.title,
-        body: config.body,
-        data: config.data,
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: config.title,
+          body: config.body,
+          data: config.data,
+        },
+        trigger: null, // Send immediately
         categoryIdentifier: config.categoryId,
       });
 
@@ -454,10 +460,10 @@ class PushNotificationService {
    */
   cleanup(): void {
     if (this.notificationListener) {
-      Notifications.removeNotificationSubscription(this.notificationListener);
+      this.notificationListener.remove();
     }
     if (this.responseListener) {
-      Notifications.removeNotificationSubscription(this.responseListener);
+      this.responseListener.remove();
     }
   }
 

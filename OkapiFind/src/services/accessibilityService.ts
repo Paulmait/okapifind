@@ -3,8 +3,9 @@
  * Required for App Store approval and inclusivity
  */
 
+import React from 'react';
 import { Platform, AccessibilityInfo, Alert } from 'react-native';
-import * as Speech from 'expo-speech';
+import Tts from 'react-native-tts';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -111,12 +112,22 @@ class AccessibilityService {
       }
 
       if (this.settings.voiceGuidance && !this.settings.screenReaderEnabled) {
-        Speech.speak(message, {
-          language: 'en-US',
-          pitch: 1,
-          rate: 0.9,
-          ...(queue ? {} : { _voiceIndex: 0 }),
-        });
+        try {
+          // Configure TTS settings
+          Tts.setDefaultLanguage('en-US');
+          Tts.setDefaultPitch(1.0);
+          Tts.setDefaultRate(0.9);
+
+          // Speak the message
+          if (queue) {
+            Tts.speak(message);
+          } else {
+            Tts.stop();
+            Tts.speak(message);
+          }
+        } catch (error) {
+          console.error('TTS error in accessibility service:', error);
+        }
       }
     }, delay);
   }
