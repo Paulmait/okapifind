@@ -1,0 +1,160 @@
+{
+  "name": "OkapiFind - Smart Parking Memory",
+  "short_name": "OkapiFind",
+  "description": "Never lose your car again! Smart parking app with automatic detection.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#007AFF",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["navigation", "travel", "utilities"],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "icons": [
+    {
+      "src": "/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Save Parking",
+      "short_name": "Save",
+      "description": "Quickly save your parking location",
+      "url": "/save?utm_source=pwa_shortcut",
+      "icons": [
+        {
+          "src": "/shortcut-save.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Find My Car",
+      "short_name": "Find",
+      "description": "Navigate back to your parked car",
+      "url": "/navigate?utm_source=pwa_shortcut",
+      "icons": [
+        {
+          "src": "/shortcut-navigate.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "History",
+      "short_name": "History",
+      "description": "View your parking history",
+      "url": "/history?utm_source=pwa_shortcut",
+      "icons": [
+        {
+          "src": "/shortcut-history.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-1.png",
+      "sizes": "1242x2688",
+      "type": "image/png",
+      "label": "Save your parking with one tap"
+    },
+    {
+      "src": "/screenshot-2.png",
+      "sizes": "1242x2688",
+      "type": "image/png",
+      "label": "Navigate back to your car"
+    },
+    {
+      "src": "/screenshot-3.png",
+      "sizes": "1242x2688",
+      "type": "image/png",
+      "label": "View parking history"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.okapi.find",
+      "id": "com.okapi.find"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/okapifind/id1234567890"
+    }
+  ],
+  "prefer_related_applications": false,
+  "protocol_handlers": [
+    {
+      "protocol": "web+okapifind",
+      "url": "/share?url=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "features": [
+    "geolocation",
+    "camera",
+    "microphone",
+    "notifications"
+  ]
+}

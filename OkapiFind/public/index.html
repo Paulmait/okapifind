@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#007AFF" />
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Never lose your car again! OkapiFind uses smart detection and GPS tracking to remember where you parked." />
+  <meta name="keywords" content="parking app, find my car, car finder, parking location, GPS parking" />
+  <meta name="author" content="OkapiFind" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://okapifind.com/" />
+  <meta property="og:title" content="OkapiFind - Never Lose Your Car Again" />
+  <meta property="og:description" content="Smart parking app that automatically remembers where you parked." />
+  <meta property="og:image" content="/og-image.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://okapifind.com/" />
+  <meta property="twitter:title" content="OkapiFind - Smart Parking Memory" />
+  <meta property="twitter:description" content="Never forget where you parked again!" />
+  <meta property="twitter:image" content="/twitter-image.png" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+
+  <title>OkapiFind - Smart Parking App | Never Lose Your Car</title>
+
+  <!-- Preconnect to external domains -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://api.mapbox.com" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* Critical CSS for immediate rendering */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    #root {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Loading screen */
+    .app-loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .app-loading-logo {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 30px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .app-loading-text {
+      color: white;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .app-loading-subtext {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+    }
+
+    .app-loading-spinner {
+      margin-top: 30px;
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Install PWA prompt */
+    .install-prompt {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      display: none;
+      z-index: 1000;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .install-prompt.show {
+      display: block;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .install-prompt-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .install-prompt-icon {
+      width: 48px;
+      height: 48px;
+      margin-right: 12px;
+    }
+
+    .install-prompt-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .install-prompt-text {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .install-prompt-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .install-prompt-button {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .install-prompt-button:active {
+      transform: scale(0.95);
+    }
+
+    .install-prompt-button.primary {
+      background: #007AFF;
+      color: white;
+    }
+
+    .install-prompt-button.secondary {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .app-loading-logo {
+        width: 100px;
+        height: 100px;
+      }
+
+      .app-loading-text {
+        font-size: 20px;
+      }
+
+      .app-loading-subtext {
+        font-size: 14px;
+      }
+    }
+  </style>
+
+  <!-- PWA iOS support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="OkapiFind" />
+
+  <!-- Structured Data for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "OkapiFind",
+    "description": "Smart parking app that automatically remembers where you parked",
+    "applicationCategory": "Navigation",
+    "operatingSystem": "iOS, Android, Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "1250"
+    }
+  }
+  </script>
+</head>
+<body>
+  <noscript>
+    <div style="text-align: center; padding: 50px; background: white;">
+      <h1>JavaScript Required</h1>
+      <p>OkapiFind requires JavaScript to be enabled. Please enable JavaScript in your browser settings.</p>
+    </div>
+  </noscript>
+
+  <!-- Loading Screen -->
+  <div id="loading" class="app-loading">
+    <img src="/icon-512.png" alt="OkapiFind" class="app-loading-logo" />
+    <div class="app-loading-text">OkapiFind</div>
+    <div class="app-loading-subtext">Never lose your car again</div>
+    <div class="app-loading-spinner"></div>
+  </div>
+
+  <!-- App Root -->
+  <div id="root"></div>
+
+  <!-- Install PWA Prompt -->
+  <div id="install-prompt" class="install-prompt">
+    <div class="install-prompt-header">
+      <img src="/icon-192.png" alt="OkapiFind" class="install-prompt-icon" />
+      <div class="install-prompt-title">Install OkapiFind</div>
+    </div>
+    <div class="install-prompt-text">
+      Install our app for a better experience with offline access and faster loading.
+    </div>
+    <div class="install-prompt-buttons">
+      <button id="install-later" class="install-prompt-button secondary">Later</button>
+      <button id="install-now" class="install-prompt-button primary">Install</button>
+    </div>
+  </div>
+
+  <script>
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker registration failed'));
+      });
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt;
+    const installPrompt = document.getElementById('install-prompt');
+    const installButton = document.getElementById('install-now');
+    const laterButton = document.getElementById('install-later');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // Show install prompt after 30 seconds
+      setTimeout(() => {
+        if (deferredPrompt) {
+          installPrompt.classList.add('show');
+        }
+      }, 30000);
+    });
+
+    installButton?.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+
+      installPrompt.classList.remove('show');
+      deferredPrompt.prompt();
+
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User ${outcome} the install prompt`);
+
+      deferredPrompt = null;
+    });
+
+    laterButton?.addEventListener('click', () => {
+      installPrompt.classList.remove('show');
+    });
+
+    // Hide loading screen when app loads
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.style.opacity = '0';
+          loading.style.transition = 'opacity 0.3s ease-out';
+          setTimeout(() => loading.remove(), 300);
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
