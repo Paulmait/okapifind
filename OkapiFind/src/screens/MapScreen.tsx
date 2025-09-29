@@ -64,10 +64,15 @@ const MapScreen: React.FC = () => {
   } = useParkingDetection();
 
   useEffect(() => {
-    (async () => {
+    let locationSubscription: Location.LocationSubscription | null = null;
+    let isMounted = true;
+
+    const setupLocation = async () => {
       try {
         // Request location permissions
         const { status } = await Location.requestForegroundPermissionsAsync();
+
+        if (!isMounted) return;
 
         if (status !== 'granted') {
           Alert.alert(
@@ -86,17 +91,21 @@ const MapScreen: React.FC = () => {
           accuracy: Location.Accuracy.Balanced, // Changed from High to Balanced for better battery life
         });
 
-        setUserLocation(location);
-        setLoading(false);
+        if (isMounted) {
+          setUserLocation(location);
+          setLoading(false);
+        }
 
         // Set up location tracking with optimized intervals
-        const locationSubscription = await Location.watchPositionAsync(
+        locationSubscription = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.Balanced, // Optimized for battery
             timeInterval: 10000, // Increased from 5000ms to 10000ms
             distanceInterval: 20, // Increased from 10m to 20m
           },
           (newLocation) => {
+            if (!isMounted) return;
+
             // Only update if significant change
             setUserLocation(prevLocation => {
               if (!prevLocation) return newLocation;
@@ -113,20 +122,31 @@ const MapScreen: React.FC = () => {
         );
 
         // Initialize parking detection if enabled
-        if (settings.enabled) {
+        if (settings.enabled && isMounted) {
           await parkingDetection.initialize();
         }
-
-        // Cleanup subscription on unmount
-        return () => {
-          locationSubscription.remove();
-        };
       } catch (error) {
-        console.error('Error getting location:', error);
-        Alert.alert('Error', 'Failed to get your location. Please try again.');
-        setLoading(false);
+        if (isMounted) {
+          console.error('Error getting location:', error);
+          Alert.alert('Error', 'Failed to get your location. Please try again.');
+          setLoading(false);
+        }
       }
-    })();
+    };
+
+    setupLocation();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+      // Clean up parking detection
+      if (parkingDetection && parkingDetection.cleanup) {
+        parkingDetection.cleanup();
+      }
+    };
   }, []);
 
   // Handle detected parking notification
