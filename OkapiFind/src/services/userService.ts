@@ -3,7 +3,21 @@
  * Handles all user-related business logic
  */
 
-import { collection, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, limit, getDocs, getFirestore, Timestamp, serverTimestamp } from 'firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  limit as limitQuery,
+  getDocs,
+  Timestamp,
+  serverTimestamp
+} from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { firebaseApp } from '../config/firebase';
 import { User, UserPreferences, UserStats } from '../graphql/types/User';

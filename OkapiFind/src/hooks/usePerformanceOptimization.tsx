@@ -4,7 +4,7 @@
  * Includes frame rate monitoring, memory management, and intelligent rendering optimizations
  */
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   InteractionManager,
   LayoutAnimation,

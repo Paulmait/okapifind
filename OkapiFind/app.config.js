@@ -61,11 +61,11 @@ export default {
       "sentry-expo"
     ],
     extra: {
-      // URLs
-      privacyPolicyUrl: 'https://okapifind.com/privacy',
-      termsOfServiceUrl: 'https://okapifind.com/terms',
-      supportUrl: 'https://okapifind.com/support',
-      websiteUrl: 'https://okapifind.com',
+      // URLs - Using GitHub Pages for legal documents
+      privacyPolicyUrl: 'https://github.com/Paulmait/okapifind/blob/main/PRIVACY_POLICY.md',
+      termsOfServiceUrl: 'https://github.com/Paulmait/okapifind/blob/main/TERMS_OF_SERVICE.md',
+      supportUrl: 'https://github.com/Paulmait/okapifind/issues',
+      websiteUrl: 'https://github.com/Paulmait/okapifind',
 
       // App Store URLs
       appStoreUrl: 'https://apps.apple.com/app/okapifind/id1234567890',
