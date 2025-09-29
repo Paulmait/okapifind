@@ -35,6 +35,11 @@ yarn-error.*
 .env
 .env.production
 .env.development
+.env.staging
+.env.test
+*.env
+!.env.example
+!.env.template
 
 # Firebase config and keys
 google-services.json
@@ -47,6 +52,13 @@ firebase-config.ts
 *.private
 api-keys.json
 secrets.json
+credentials.json
+config.secret.js
+config.private.js
+*.key
+*.keys
+service-account*.json
+serviceAccountKey.json
 
 # Firebase specific
 .firebase/
