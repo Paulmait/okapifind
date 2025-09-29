@@ -81,23 +81,34 @@ const MapScreen: React.FC = () => {
 
         setLocationPermission(true);
 
-        // Get current location
+        // Get current location with optimized settings
         const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.High,
+          accuracy: Location.Accuracy.Balanced, // Changed from High to Balanced for better battery life
         });
 
         setUserLocation(location);
         setLoading(false);
 
-        // Set up location tracking
+        // Set up location tracking with optimized intervals
         const locationSubscription = await Location.watchPositionAsync(
           {
-            accuracy: Location.Accuracy.High,
-            timeInterval: 5000,
-            distanceInterval: 10,
+            accuracy: Location.Accuracy.Balanced, // Optimized for battery
+            timeInterval: 10000, // Increased from 5000ms to 10000ms
+            distanceInterval: 20, // Increased from 10m to 20m
           },
           (newLocation) => {
-            setUserLocation(newLocation);
+            // Only update if significant change
+            setUserLocation(prevLocation => {
+              if (!prevLocation) return newLocation;
+              const distance = calculateDistance(
+                prevLocation.coords.latitude,
+                prevLocation.coords.longitude,
+                newLocation.coords.latitude,
+                newLocation.coords.longitude
+              );
+              // Only update if moved more than 5 meters
+              return distance > 5 ? newLocation : prevLocation;
+            });
           }
         );
 
