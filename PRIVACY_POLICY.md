@@ -2,162 +2,335 @@
 
 **Effective Date:** September 29, 2025
 **Last Updated:** September 29, 2025
+**Version:** 1.0.0
 
-## Introduction
+## 1. Introduction
 
-OkapiFind ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application OkapiFind (the "App").
+OkapiFind ("we," "our," or "us") operates the OkapiFind mobile application (the "Service"). This Privacy Policy informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have.
 
-Please read this Privacy Policy carefully. By using the App, you agree to the collection and use of information in accordance with this policy.
+**By using our Service, you agree to the collection and use of information in accordance with this policy.**
 
-## Information We Collect
+### Contact Information
+- **Data Controller:** OkapiFind LLC
+- **Email:** privacy@okapifind.com
+- **Address:** [To be provided]
+- **Data Protection Officer:** dpo@okapifind.com
 
-### 1. Location Information
-- **Precise Location Data**: We collect your device's real-time location to provide core functionality - remembering where you parked and navigating you back to your vehicle
-- **Background Location**: With your permission, we may collect location data even when the app is in the background to automatically detect parking events
-- **Location History**: We store your parking history locally on your device for quick access
+## 2. Information We Collect
 
-### 2. Device Information
-- Device type and model
-- Operating system version
-- Unique device identifiers
-- Motion and activity data (to detect when you leave your vehicle)
-- Camera data (when using AR navigation features)
+### 2.1 Personal Information
+Information that can identify you directly:
+- **Account Information**: Email address, name (optional), profile picture (optional)
+- **Authentication Data**: OAuth tokens from Google/Apple Sign-In
+- **Contact Information**: Phone number (optional, for emergency features)
 
-### 3. User Account Information
-- Email address (if you create an account)
-- Name (optional)
-- Profile picture (optional)
-- Authentication tokens from third-party providers (Google, Apple)
+### 2.2 Location Data
+**We collect location data ONLY when you grant permission:**
+- **Precise Location**: Real-time GPS coordinates to save parking locations
+- **Background Location** (Optional): To auto-detect when you park
+- **Location History**: Stored locally on your device (last 30 days)
 
-### 4. Usage Data
-- App feature usage statistics
-- Parking patterns and frequency
-- Navigation preferences
-- Error logs and crash reports
+**Important:** You can disable location access at any time in your device settings.
 
-### 5. Payment Information
-- Subscription status
-- Transaction history (processed by RevenueCat/Stripe)
-- We do NOT store credit card numbers or banking information
+### 2.3 Device Information
+Automatically collected technical data:
+- Device model and manufacturer
+- Operating system and version
+- Unique device identifiers (for analytics, not advertising)
+- Screen resolution and size
+- App version and build number
+- Language and time zone settings
+- Network connection type
 
-## How We Use Your Information
+### 2.4 Usage Information
+How you interact with our app:
+- Features used and frequency
+- Parking save patterns
+- Navigation routes taken (anonymized)
+- Session duration and activity
+- In-app actions and preferences
+- Search queries within the app
 
-We use the collected information to:
-- **Provide Core Services**: Remember parking locations and provide navigation
-- **Improve User Experience**: Analyze usage patterns to enhance features
-- **Send Notifications**: Alert you about parking expiration, street cleaning, etc.
-- **Customer Support**: Respond to your inquiries and support requests
-- **Safety Features**: Provide emergency contact and safety mode features
-- **Analytics**: Understand app performance and user behavior
+### 2.5 Sensor Data
+With your permission:
+- **Motion/Activity**: To detect when you exit your vehicle
+- **Camera**: Only when you use photo notes or AR features
+- **Microphone**: Only when you use voice commands
 
-## Data Sharing and Disclosure
+### 2.6 Payment Information
+- Subscription type and status
+- Purchase history and receipts
+- **We NEVER store**: Credit card numbers, CVV codes, or banking details
+- Payment processing handled by: Apple App Store, Google Play Store, Stripe
 
-We do NOT sell your personal information. We may share your information only in the following situations:
+### 2.7 Communications
+- Support tickets and inquiries
+- Feedback and survey responses
+- Email communication preferences
 
-### Third-Party Service Providers
-We work with trusted service providers:
-- **Firebase** (Google): Authentication and real-time database
-- **Supabase**: Backend infrastructure and data storage
-- **Google Maps**: Mapping and navigation services
-- **Sentry**: Error tracking and app performance monitoring
-- **RevenueCat/Stripe**: Payment processing
-- **Google Gemini AI**: Intelligent parking suggestions (anonymized data only)
+## 3. Legal Basis for Processing (GDPR)
 
-### Legal Requirements
-We may disclose your information if required by law or in response to valid requests by public authorities.
+We process your personal data under the following legal bases:
+- **Consent**: For location data, camera, microphone access
+- **Contract**: To provide our services you've subscribed to
+- **Legitimate Interests**: For improving our service, analytics, security
+- **Legal Obligations**: To comply with applicable laws
 
-### Business Transfers
-In the event of a merger, acquisition, or sale of assets, your information may be transferred.
+## 4. How We Use Your Information
 
-## Data Storage and Security
+### 4.1 Primary Purposes
+- **Save Parking Locations**: Core app functionality
+- **Provide Navigation**: Guide you back to your vehicle
+- **Send Reminders**: Parking meter expiration, street cleaning alerts
+- **Process Payments**: Manage subscriptions
+- **Customer Support**: Respond to your requests
+- **Account Management**: Maintain your profile and preferences
 
-### Storage
-- **Local Storage**: Most data is stored locally on your device
-- **Cloud Storage**: Account data and preferences are encrypted and stored in secure cloud databases
-- **Retention**: We retain your data for as long as you use the app, plus 90 days after account deletion
+### 4.2 Secondary Purposes
+- **Service Improvement**: Analyze usage patterns
+- **Personalization**: Customize features to your needs
+- **Safety Features**: Emergency contact, share location
+- **Analytics**: Understand app performance
+- **Legal Compliance**: Meet regulatory requirements
+- **Communications**: Service updates, optional newsletters
 
-### Security Measures
-- End-to-end encryption for sensitive data
-- Secure HTTPS connections
-- Regular security audits
-- Access controls and authentication
-- Automatic data anonymization after 30 days
+## 5. Data Sharing and Disclosure
 
-## Your Privacy Rights
+### 5.1 We DO NOT Sell Your Data
+**We never sell, rent, or trade your personal information.**
 
+### 5.2 Service Providers
+We share data with trusted providers who assist our operations:
+
+| Provider | Purpose | Data Shared | Location |
+|----------|---------|------------|----------|
+| Google Firebase | Authentication, Analytics | User ID, Email | USA |
+| Supabase | Database, Storage | Profile, Preferences | USA |
+| Google Maps | Mapping Services | Location (anonymized) | USA |
+| Sentry | Error Tracking | Device info, Crash logs | USA |
+| RevenueCat | Subscription Management | User ID, Purchase data | USA |
+| Amazon AWS | Cloud Infrastructure | Encrypted user data | USA |
+
+### 5.3 Legal Requirements
+We may disclose your information if required to:
+- Comply with legal obligations or court orders
+- Protect our rights, privacy, safety, or property
+- Prevent fraud or security issues
+- Respond to government requests
+
+### 5.4 Business Transfers
+If we're acquired or merged, your data may be transferred. We'll notify you before any transfer and any changes to this policy.
+
+### 5.5 Aggregated Data
+We may share anonymized, aggregated data that cannot identify you for research or marketing purposes.
+
+## 6. Data Storage and Security
+
+### 6.1 Storage Locations
+- **Primary Storage**: Your device (local)
+- **Cloud Backup**: Encrypted servers in the USA
+- **Data Centers**: SOC 2 Type II certified facilities
+
+### 6.2 Security Measures
+- **Encryption**: AES-256 for data at rest, TLS 1.3 for data in transit
+- **Access Control**: Role-based access, multi-factor authentication
+- **Regular Audits**: Quarterly security assessments
+- **Incident Response**: 24-hour breach notification policy
+- **Data Minimization**: We only collect necessary data
+- **Secure Development**: OWASP guidelines followed
+
+### 6.3 Retention Periods
+| Data Type | Retention Period | Reason |
+|-----------|-----------------|---------|
+| Account Data | Until deletion requested | Service provision |
+| Location History | 30 days (local), 7 days (cloud) | User convenience |
+| Analytics | 90 days | Service improvement |
+| Crash Logs | 90 days | Bug fixing |
+| Payment Records | 7 years | Legal requirements |
+| Deleted Account | 30 days (soft delete) | Recovery option |
+
+## 7. Your Rights and Choices
+
+### 7.1 Your Rights
 You have the right to:
-- **Access**: Request copies of your personal data
-- **Correction**: Request correction of inaccurate data
-- **Deletion**: Request deletion of your data
-- **Portability**: Request transfer of your data
-- **Opt-Out**: Disable specific data collection features
+- **Access**: Request a copy of your personal data
+- **Rectification**: Correct inaccurate data
+- **Erasure**: Request deletion ("right to be forgotten")
+- **Portability**: Receive your data in a portable format
+- **Restriction**: Limit processing of your data
+- **Object**: Opt-out of certain processing
 - **Withdraw Consent**: Revoke permissions at any time
+- **Non-Discrimination**: Not be discriminated against for exercising rights
 
-### How to Exercise Your Rights
-- In-app: Settings > Privacy > Manage Data
-- Email: privacy@okapifind.com
-- Response time: Within 30 days
+### 7.2 How to Exercise Rights
+- **In-App**: Settings → Privacy → Manage My Data
+- **Email**: privacy@okapifind.com
+- **Response Time**: Within 30 days (GDPR) or 45 days (CCPA)
+- **Verification**: We may request identity verification
 
-## Children's Privacy
+### 7.3 Account Deletion
+To delete your account:
+1. Go to Settings → Account → Delete Account
+2. Or email delete@okapifind.com
+3. We'll delete your data within 30 days
+4. Some data may be retained for legal obligations
 
-Our App is not intended for children under 13. We do not knowingly collect personal information from children under 13. If you become aware that a child has provided us with personal information, please contact us.
+## 8. Children's Privacy
 
-## Location Data Special Notice
+- Our Service is not directed to children under 13
+- We don't knowingly collect data from children under 13
+- If you're a parent and believe we have your child's data, contact us immediately
+- We will promptly delete such information
 
-### Why We Need Location Access
-OkapiFind's core functionality requires location access to:
-- Save your parking location
-- Provide navigation back to your car
-- Send location-based reminders
-- Detect parking automatically
+## 9. International Data Transfers
 
-### Your Control
-You can:
-- Deny location permission (app functionality will be limited)
-- Use "While Using App" permission instead of "Always"
-- Manually clear location history in Settings
-- Disable automatic parking detection
+### 9.1 Transfer Mechanisms
+- **Standard Contractual Clauses**: For EU-US transfers
+- **Adequacy Decisions**: Where applicable
+- **Privacy Shield**: Where certified (providers)
 
-## International Data Transfers
+### 9.2 Your Rights
+If you're located outside the USA, you have rights under your local laws. We comply with:
+- GDPR (European Union)
+- CCPA/CPRA (California)
+- PIPEDA (Canada)
+- LGPD (Brazil)
+- Privacy Act (Australia)
 
-Your information may be transferred to and maintained on servers located outside of your country. We ensure appropriate safeguards are in place.
+## 10. California Privacy Rights (CCPA)
 
-## California Privacy Rights (CCPA)
-
-California residents have additional rights:
-- Right to know what personal information is collected
-- Right to know if personal information is sold or disclosed
-- Right to opt-out of the sale of personal information
+### 10.1 Additional Rights for California Residents
+- Right to know categories of personal information collected
+- Right to know if personal information is sold (we don't sell)
+- Right to opt-out of sale (not applicable)
+- Right to deletion
 - Right to non-discrimination
 
-## European Privacy Rights (GDPR)
+### 10.2 Categories of Information Collected
+Under CCPA, we collect these categories:
+- Identifiers (name, email)
+- Commercial information (subscription)
+- Internet activity (app usage)
+- Geolocation data
+- Sensory data (photos, voice)
 
-EU residents have additional rights:
-- Legal basis for processing
-- Right to lodge a complaint with supervisory authorities
-- Right to object to processing
-- Rights related to automated decision-making
+### 10.3 "Do Not Sell"
+We DO NOT sell personal information as defined by CCPA.
 
-## Changes to This Privacy Policy
+## 11. Cookie Policy
 
-We may update our Privacy Policy from time to time. Changes will be posted in the App with an updated "Last Updated" date. Continued use of the App after changes constitutes acceptance.
+### 11.1 Mobile App
+Our mobile app doesn't use cookies but may use similar technologies:
+- **Local Storage**: For preferences and cache
+- **Device Identifiers**: For analytics (not advertising)
 
-## Contact Us
+### 11.2 Marketing Website
+If you visit our website:
+- **Essential Cookies**: For functionality
+- **Analytics Cookies**: To understand usage (optional)
+- **No Advertising Cookies**: We don't use ad tracking
 
-If you have questions about this Privacy Policy, please contact us:
+## 12. Third-Party Links
 
-**Email:** privacy@okapifind.com
-**GitHub:** https://github.com/yourusername/okapifind/issues
-**Address:** [Your Company Address]
+Our Service may contain links to third-party services. We're not responsible for their privacy practices. Review their policies before providing information.
 
-## Compliance Statements
+## 13. Data Breach Notification
 
-- We comply with Apple App Store Guidelines
-- We comply with Google Play Store Policies
-- We follow GDPR requirements for EU users
-- We follow CCPA requirements for California residents
-- We are committed to accessibility standards (WCAG 2.1 AA)
+In case of a data breach:
+- We'll notify affected users within 72 hours
+- Notification via email and in-app message
+- We'll provide: nature of breach, data affected, measures taken, recommendations
+
+## 14. Special Features Privacy
+
+### 14.1 Location Sharing
+- Only shared with your explicit consent
+- You control who sees your location
+- Sharing can be stopped anytime
+
+### 14.2 Photo Storage
+- Photos stored locally by default
+- Cloud backup only with permission
+- Photos are encrypted
+
+### 14.3 Voice Commands
+- Audio processed on-device when possible
+- Not stored unless you report an issue
+- Can be disabled in settings
+
+## 15. Updates to This Policy
+
+- We'll notify you of material changes via email and in-app
+- Review the "Last Updated" date
+- Continued use after changes means acceptance
+- Major changes require explicit consent
+
+## 16. Accessibility
+
+This policy is available in:
+- Large print format
+- Screen reader compatible format
+- Multiple languages (coming soon)
+
+Contact us for alternative formats.
+
+## 17. Complaints
+
+If you have privacy concerns:
+1. Contact us first: privacy@okapifind.com
+2. You may also lodge a complaint with:
+   - **EU**: Your local Data Protection Authority
+   - **UK**: Information Commissioner's Office (ICO)
+   - **USA**: Federal Trade Commission (FTC)
+   - **California**: California Attorney General
+
+## 18. Privacy Policy for Specific Regions
+
+### European Economic Area (EEA)
+- Legal basis for processing disclosed
+- Data Protection Officer available
+- Right to lodge complaint with supervisory authority
+- International transfer safeguards in place
+
+### United Kingdom
+- UK GDPR compliance
+- ICO registration: [To be added]
+
+### Canada
+- PIPEDA compliance
+- Privacy Commissioner of Canada oversight
+
+## 19. Developer Information
+
+**Company**: OkapiFind LLC
+**App Store Developer**: [Developer Name]
+**Google Play Developer**: [Developer Name]
+**Data Protection Registration**: [Number]
+
+## 20. Audit and Compliance
+
+- Annual privacy audits conducted
+- ISO 27001 certification (in progress)
+- SOC 2 Type II compliance (planned)
+- GDPR compliance verified
 
 ---
 
-*This privacy policy is provided in good faith and is subject to change. Your continued use of OkapiFind constitutes acceptance of these terms.*
+**Questions?**
+Contact our Privacy Team:
+- Email: privacy@okapifind.com
+- Phone: [To be added]
+- Mail: [Address to be added]
+
+**This privacy policy is provided in English. Translations are for convenience only.**
+
+---
+
+*This Privacy Policy complies with:*
+- Apple App Store Guidelines (3.1.1, 5.1.1, 5.1.2)
+- Google Play Store Policy (User Data, Privacy & Security)
+- GDPR (EU) 2016/679
+- CCPA (California) Civil Code 1798.100
+- COPPA (Children's Privacy)
+- PIPEDA (Canada)
+- International privacy frameworks
