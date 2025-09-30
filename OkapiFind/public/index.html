@@ -321,16 +321,53 @@
       installPrompt.classList.remove('show');
     });
 
-    // Hide loading screen when app loads
+    // Hide loading screen when app loads (or after timeout)
+    let loadingHidden = false;
+
+    function hideLoadingScreen() {
+      if (loadingHidden) return;
+      loadingHidden = true;
+
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.style.opacity = '0';
+        loading.style.transition = 'opacity 0.3s ease-out';
+        setTimeout(() => loading.remove(), 300);
+      }
+    }
+
+    // Hide when DOM is ready OR after 10 seconds (whichever comes first)
     window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        const loading = document.getElementById('loading');
-        if (loading) {
-          loading.style.opacity = '0';
-          loading.style.transition = 'opacity 0.3s ease-out';
-          setTimeout(() => loading.remove(), 300);
-        }
-      }, 1000);
+      console.log('DOM loaded');
+    });
+
+    // Wait for React to mount (check for root element population)
+    const checkReactMount = setInterval(() => {
+      const root = document.getElementById('root');
+      if (root && root.children.length > 0) {
+        console.log('React mounted successfully');
+        clearInterval(checkReactMount);
+        hideLoadingScreen();
+      }
+    }, 100);
+
+    // Fallback: hide after 10 seconds even if React doesn't mount
+    setTimeout(() => {
+      console.log('Loading screen timeout - hiding anyway');
+      clearInterval(checkReactMount);
+      hideLoadingScreen();
+
+      // Show error if React didn't mount
+      const root = document.getElementById('root');
+      if (!root || root.children.length === 0) {
+        console.error('React app failed to mount');
+        root.innerHTML = '<div style="padding: 40px; text-align: center; background: white; margin: 20px; border-radius: 12px;"><h1 style="color: #ef4444; margin-bottom: 16px;">⚠️ Configuration Required</h1><p style="color: #666; margin-bottom: 16px;">The app could not start. This usually means environment variables are missing.</p><p style="color: #666;">Please check the browser console (F12) for error messages, or contact support.</p></div>';
+      }
+    }, 10000);
+
+    // Log any errors
+    window.addEventListener('error', (e) => {
+      console.error('Page error:', e.message, e.filename, e.lineno);
     });
   </script>
 </body>
