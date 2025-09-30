@@ -10,6 +10,12 @@ module.exports = async function (env, argv) {
         dangerouslyAddModulePathsToTranspile: [
           'react-native-maps',
           'react-native-skeleton-placeholder',
+          '@react-navigation/elements',
+          '@react-navigation/native',
+          '@react-navigation/stack',
+          'react-native-gesture-handler',
+          'react-native-safe-area-context',
+          'react-native-screens',
         ],
       },
     },
