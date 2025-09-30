@@ -95,7 +95,7 @@ export default {
 
       // Sentry Configuration
       sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-      sentryDebug: __DEV__,
+      sentryDebug: process.env.NODE_ENV !== 'production',
 
       // EAS Configuration
       eas: {

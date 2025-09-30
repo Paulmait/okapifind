@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd OkapiFind && npm install --legacy-peer-deps && npx expo export:web",
+  "outputDirectory": "OkapiFind/web-build",
+  "installCommand": "echo 'Skipping root install'",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
