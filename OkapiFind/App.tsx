@@ -21,6 +21,8 @@ import { performance } from './src/services/performance';
 import { ErrorBoundary } from './src/services/errorBoundary';
 import { featureFlagService } from './src/services/featureFlags';
 import { offlineModeService } from './src/services/offlineMode';
+import { FirebaseConfigGuard } from './src/components/FirebaseConfigGuard';
+import { OfflineIndicator } from './src/components/OfflineIndicator';
 import './src/i18n'; // Initialize i18n
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -125,7 +127,7 @@ function AuthNavigator() {
 }
 
 export default function App() {
-  const { isLoading, isAuthenticated, isReady } = useAuth();
+  const { isLoading, isAuthenticated, isReady, currentUser } = useAuth();
 
   useEffect(() => {
     // Initialize all services on app start
@@ -158,11 +160,21 @@ export default function App() {
   }
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary
+      userId={currentUser?.uid}
+      screenName="App"
+      onError={(error, errorInfo) => {
+        console.error('Critical app error:', error);
+        // Additional error handling logic can go here
+      }}
+    >
       <SafeAreaProvider>
+        <OfflineIndicator />
         <NavigationContainer>
           <StatusBar style="auto" />
-          {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+          <FirebaseConfigGuard>
+            {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+          </FirebaseConfigGuard>
         </NavigationContainer>
       </SafeAreaProvider>
     </ErrorBoundary>

@@ -1,15 +1,19 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { feedbackService } from './feedback';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  userId?: string;
+  screenName?: string;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
   error?: Error;
+  errorInfo?: ErrorInfo;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -23,15 +27,34 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.setState({ errorInfo });
+
     console.error('Error caught by boundary:', error, errorInfo);
 
-    // Auto-submit crash report
+    // Build error context
+    const context = {
+      userId: this.props.userId || 'anonymous',
+      screenName: this.props.screenName || 'unknown',
+      timestamp: new Date().toISOString(),
+      appVersion: '1.0.0',
+      platform: Platform.OS,
+      platformVersion: Platform.Version,
+      errorBoundary: true,
+      componentStack: errorInfo.componentStack,
+    };
+
+    // Auto-submit crash report with context
     feedbackService.submitFeedback({
       type: 'bug',
       subject: 'App Crash',
-      message: `${error.message}\n\nStack: ${error.stack}`,
+      message: `${error.message}\n\nStack: ${error.stack}\n\nContext: ${JSON.stringify(context, null, 2)}`,
       includeDeviceInfo: true,
     });
+
+    // Call custom error handler if provided
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
   }
 
   render() {

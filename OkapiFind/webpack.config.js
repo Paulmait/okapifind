@@ -17,9 +17,9 @@ module.exports = async function (env, argv) {
     argv
   );
 
-  // Customize the config
+  // Customize the config for production
   if (config.mode === 'production') {
-    // Optimize for production
+    // Optimize for production with code splitting
     config.optimization = {
       ...config.optimization,
       splitChunks: {
@@ -38,31 +38,36 @@ module.exports = async function (env, argv) {
         },
       },
     };
-  }
 
-  // Add service worker for PWA
-  config.plugins.push(
-    new (require('workbox-webpack-plugin').GenerateSW)({
-      clientsClaim: true,
-      skipWaiting: true,
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/fonts\.googleapis\.com/,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'google-fonts-stylesheets',
-          },
-        },
-        {
-          urlPattern: /^https:\/\/api\.mapbox\.com/,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'mapbox-api',
-          },
-        },
-      ],
-    })
-  );
+    // Add service worker for PWA if workbox is available
+    try {
+      const { GenerateSW } = require('workbox-webpack-plugin');
+      config.plugins.push(
+        new GenerateSW({
+          clientsClaim: true,
+          skipWaiting: true,
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-stylesheets',
+              },
+            },
+            {
+              urlPattern: /^https:\/\/api\.mapbox\.com/,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'mapbox-api',
+              },
+            },
+          ],
+        })
+      );
+    } catch (error) {
+      console.warn('Workbox plugin not available, PWA service worker will not be generated');
+    }
+  }
 
   return config;
 };
