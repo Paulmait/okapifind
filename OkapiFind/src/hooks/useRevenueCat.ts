@@ -35,6 +35,19 @@ export const useRevenueCat = () => {
 
   const initializeRevenueCat = async () => {
     try {
+      // Web doesn't support RevenueCat - skip initialization
+      if (Platform.OS === 'web') {
+        setState({
+          isInitialized: true,
+          isPremium: false,
+          customerInfo: null,
+          offerings: null,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
       if (Platform.OS === 'android' && __DEV__) {
         Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
       }
@@ -77,6 +90,11 @@ export const useRevenueCat = () => {
   };
 
   const purchasePackage = async (packageId: string) => {
+    if (Platform.OS === 'web') {
+      Alert.alert('Not Available', 'In-app purchases are not available on web. Please use the mobile app.');
+      return false;
+    }
+
     if (!state.offerings?.current) {
       Alert.alert('Error', 'No packages available');
       return false;
@@ -111,6 +129,10 @@ export const useRevenueCat = () => {
   };
 
   const restorePurchases = async (showSuccessAlert: boolean = true): Promise<boolean> => {
+    if (Platform.OS === 'web') {
+      return false;
+    }
+
     try {
       setState(prev => ({ ...prev, loading: true }));
 
@@ -188,6 +210,8 @@ export const useRevenueCat = () => {
   };
 
   const checkSubscriptionStatus = async () => {
+    if (Platform.OS === 'web') return false;
+
     try {
       const customerInfo = await Purchases.getCustomerInfo();
       const isPremium = customerInfo.entitlements.active['premium'] !== undefined;
@@ -210,6 +234,8 @@ export const useRevenueCat = () => {
   };
 
   const logOut = async () => {
+    if (Platform.OS === 'web') return;
+
     try {
       await Purchases.logOut();
       const customerInfo = await Purchases.getCustomerInfo();
@@ -225,6 +251,8 @@ export const useRevenueCat = () => {
   };
 
   const setUserId = async (userId: string) => {
+    if (Platform.OS === 'web') return;
+
     try {
       const { customerInfo } = await Purchases.logIn(userId);
       const isPremium = customerInfo.entitlements.active['premium'] !== undefined;
@@ -256,6 +284,8 @@ export const useRevenueCat = () => {
   };
 
   const syncPurchases = async (): Promise<boolean> => {
+    if (Platform.OS === 'web') return false;
+
     try {
       setState(prev => ({ ...prev, loading: true }));
 
@@ -284,6 +314,8 @@ export const useRevenueCat = () => {
   };
 
   const validateEntitlement = async (entitlementId: string): Promise<boolean> => {
+    if (Platform.OS === 'web') return false;
+
     try {
       // Force refresh customer info from the server
       const customerInfo = await Purchases.getCustomerInfo();
@@ -350,6 +382,11 @@ export const useRevenueCat = () => {
 };
 
 export const initializeRevenueCat = async () => {
+  if (Platform.OS === 'web') {
+    console.log('RevenueCat not available on web');
+    return;
+  }
+
   try {
     const apiKey = Platform.OS === 'ios' ? REVENUCAT_API_KEY_IOS : REVENUCAT_API_KEY_ANDROID;
 

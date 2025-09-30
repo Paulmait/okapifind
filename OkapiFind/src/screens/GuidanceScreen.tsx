@@ -17,8 +17,9 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as Location from 'expo-location';
 import Tts from 'react-native-tts';
 import * as Haptics from 'expo-haptics';
-import { Magnetometer } from 'expo-sensors';
 import { Subscription } from 'expo-sensors/build/Pedometer';
+// Import Magnetometer conditionally for web compatibility
+const Magnetometer = Platform.OS !== 'web' ? require('expo-sensors').Magnetometer : null;
 import {
   calculateBearing,
   calculateDistance,
@@ -145,6 +146,11 @@ const GuidanceScreen: React.FC = () => {
   };
 
   const startCompassTracking = () => {
+    if (Platform.OS === 'web' || !Magnetometer) {
+      console.log('Compass not available on web');
+      return;
+    }
+
     Magnetometer.setUpdateInterval(100);
     magnetometerSubscription.current = Magnetometer.addListener((data) => {
       let angle = Math.atan2(data.y, data.x);

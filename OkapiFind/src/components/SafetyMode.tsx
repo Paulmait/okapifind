@@ -12,7 +12,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as Location from 'expo-location';
-import * as TaskManager from 'expo-task-manager';
+// TaskManager only works on native platforms
+const TaskManager = Platform.OS !== 'web' ? require('expo-task-manager') : null;
 import {
   doc,
   setDoc,
@@ -65,39 +66,41 @@ interface LiveSession {
   estimatedArrival?: string;
 }
 
-// Define the background task
-TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
-  if (error) {
-    console.error('Safety Mode location error:', error);
-    return;
-  }
+// Define the background task (only on native platforms)
+if (Platform.OS !== 'web' && TaskManager) {
+  TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }: any) => {
+    if (error) {
+      console.error('Safety Mode location error:', error);
+      return;
+    }
 
-  if (data) {
-    const { locations } = data as any;
-    const location = locations[0];
+    if (data) {
+      const { locations } = data as any;
+      const location = locations[0];
 
-    if (location) {
-      // Get the session ID from AsyncStorage or a global state
-      // For now, we'll use a timestamp-based ID stored globally
-      const sessionId = (global as any).safetyModeSessionId;
+      if (location) {
+        // Get the session ID from AsyncStorage or a global state
+        // For now, we'll use a timestamp-based ID stored globally
+        const sessionId = (global as any).safetyModeSessionId;
 
-      if (sessionId) {
-        try {
-          await updateDoc(doc(db, 'safety_sessions', sessionId), {
-            currentLocation: {
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
-              timestamp: serverTimestamp(),
-            },
-            lastUpdate: serverTimestamp(),
-          });
-        } catch (error) {
-          console.error('Failed to update location:', error);
+        if (sessionId) {
+          try {
+            await updateDoc(doc(db, 'safety_sessions', sessionId), {
+              currentLocation: {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                timestamp: serverTimestamp(),
+              },
+              lastUpdate: serverTimestamp(),
+            });
+          } catch (error) {
+            console.error('Failed to update location:', error);
+          }
         }
       }
     }
-  }
-});
+  });
+}
 
 export const SafetyMode: React.FC<SafetyModeProps> = ({
   destination,

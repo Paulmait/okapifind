@@ -25,7 +25,7 @@ export const MapView: React.FC<MapViewProps> = ({
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN || '';
+    mapboxgl.accessToken = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -164,7 +164,7 @@ export const MapView: React.FC<MapViewProps> = ({
   const handleSaveLocation = () => {
     if (userLocation && onLocationSave) {
       fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${userLocation.lng},${userLocation.lat}.json?access_token=${process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${userLocation.lng},${userLocation.lat}.json?access_token=${process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN}`
       )
         .then((res) => res.json())
         .then((data) => {
