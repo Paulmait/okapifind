@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
+  <title>OkapiFind - Smart Parking App</title>
+
+  <style>
+    /* Base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body, #root {
+      width: 100%;
+      height: 100%;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #root {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Loading screen */
+    .app-loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+    }
+
+    .app-loading-logo {
+      font-size: 80px;
+      margin-bottom: 20px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .app-loading-text {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .app-loading-subtext {
+      font-size: 16px;
+      opacity: 0.8;
+    }
+
+    .app-loading-spinner {
+      margin-top: 30px;
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Error display */
+    .app-error {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 40px;
+      background: white;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      display: none;
+    }
+
+    .app-error h1 {
+      color: #ef4444;
+      margin-bottom: 16px;
+      font-size: 24px;
+    }
+
+    .app-error p {
+      color: #666;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .app-error code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <noscript>
+    <div style="padding: 40px; text-align: center; background: white; margin: 20px; border-radius: 12px;">
+      <h1 style="color: #ef4444; margin-bottom: 16px;">JavaScript Required</h1>
+      <p style="color: #666;">OkapiFind requires JavaScript to be enabled. Please enable JavaScript in your browser settings.</p>
+    </div>
+  </noscript>
+
+  <!-- Loading Screen -->
+  <div id="loading" class="app-loading">
+    <div class="app-loading-logo">🚗</div>
+    <div class="app-loading-text">OkapiFind</div>
+    <div class="app-loading-subtext">Never lose your car again</div>
+    <div class="app-loading-spinner"></div>
+  </div>
+
+  <!-- Error Display -->
+  <div id="error" class="app-error">
+    <h1>⚠️ Configuration Required</h1>
+    <p>The app could not start. This usually means environment variables are missing.</p>
+    <p>Please check the browser console (F12) for error messages.</p>
+    <p>Missing: <code>EXPO_PUBLIC_FIREBASE_*</code> and <code>EXPO_PUBLIC_SUPABASE_*</code></p>
+  </div>
+
+  <!-- App Root -->
+  <div id="root"></div>
+
+  <script>
+    // Hide loading screen when React mounts
+    let loadingHidden = false;
+
+    function hideLoadingScreen() {
+      if (loadingHidden) return;
+      loadingHidden = true;
+
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.style.opacity = '0';
+        loading.style.transition = 'opacity 0.3s ease-out';
+        setTimeout(() => loading.remove(), 300);
+      }
+    }
+
+    // Check for React mount every 100ms
+    const checkReactMount = setInterval(() => {
+      const root = document.getElementById('root');
+      if (root && root.children.length > 0) {
+        console.log('✅ React mounted successfully');
+        clearInterval(checkReactMount);
+        hideLoadingScreen();
+      }
+    }, 100);
+
+    // Timeout after 10 seconds
+    setTimeout(() => {
+      console.log('⏱️ Loading timeout');
+      clearInterval(checkReactMount);
+      hideLoadingScreen();
+
+      // Show error if React didn't mount
+      const root = document.getElementById('root');
+      if (!root || root.children.length === 0) {
+        console.error('❌ React app failed to mount');
+        const error = document.getElementById('error');
+        if (error) error.style.display = 'block';
+      }
+    }, 10000);
+
+    // Log errors
+    window.addEventListener('error', (e) => {
+      console.error('💥 Error:', e.message, e.filename, e.lineno);
+    });
+
+    window.addEventListener('unhandledrejection', (e) => {
+      console.error('💥 Unhandled promise rejection:', e.reason);
+    });
+
+    console.log('🚀 OkapiFind starting...');
+  </script>
+</body>
+</html>

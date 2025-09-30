@@ -1,4 +1,5 @@
 const createExpoWebpackConfigAsync = require('@expo/webpack-config');
+const path = require('path');
 
 module.exports = async function (env, argv) {
   const config = await createExpoWebpackConfigAsync(
@@ -14,6 +15,14 @@ module.exports = async function (env, argv) {
     },
     argv
   );
+
+  // Use custom HTML template
+  const HtmlWebpackPlugin = config.plugins.find(
+    plugin => plugin.constructor.name === 'HtmlWebpackPlugin'
+  );
+  if (HtmlWebpackPlugin) {
+    HtmlWebpackPlugin.userOptions.template = path.resolve(__dirname, 'web/index.html');
+  }
 
   // Customize the config for production
   if (config.mode === 'production') {
