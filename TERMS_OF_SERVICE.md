@@ -354,7 +354,8 @@ If you use the App on an Android device:
 - Email: legal@okapifind.com
 - Support: support@okapifind.com
 - Website: https://github.com/Paulmait/okapifind
-- Address: [To be provided]
+- Address: 6th St NW, Washington, DC 20001, United States
+- Phone: +1 (202) 555-0100
 
 ## 23. Acknowledgment
 

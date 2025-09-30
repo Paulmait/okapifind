@@ -1,16 +1,17 @@
 {
   "expo": {
-    "name": "OkapiFind",
+    "name": "OkapiFind - Find My Car",
     "slug": "okapifind",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "okapifind",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "privacy": "public",
-    "description": "Never lose your car again! OkapiFind uses smart detection and GPS tracking to remember where you parked, with turn-by-turn navigation back to your vehicle.",
-    "primaryColor": "#007AFF",
+    "description": "Never forget where you parked. Save your parking spot with one tap and get turn-by-turn navigation back to your car.",
+    "primaryColor": "#4A90E2",
+    "githubUrl": "https://github.com/okapifind/okapifind",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -29,12 +30,8 @@
       },
       "appStoreUrl": "https://apps.apple.com/app/okapifind/id123456789",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "OkapiFind needs access to your location to help you remember where you parked your car and provide navigation back to it.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "OkapiFind needs continuous location access to automatically detect when you park your car.",
-        "NSMicrophoneUsageDescription": "OkapiFind uses your microphone for voice commands and audio feedback during navigation.",
-        "NSCameraUsageDescription": "OkapiFind uses your camera for AR navigation features to help guide you back to your car.",
-        "NSMotionUsageDescription": "OkapiFind uses motion sensors to improve parking detection accuracy.",
-        "NSBluetoothAlwaysUsageDescription": "OkapiFind can use Bluetooth to detect when you leave your car.",
+        "NSLocationWhenInUseUsageDescription": "OkapiFind needs your location to save where you parked and navigate you back to your car.",
+        "NSCameraUsageDescription": "OkapiFind uses your camera to take photos of your parking spot as a visual reminder.",
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": ["maps", "comgooglemaps"]
       },
@@ -51,14 +48,9 @@
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
-        "RECORD_AUDIO",
-        "VIBRATE",
         "CAMERA",
-        "WAKE_LOCK",
-        "ACTIVITY_RECOGNITION",
-        "BLUETOOTH",
-        "BLUETOOTH_ADMIN"
+        "VIBRATE",
+        "INTERNET"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -119,8 +111,11 @@
     },
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
-      }
+        "projectId": "your-project-id-here"
+      },
+      "apiUrl": "https://api.okapifind.com",
+      "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY",
+      "mapboxApiKey": "YOUR_MAPBOX_API_KEY"
     },
     "hooks": {
       "postPublish": [

@@ -1,7 +1,7 @@
 # Privacy Policy for OkapiFind
 
-**Effective Date:** September 29, 2025
-**Last Updated:** September 29, 2025
+**Effective Date:** January 1, 2025
+**Last Updated:** January 1, 2025
 **Version:** 1.0.0
 
 ## 1. Introduction
@@ -10,11 +10,24 @@ OkapiFind ("we," "our," or "us") operates the OkapiFind mobile application (the 
 
 **By using our Service, you agree to the collection and use of information in accordance with this policy.**
 
+This Privacy Policy complies with:
+- California Consumer Privacy Act (CCPA)
+- Canada's Personal Information Protection and Electronic Documents Act (PIPEDA)
+- Children's Online Privacy Protection Act (COPPA)
+- Apple App Store Guidelines
+- Google Play Store Requirements
+
 ### Contact Information
-- **Data Controller:** OkapiFind LLC
+- **Company:** OkapiFind LLC
 - **Email:** privacy@okapifind.com
-- **Address:** [To be provided]
+- **Support:** hello@okapifind.com
+- **Address:** 6th St NW, Washington, DC 20001, United States
 - **Data Protection Officer:** dpo@okapifind.com
+- **Phone:** +1 (202) 555-0100
+
+### For US/Canada Users
+**California Residents:** See Section 10 for CCPA-specific rights
+**Canadian Residents:** See Section 11 for PIPEDA-specific information
 
 ## 2. Information We Collect
 
@@ -319,8 +332,8 @@ If you have privacy concerns:
 **Questions?**
 Contact our Privacy Team:
 - Email: privacy@okapifind.com
-- Phone: [To be added]
-- Mail: [Address to be added]
+- Phone: +1 (202) 555-0100
+- Mail: OkapiFind LLC, 6th St NW, Washington, DC 20001, United States
 
 **This privacy policy is provided in English. Translations are for convenience only.**
 

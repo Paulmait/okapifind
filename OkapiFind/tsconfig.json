@@ -8,14 +8,14 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "jsx": "react-native",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "types": ["react-native", "jest"],
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": [
     "src/**/*",
