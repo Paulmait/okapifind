@@ -148,9 +148,21 @@ export const useAuth = () => {
   }, []);
 
   useEffect(() => {
+    // Timeout fallback in case Firebase doesn't initialize
+    const initTimeout = setTimeout(() => {
+      if (!authInitialized) {
+        console.warn('Auth initialization timeout - proceeding without auth');
+        setLoading(false);
+        setAuthInitialized(true);
+        setError('Authentication service unavailable. Some features may be limited.');
+      }
+    }, 5000); // 5 second timeout
+
     // Listen to Firebase auth state changes
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       try {
+        clearTimeout(initTimeout); // Cancel timeout if auth state changes
+
         if (user) {
           // User is signed in
           setCurrentUser(user);
@@ -179,7 +191,10 @@ export const useAuth = () => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(initTimeout);
+      unsubscribe();
+    };
   }, []);
 
   const checkOrCreateUserProfile = async (user: User) => {
