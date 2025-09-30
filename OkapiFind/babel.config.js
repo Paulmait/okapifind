@@ -10,7 +10,8 @@ module.exports = function (api) {
       '@babel/plugin-transform-flow-strip-types',
 
       // Reanimated plugin (must be last)
-      'react-native-reanimated/plugin',
+      // Commented out for web build to avoid dependency issues
+      // 'react-native-reanimated/plugin',
     ],
     env: {
       production: {
