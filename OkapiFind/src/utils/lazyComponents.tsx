@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { performance } from '../services/performance';
 import { Colors } from '../constants/colors';
 
@@ -39,16 +39,28 @@ export function withLazyLoading<P extends object>(
   return LazyWrapper;
 }
 
-// Lazy component definitions
-export const LazyMapScreen = React.lazy(() => import('../screens/MapScreen'));
-export const LazyGuidanceScreen = React.lazy(() => import('../screens/GuidanceScreen'));
+// Lazy component definitions - skip native-only components on web
+export const LazyMapScreen = Platform.OS === 'web'
+  ? React.lazy(() => import('../screens/WebMapScreen'))
+  : React.lazy(() => import('../screens/MapScreen'));
+
+export const LazyGuidanceScreen = Platform.OS === 'web'
+  ? React.lazy(() => import('../screens/WebMapScreen')) // Use web map for guidance too
+  : React.lazy(() => import('../screens/GuidanceScreen'));
+
 export const LazySettingsScreen = React.lazy(() => import('../screens/SettingsScreen'));
 export const LazyLegalScreen = React.lazy(() => import('../screens/LegalScreen'));
 export const LazyPaywallScreen = React.lazy(() => import('../screens/PaywallScreen'));
 export const LazyAuthScreen = React.lazy(() => import('../screens/AuthScreen'));
 export const LazyOnboardingScreen = React.lazy(() => import('../screens/OnboardingScreen'));
-export const LazyARNavigationScreen = React.lazy(() => import('../screens/ARNavigationScreen'));
-export const LazyLiveTrackingScreen = React.lazy(() => import('../screens/LiveTrackingScreen'));
+
+export const LazyARNavigationScreen = Platform.OS === 'web'
+  ? React.lazy(() => import('../screens/WebMapScreen')) // AR not supported on web
+  : React.lazy(() => import('../screens/ARNavigationScreen'));
+
+export const LazyLiveTrackingScreen = Platform.OS === 'web'
+  ? React.lazy(() => import('../screens/WebMapScreen')) // Use web map for tracking
+  : React.lazy(() => import('../screens/LiveTrackingScreen'));
 
 // Wrapped lazy components with performance monitoring
 export const MapScreen = withLazyLoading(LazyMapScreen, undefined, 'MapScreen');
