@@ -30,6 +30,21 @@ module.exports = async function (env, argv) {
     HtmlWebpackPlugin.userOptions.template = path.resolve(__dirname, 'web/index.html');
   }
 
+  // Fix: Ensure react-navigation is transpiled properly
+  // Find and modify babel-loader rule to include problematic node_modules
+  config.module.rules.forEach(rule => {
+    if (rule.oneOf) {
+      rule.oneOf.forEach(oneOfRule => {
+        if (oneOfRule.loader && oneOfRule.loader.includes('babel-loader')) {
+          // Modify the exclude to not exclude react-navigation
+          if (oneOfRule.exclude) {
+            oneOfRule.exclude = /node_modules\/(?!(@react-navigation|react-native-gesture-handler|react-native-safe-area-context|react-native-screens))/;
+          }
+        }
+      });
+    }
+  });
+
   // Customize the config for production
   if (config.mode === 'production') {
     // Optimize for production with code splitting
