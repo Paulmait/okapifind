@@ -44,8 +44,7 @@
     "deploy:production": "npm run test:ci && npm run typecheck && npm run lint && eas build --profile production --platform all --auto-submit",
     "verify": "npm run typecheck && npm run lint && npm run test:ci",
     "clean": "rm -rf node_modules .expo dist build ios android",
-    "clean:install": "npm run clean && npm install --legacy-peer-deps",
-    "postinstall": "npx pod-install ios && patch-package"
+    "clean:install": "npm run clean && npm install --legacy-peer-deps"
   },
   "dependencies": {
     "@apollo/client": "^4.0.5",
