@@ -23,6 +23,8 @@ import { featureFlagService } from './src/services/featureFlags';
 import { offlineModeService } from './src/services/offlineMode';
 import { FirebaseConfigGuard } from './src/components/FirebaseConfigGuard';
 import { OfflineIndicator } from './src/components/OfflineIndicator';
+import { ConfigDiagnostic } from './src/components/ConfigDiagnostic';
+import { isFirebaseConfigured } from './src/config/firebase';
 import './src/i18n'; // Initialize i18n
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -129,6 +131,9 @@ function AuthNavigator() {
 export default function App() {
   const { isLoading, isAuthenticated, isReady, currentUser } = useAuth();
 
+  // Check if Firebase is configured - show diagnostic if not
+  const firebaseConfigured = isFirebaseConfigured();
+
   useEffect(() => {
     // Initialize all services on app start
     analytics.initialize();
@@ -148,6 +153,16 @@ export default function App() {
       performance.endTimer('App_initialization');
     };
   }, []);
+
+  // Show diagnostic screen if Firebase not configured (especially important for web)
+  if (!firebaseConfigured && Platform.OS === 'web') {
+    return (
+      <SafeAreaProvider>
+        <ConfigDiagnostic />
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
+    );
+  }
 
   // Show loading screen while auth is initializing
   if (isLoading || !isReady) {
