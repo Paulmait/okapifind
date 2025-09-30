@@ -10,7 +10,7 @@ export default {
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
-      image: "./assets/splash.png",
+      image: "./assets/splash-icon.png",
       resizeMode: "contain",
       backgroundColor: "#0F1B2A"
     },
@@ -46,7 +46,7 @@ export default {
     },
     web: {
       favicon: "./assets/favicon.png",
-      bundler: "metro"
+      bundler: "webpack"
     },
     plugins: [
       "expo-location",

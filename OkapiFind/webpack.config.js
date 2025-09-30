@@ -11,8 +11,6 @@ module.exports = async function (env, argv) {
           'react-native-skeleton-placeholder',
         ],
       },
-      // PWA configuration
-      offline: true,
     },
     argv
   );
