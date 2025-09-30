@@ -28,13 +28,13 @@ Before starting, ensure you have:
 4. Copy these values:
 
 ```
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyBBz1nwINWdmnKr13zutmBoEgwFD6XHAfg
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=okapifind-e5b81.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=okapifind-e5b81
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=okapifind-e5b81.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=897907860773
-NEXT_PUBLIC_FIREBASE_APP_ID=1:897907860773:web:830b5654c6a20b8199e6cc
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-GLP7PK7361
+NEXT_PUBLIC_FIREBASE_API_KEY=[your_firebase_api_key]
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=[your_project].firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=[your_project_id]
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=[your_project].firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=[your_sender_id]
+NEXT_PUBLIC_FIREBASE_APP_ID=[your_app_id]
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=[your_measurement_id]
 ```
 
 ### 1.2 Supabase Setup
@@ -44,8 +44,8 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-GLP7PK7361
 2. Copy these values:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://kmobwbqdtmbzdyysdxjx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_LCRH55EAKXxEO-HAZko8XA_lwLi_NK9
+NEXT_PUBLIC_SUPABASE_URL=[your_supabase_url]
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[your_supabase_anon_key]
 ```
 
 **Note:** You do NOT need SUPABASE_SERVICE_ROLE_KEY or JWT_SECRET for typical client-side usage.
@@ -426,24 +426,24 @@ Your OkapiFind app is now live in production!
 
 ### Required Variables (15)
 
-| Variable | Value | Source |
-|----------|-------|--------|
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | AIzaSyBBz1nwINWdmnKr13zutmBoEgwFD6XHAfg | Firebase Console |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | okapifind-e5b81.firebaseapp.com | Firebase Console |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | okapifind-e5b81 | Firebase Console |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | okapifind-e5b81.firebasestorage.app | Firebase Console |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | 897907860773 | Firebase Console |
-| `NEXT_PUBLIC_FIREBASE_APP_ID` | 1:897907860773:web:830b5654c6a20b8199e6cc | Firebase Console |
-| `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` | G-GLP7PK7361 | Firebase Console |
-| `NEXT_PUBLIC_SUPABASE_URL` | https://kmobwbqdtmbzdyysdxjx.supabase.co | Supabase Dashboard |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | sb_publishable_LCRH55EAKXxEO-HAZko8XA_lwLi_NK9 | Supabase Dashboard |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | [your_maps_key_1] | Google Cloud Console |
-| `NEXT_PUBLIC_OKAPIFIND_MAPS_KEY` | [your_maps_key_2] | Google Cloud Console |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | pk_live_... | Stripe Dashboard |
-| `STRIPE_SECRET_KEY` | sk_live_... | Stripe Dashboard |
-| `STRIPE_WEBHOOK_SECRET` | whsec_... | Stripe Dashboard (after webhook setup) |
-| `ENCRYPTION_KEY` | 8f7a9b2c4d6e1f3a5b8c9d0e2f4a6b8c | Generated |
-| `JWT_SECRET` | 3a7f9c2e5b8d1f4a6c9e2b5d8f1a4c7e | Generated |
+| Variable | Example/Format | Source |
+|----------|----------------|--------|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | AIzaSy... | Firebase Console → Project Settings |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | your-project.firebaseapp.com | Firebase Console → Project Settings |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | your-project-id | Firebase Console → Project Settings |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | your-project.firebasestorage.app | Firebase Console → Project Settings |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | 123456789 | Firebase Console → Project Settings |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | 1:123:web:abc123 | Firebase Console → Project Settings |
+| `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` | G-ABC123XYZ | Firebase Console → Project Settings |
+| `NEXT_PUBLIC_SUPABASE_URL` | https://xyz.supabase.co | Supabase Dashboard → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | eyJhbGc... | Supabase Dashboard → API |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | AIza... | Google Cloud Console → Credentials |
+| `NEXT_PUBLIC_OKAPIFIND_MAPS_KEY` | AIza... (if you have 2nd key) | Google Cloud Console → Credentials |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | pk_live_... | Stripe Dashboard → API Keys |
+| `STRIPE_SECRET_KEY` | sk_live_... | Stripe Dashboard → API Keys |
+| `STRIPE_WEBHOOK_SECRET` | whsec_... | Stripe Dashboard → Webhooks |
+| `ENCRYPTION_KEY` | 32-char hex string | Generated via Node.js |
+| `JWT_SECRET` | 32-char hex string | Generated via Node.js |
 
 ---
 
