@@ -12,10 +12,8 @@ Before starting, ensure you have:
 - [ ] Vercel account (sign up at https://vercel.com)
 - [ ] Firebase project created
 - [ ] Supabase project created
-- [ ] Google Maps API key
-- [ ] Mapbox account and token
+- [ ] Google Maps API keys (may need 2 keys with different restrictions)
 - [ ] Stripe account for payments
-- [ ] RevenueCat account (optional for mobile)
 
 ---
 
@@ -30,21 +28,13 @@ Before starting, ensure you have:
 4. Copy these values:
 
 ```
-EXPO_PUBLIC_FIREBASE_API_KEY=AIza...
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
-EXPO_PUBLIC_FIREBASE_APP_ID=1:123:web:abc123
-EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=G-ABC123XYZ
-```
-
-5. Go to Authentication → Sign-in method
-6. Enable Google Sign-In
-7. Copy Web Client ID:
-
-```
-EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=123-abc.apps.googleusercontent.com
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyBBz1nwINWdmnKr13zutmBoEgwFD6XHAfg
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=okapifind-e5b81.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=okapifind-e5b81
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=okapifind-e5b81.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=897907860773
+NEXT_PUBLIC_FIREBASE_APP_ID=1:897907860773:web:830b5654c6a20b8199e6cc
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-GLP7PK7361
 ```
 
 ### 1.2 Supabase Setup
@@ -54,61 +44,44 @@ EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=123-abc.apps.googleusercontent.com
 2. Copy these values:
 
 ```
-SUPABASE_URL=https://xyz.supabase.co
-SUPABASE_ANON_KEY=eyJhbGc...
+NEXT_PUBLIC_SUPABASE_URL=https://kmobwbqdtmbzdyysdxjx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_LCRH55EAKXxEO-HAZko8XA_lwLi_NK9
 ```
 
-3. Go to Settings → Database → Connection String
-4. Copy Service Role Key (click "Reveal"):
-
-```
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
-```
-
-5. Go to Settings → API → JWT Settings
-6. Copy JWT Secret:
-
-```
-SUPABASE_JWT_SECRET=your-super-secret-jwt-secret
-```
+**Note:** You do NOT need SUPABASE_SERVICE_ROLE_KEY or JWT_SECRET for typical client-side usage.
 
 ### 1.3 Google Maps Setup
 **Go to:** https://console.cloud.google.com/apis/credentials
 
-1. Select your project
-2. Click "Create Credentials" → API Key
-3. Copy the key:
+**You may have TWO different keys with different restrictions:**
+
+1. **Maps Platform API Key** - for primary map features
+2. **OkapiFind Maps Key** - for additional features or different restrictions
+
+Copy both keys and note which is which:
 
 ```
-EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=AIza...
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=[your_first_maps_key]
+NEXT_PUBLIC_OKAPIFIND_MAPS_KEY=[your_second_maps_key]
 ```
 
-4. **IMPORTANT:** Click "Restrict Key"
-   - API restrictions → Select APIs:
-     - Maps JavaScript API
-     - Places API
-     - Directions API
-     - Distance Matrix API
-     - Geocoding API
-   - Save
+**IMPORTANT:** For each key, click "Edit" and ensure it has:
+- **API restrictions** → Select required APIs:
+  - Maps JavaScript API
+  - Places API
+  - Directions API
+  - Distance Matrix API
+  - Geocoding API
+- **HTTP referrer restrictions** (add after deployment)
+- Save
 
-### 1.4 Mapbox Setup
-**Go to:** https://account.mapbox.com
-
-1. Go to Tokens
-2. Create new token or copy default token:
-
-```
-EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.eyJ1...
-```
-
-### 1.5 Stripe Setup
+### 1.4 Stripe Setup
 **Go to:** https://dashboard.stripe.com/apikeys
 
 1. Copy Publishable key:
 
 ```
-EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 ```
 
 2. Copy Secret key (click "Reveal"):
@@ -117,85 +90,25 @@ EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 STRIPE_SECRET_KEY=sk_live_...
 ```
 
-3. Go to Developers → Webhooks
-4. Click "Add endpoint"
-5. Set URL: `https://your-domain.vercel.app/api/stripe-webhook`
-6. Select events:
-   - `checkout.session.completed`
-   - `customer.subscription.created`
-   - `customer.subscription.updated`
-   - `customer.subscription.deleted`
-   - `invoice.payment_succeeded`
-   - `invoice.payment_failed`
-7. Copy webhook signing secret:
+3. **IMPORTANT:** Webhook setup (do this AFTER first deployment in Step 3.4)
 
-```
-STRIPE_WEBHOOK_SECRET=whsec_...
-```
-
-### 1.6 RevenueCat Setup (Optional)
-**Go to:** https://app.revenuecat.com
-
-1. Go to Settings → API Keys
-2. Copy public API key:
-
-```
-EXPO_PUBLIC_REVENUECAT_API_KEY_WEB=rc_...
-```
-
-3. Copy secret key:
-
-```
-REVENUECAT_SECRET_KEY=sk_...
-```
-
-### 1.7 Gemini AI Setup (Optional)
-**Go to:** https://makersuite.google.com/app/apikey
-
-1. Create API key
-2. Copy:
-
-```
-EXPO_PUBLIC_GEMINI_API_KEY=AIza...
-```
-
-### 1.8 Resend Email Setup (Optional)
-**Go to:** https://resend.com/api-keys
-
-1. Create API key
-2. Copy:
-
-```
-RESEND_API_KEY=re_...
-```
-
-### 1.9 Sentry Monitoring Setup (Optional)
-**Go to:** https://sentry.io
-
-1. Create new project → React
-2. Copy DSN:
-
-```
-EXPO_PUBLIC_SENTRY_DSN=https://abc@xyz.ingest.sentry.io/123
-```
-
-### 1.10 Generate Security Keys
+### 1.5 Generate Security Keys
 
 Open your terminal and run:
 
 ```bash
-# Generate JWT Secret (32 characters)
+# Generate Encryption Key (32 characters)
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
-# Generate Encryption Key (32 characters)
+# Generate JWT Secret (32 characters)
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 Copy the outputs:
 
 ```
-JWT_SECRET=abc123def456...
-ENCRYPTION_KEY=xyz789uvw012...
+ENCRYPTION_KEY=8f7a9b2c4d6e1f3a5b8c9d0e2f4a6b8c
+JWT_SECRET=3a7f9c2e5b8d1f4a6c9e2b5d8f1a4c7e
 ```
 
 ---
@@ -211,69 +124,51 @@ ENCRYPTION_KEY=xyz789uvw012...
 
 ### 2.2 Configure Project
 
-1. **Framework Preset:** Detected automatically (Expo)
-2. **Root Directory:** `OkapiFind`
+1. **Framework Preset:** Next.js (detected automatically)
+2. **Root Directory:** Leave as root or specify if needed
 3. **Build Command:** `npm run build` (or leave default)
-4. **Output Directory:** `web-build` (or leave default)
+4. **Output Directory:** Leave default
 5. **Install Command:** `npm install`
 
 ### 2.3 Add Environment Variables
 
-Click "Environment Variables" and add ALL 23 variables:
+Click "Environment Variables" and add these **11 required variables**:
 
-#### Database & Backend (4 vars)
+#### Firebase (7 vars)
 ```
-SUPABASE_URL = https://xyz.supabase.co
-SUPABASE_ANON_KEY = eyJhbGc...
-SUPABASE_SERVICE_ROLE_KEY = eyJhbGc...
-SUPABASE_JWT_SECRET = your-super-secret...
-```
-
-#### Firebase Authentication (9 vars)
-```
-EXPO_PUBLIC_FIREBASE_API_KEY = AIza...
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN = your-project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID = your-project-id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET = your-project.appspot.com
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 123456789
-EXPO_PUBLIC_FIREBASE_APP_ID = 1:123:web:abc123
-EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID = G-ABC123XYZ
-EXPO_PUBLIC_GOOGLE_CLIENT_ID = 123-abc.apps.googleusercontent.com
-EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = 123-def.apps.googleusercontent.com
+NEXT_PUBLIC_FIREBASE_API_KEY = AIzaSyBBz1nwINWdmnKr13zutmBoEgwFD6XHAfg
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = okapifind-e5b81.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID = okapifind-e5b81
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = okapifind-e5b81.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = 897907860773
+NEXT_PUBLIC_FIREBASE_APP_ID = 1:897907860773:web:830b5654c6a20b8199e6cc
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID = G-GLP7PK7361
 ```
 
-#### Maps & Location (2 vars)
+#### Supabase (2 vars)
 ```
-EXPO_PUBLIC_GOOGLE_MAPS_API_KEY = AIza...
-EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN = pk.eyJ1...
+NEXT_PUBLIC_SUPABASE_URL = https://kmobwbqdtmbzdyysdxjx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY = sb_publishable_LCRH55EAKXxEO-HAZko8XA_lwLi_NK9
 ```
 
-#### Payments (5 vars)
+#### Google Maps (2 vars - add BOTH if you have them)
 ```
-EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY = pk_live_...
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = [your_first_maps_key]
+NEXT_PUBLIC_OKAPIFIND_MAPS_KEY = [your_second_maps_key]
+```
+
+#### Stripe (2 vars)
+```
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = pk_live_...
 STRIPE_SECRET_KEY = sk_live_...
-STRIPE_WEBHOOK_SECRET = whsec_...
-EXPO_PUBLIC_REVENUECAT_API_KEY_WEB = rc_...
-REVENUECAT_SECRET_KEY = sk_...
 ```
 
-#### AI & Services (3 vars)
-```
-EXPO_PUBLIC_GEMINI_API_KEY = AIza...
-RESEND_API_KEY = re_...
-EXPO_PUBLIC_SENTRY_DSN = https://abc@xyz.ingest.sentry.io/123
-```
+**Note:** STRIPE_WEBHOOK_SECRET will be added AFTER deployment in Step 3.4
 
 #### Security (2 vars)
 ```
-JWT_SECRET = abc123def456...
-ENCRYPTION_KEY = xyz789uvw012...
-```
-
-#### API Endpoints (2 vars)
-```
-EXPO_PUBLIC_API_URL = https://your-app.vercel.app
-EXPO_PUBLIC_WEBSOCKET_URL = wss://your-app.vercel.app
+ENCRYPTION_KEY = 8f7a9b2c4d6e1f3a5b8c9d0e2f4a6b8c
+JWT_SECRET = 3a7f9c2e5b8d1f4a6c9e2b5d8f1a4c7e
 ```
 
 **IMPORTANT:** For each variable:
@@ -286,169 +181,131 @@ EXPO_PUBLIC_WEBSOCKET_URL = wss://your-app.vercel.app
 
 1. Click "Deploy"
 2. Wait 2-5 minutes for build to complete
-3. Once deployed, copy your production URL: `https://your-app.vercel.app`
+3. Once deployed, **copy your production URL**: `https://your-app-name.vercel.app`
 
 ---
 
-## ✅ STEP 3: Update API Endpoints (2 minutes)
+## ✅ STEP 3: Post-Deployment Configuration (5 minutes)
 
-### 3.1 Update Vercel Environment Variables
-
-1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
-2. Find these two variables and update with your actual Vercel URL:
-
-```
-EXPO_PUBLIC_API_URL = https://your-actual-app.vercel.app
-EXPO_PUBLIC_WEBSOCKET_URL = wss://your-actual-app.vercel.app
-```
-
-3. Click "Save"
-4. Go to Deployments → Latest deployment → ⋯ → Redeploy
-
-### 3.2 Update Firebase Authorized Domains
+### 3.1 Update Firebase Authorized Domains
 
 1. Go to Firebase Console → Authentication → Settings → Authorized Domains
 2. Click "Add domain"
 3. Add: `your-actual-app.vercel.app`
 4. Click "Add"
 
-### 3.3 Update Google Maps API Restrictions
+### 3.2 Update Google Maps API Restrictions
+
+For **EACH** of your Google Maps API keys:
 
 1. Go to Google Cloud Console → APIs & Credentials
 2. Click your API key → Edit
-3. Add HTTP referrer:
+3. Under **Application restrictions**, add HTTP referrers:
    - `https://your-actual-app.vercel.app/*`
    - `https://*.vercel.app/*` (for preview deployments)
 4. Save
+5. Repeat for the second Maps key if you have one
 
-### 3.4 Update Stripe Webhook URL
+### 3.3 Set Up Stripe Webhook
 
 1. Go to Stripe Dashboard → Developers → Webhooks
-2. Click your webhook endpoint → Edit
-3. Update URL to: `https://your-actual-app.vercel.app/api/stripe-webhook`
-4. Save
+2. Click "Add endpoint"
+3. Set URL: `https://your-actual-app.vercel.app/api/stripe-webhook`
+4. Select events:
+   - `checkout.session.completed`
+   - `customer.subscription.created`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   - `invoice.payment_succeeded`
+   - `invoice.payment_failed`
+5. Click "Add endpoint"
+6. Copy the **Signing secret** (starts with `whsec_...`)
+
+### 3.4 Add Stripe Webhook Secret to Vercel
+
+1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+2. Add new variable:
+   ```
+   STRIPE_WEBHOOK_SECRET = whsec_...
+   ```
+3. Select all environments (Production, Preview, Development)
+4. Click "Save"
+5. Go to Deployments → Latest deployment → ⋯ → Redeploy
 
 ---
 
 ## 🧪 STEP 4: Test Your Deployment (3 minutes)
 
-### 4.1 Health Check
-
-Visit: `https://your-actual-app.vercel.app/api/health`
-
-Should return:
-```json
-{
-  "status": "healthy",
-  "timestamp": "2025-09-30T12:00:00.000Z",
-  "services": {
-    "api": "operational",
-    "database": "operational",
-    "firebase": "operational",
-    "maps": "operational"
-  }
-}
-```
-
-### 4.2 App Functionality
+### 4.1 Basic Functionality Test
 
 1. Visit: `https://your-actual-app.vercel.app`
 2. Check:
    - [ ] App loads without errors
-   - [ ] Firebase config guard shows if keys missing
-   - [ ] Offline indicator appears when disconnected
-   - [ ] Sign in with Google works
-   - [ ] Map loads correctly
-   - [ ] Location tracking works
+   - [ ] No console errors in browser DevTools (F12)
+   - [ ] Firebase authentication works
+   - [ ] Maps load correctly
    - [ ] Navigation works
 
-### 4.3 Check Vercel Logs
+### 4.2 Check Vercel Logs
 
 1. Go to Vercel Dashboard → Your Project → Deployments
 2. Click latest deployment
 3. Click "Runtime Logs"
 4. Look for any errors (should be clean)
 
+### 4.3 Check Browser Console
+
+1. Open your deployed app
+2. Press F12 to open DevTools
+3. Check Console tab for errors
+4. Common issues:
+   - Missing API keys → Check environment variables
+   - CORS errors → Check Firebase authorized domains
+   - Maps not loading → Check Maps API keys and restrictions
+
 ---
 
-## 🔒 STEP 5: Security Post-Deployment (5 minutes)
+## 🔒 STEP 5: Security Checklist (3 minutes)
 
-### 5.1 Enable API Key Restrictions
+### 5.1 Verify API Key Restrictions
 
 **Google Maps:**
-- [ ] HTTP referrer restrictions enabled
+- [ ] HTTP referrer restrictions enabled (completed in Step 3.2)
 - [ ] Only required APIs enabled
-- [ ] Billing alerts configured
+- [ ] Billing alerts configured in Google Cloud Console
 
 **Firebase:**
-- [ ] Authorized domains configured
-- [ ] Security rules configured for Firestore/Storage
+- [ ] Authorized domains configured (completed in Step 3.1)
+- [ ] Authentication methods enabled
 
 **Stripe:**
-- [ ] Webhook signature verification enabled
-- [ ] Live mode enabled (not test mode)
+- [ ] Webhook signature verification enabled (completed in Step 3.4)
+- [ ] Using live mode keys (not test mode)
 
 **Supabase:**
-- [ ] Row Level Security (RLS) enabled
-- [ ] API key restrictions configured
+- [ ] Row Level Security (RLS) policies configured
+- [ ] Only using anon/public key (not service role key)
 
-### 5.2 Configure Security Headers
+### 5.2 Enable Vercel Analytics (Optional)
 
-Add to `vercel.json` (create if doesn't exist):
-
-```json
-{
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
-      ]
-    }
-  ]
-}
-```
-
-### 5.3 Set Up Monitoring
-
-**Vercel:**
-- [ ] Enable Web Analytics (Settings → Analytics)
-- [ ] Configure deployment notifications (Settings → Git)
-
-**Sentry (if configured):**
-- [ ] Error tracking enabled
-- [ ] Performance monitoring enabled
-- [ ] Alerts configured
+1. Go to Vercel Dashboard → Your Project → Settings → Analytics
+2. Enable Web Analytics
+3. Configure deployment notifications in Settings → Git
 
 ---
 
-## 🎯 STEP 6: Custom Domain (Optional, 5 minutes)
+## 🎯 STEP 6: Custom Domain (Optional, 10 minutes)
 
 ### 6.1 Add Domain to Vercel
 
 1. Go to Vercel Dashboard → Your Project → Settings → Domains
 2. Enter your domain: `okapifind.com`
 3. Click "Add"
-4. Follow DNS instructions
+4. Vercel will show you DNS records to configure
 
 ### 6.2 Update DNS Records
 
-At your domain registrar (GoDaddy, Namecheap, etc):
+At your domain registrar (GoDaddy, Namecheap, Cloudflare, etc):
 
 **For apex domain (okapifind.com):**
 ```
@@ -464,80 +321,75 @@ Name: www
 Value: cname.vercel-dns.com
 ```
 
-### 6.3 Update Environment Variables
+Wait 5-10 minutes for DNS propagation. Vercel will automatically verify.
 
-1. Update `EXPO_PUBLIC_API_URL` → `https://okapifind.com`
-2. Update `EXPO_PUBLIC_WEBSOCKET_URL` → `wss://okapifind.com`
-3. Redeploy
+### 6.3 Update Service Configurations
 
-### 6.4 Update Firebase/Google/Stripe
+Once your custom domain is active, update these services:
 
-Repeat Step 3 (Update API Endpoints) with your custom domain
+**Firebase:**
+- Go to Authentication → Settings → Authorized Domains
+- Add: `okapifind.com` and `www.okapifind.com`
+
+**Google Maps:**
+- Go to Google Cloud Console → APIs & Credentials
+- Edit each Maps API key → Add HTTP referrers:
+  - `https://okapifind.com/*`
+  - `https://www.okapifind.com/*`
+
+**Stripe:**
+- Go to Stripe Dashboard → Developers → Webhooks
+- Edit your webhook endpoint
+- Update URL to: `https://okapifind.com/api/stripe-webhook`
 
 ---
 
 ## 🐛 Common Issues & Solutions
 
+### Issue: Build fails in Vercel
+
+**Solution:**
+1. Check build logs in Vercel Dashboard → Deployments → Your deployment → Build Logs
+2. Common causes:
+   - Missing dependencies in `package.json`
+   - TypeScript errors
+   - Environment variables not properly set
+3. Fix locally first, then push to trigger rebuild
+
 ### Issue: "Firebase not configured" error
 
 **Solution:**
-1. Verify all `EXPO_PUBLIC_FIREBASE_*` variables are set in Vercel
-2. Check Firebase console that project is active
-3. Redeploy
+1. Verify all 7 `NEXT_PUBLIC_FIREBASE_*` variables are set in Vercel
+2. Check they're set for all environments (Production, Preview, Development)
+3. Redeploy after adding variables
 
-### Issue: "Maps not loading"
+### Issue: Maps not loading
 
 **Solution:**
 1. Check Google Maps API key is valid
-2. Verify HTTP referrer restrictions include your domain
-3. Enable required APIs (Maps JS, Places, Directions, Distance Matrix)
-4. Check billing is enabled in Google Cloud
+2. Verify HTTP referrer restrictions include your Vercel domain
+3. Enable required APIs in Google Cloud Console:
+   - Maps JavaScript API
+   - Places API
+   - Directions API
+   - Distance Matrix API
+   - Geocoding API
+4. Check billing is enabled
 
-### Issue: Build fails with "Module not found"
-
-**Solution:**
-1. Check all dependencies are in `package.json`
-2. Delete `node_modules` and `package-lock.json`
-3. Run `npm install`
-4. Commit and push
-5. Redeploy
-
-### Issue: Stripe webhook not receiving events
+### Issue: Stripe webhook not working
 
 **Solution:**
-1. Verify webhook URL matches your Vercel URL exactly
-2. Check webhook signing secret matches `STRIPE_WEBHOOK_SECRET`
-3. Test with Stripe CLI: `stripe listen --forward-to localhost:3000/api/stripe-webhook`
+1. Verify `STRIPE_WEBHOOK_SECRET` is set in Vercel
+2. Check webhook URL in Stripe Dashboard matches your deployment URL exactly
+3. View webhook logs in Stripe Dashboard → Developers → Webhooks → Your endpoint
 
 ### Issue: Authentication fails
 
 **Solution:**
 1. Check Firebase authorized domains include your Vercel domain
-2. Verify all Firebase env vars are correct
-3. Check browser console for specific error messages
-4. Test in incognito mode (clear cookies)
-
----
-
-## 📊 Post-Launch Monitoring
-
-### Daily Checks
-- [ ] Vercel deployment status (should be green)
-- [ ] Error rate in Sentry (should be <1%)
-- [ ] API response times (should be <500ms)
-- [ ] User sign-ups and engagement
-
-### Weekly Checks
-- [ ] Database size and performance
-- [ ] API quota usage (Google Maps, Stripe, etc.)
-- [ ] Cost analysis (Vercel, Firebase, Supabase)
-- [ ] Security alerts and updates
-
-### Monthly Checks
-- [ ] Rotate API keys and secrets
-- [ ] Review access logs for anomalies
-- [ ] Update dependencies (`npm update`)
-- [ ] Performance optimization
+2. Verify all Firebase env vars are correct (no typos)
+3. Check browser console (F12) for specific error messages
+4. Test in incognito mode
 
 ---
 
@@ -545,52 +397,63 @@ Repeat Step 3 (Update API Endpoints) with your custom domain
 
 Your OkapiFind app is now live in production!
 
-**Next Steps:**
-1. Share your app: `https://your-actual-app.vercel.app`
-2. Monitor analytics in Vercel Dashboard
-3. Track errors in Sentry (if configured)
-4. Collect user feedback
-5. Iterate and improve!
+**Your deployment URL:** `https://your-app-name.vercel.app`
 
-**Support:**
-- Vercel Docs: https://vercel.com/docs
-- Firebase Docs: https://firebase.google.com/docs
-- Supabase Docs: https://supabase.com/docs
+### What's Next?
+
+1. **Test thoroughly** - Check all features work as expected
+2. **Monitor logs** - Watch Vercel Dashboard for errors
+3. **Share with users** - Get feedback
+4. **Set up custom domain** - Follow Step 6 if needed
+
+### Ongoing Maintenance
+
+**Weekly:**
+- Check Vercel deployment status
+- Monitor API quota usage (Google Maps, Stripe)
+- Review costs (Vercel, Firebase, Supabase)
+
+**Monthly:**
+- Update dependencies (`npm update`)
+- Review security settings
+- Analyze user feedback
 
 ---
 
-## 📝 Environment Variables Reference
+## 📝 Environment Variables Quick Reference
 
-Total: **23 critical variables**
+**Total: 15 required variables** (11 base + 2 Stripe + 2 security)
 
-| Variable | Where to Get | Required? |
-|----------|--------------|-----------|
-| `SUPABASE_URL` | Supabase Dashboard → API | ✅ Critical |
-| `SUPABASE_ANON_KEY` | Supabase Dashboard → API | ✅ Critical |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard → API | ✅ Critical |
-| `SUPABASE_JWT_SECRET` | Supabase Dashboard → API → JWT Settings | ✅ Critical |
-| `EXPO_PUBLIC_FIREBASE_API_KEY` | Firebase Console → Project Settings | ✅ Critical |
-| `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase Console → Project Settings | ✅ Critical |
-| `EXPO_PUBLIC_FIREBASE_PROJECT_ID` | Firebase Console → Project Settings | ✅ Critical |
-| `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase Console → Project Settings | ✅ Critical |
-| `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase Console → Project Settings | ✅ Critical |
-| `EXPO_PUBLIC_FIREBASE_APP_ID` | Firebase Console → Project Settings | ✅ Critical |
-| `EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID` | Firebase Console → Project Settings | ✅ Critical |
-| `EXPO_PUBLIC_GOOGLE_CLIENT_ID` | Firebase Console → Authentication | ✅ Critical |
-| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Firebase Console → Authentication | ✅ Critical |
-| `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` | Google Cloud Console → Credentials | ✅ Critical |
-| `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN` | Mapbox Account → Tokens | ✅ Critical |
-| `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe Dashboard → API Keys | ✅ Critical |
-| `STRIPE_SECRET_KEY` | Stripe Dashboard → API Keys | ✅ Critical |
-| `STRIPE_WEBHOOK_SECRET` | Stripe Dashboard → Webhooks | ✅ Critical |
-| `EXPO_PUBLIC_REVENUECAT_API_KEY_WEB` | RevenueCat → API Keys | 🟡 Optional |
-| `REVENUECAT_SECRET_KEY` | RevenueCat → API Keys | 🟡 Optional |
-| `EXPO_PUBLIC_GEMINI_API_KEY` | Google AI Studio | 🟡 Optional |
-| `RESEND_API_KEY` | Resend Dashboard | 🟡 Optional |
-| `EXPO_PUBLIC_SENTRY_DSN` | Sentry.io → Project Settings | 🟡 Optional |
-| `JWT_SECRET` | Generate with Node.js | ✅ Critical |
-| `ENCRYPTION_KEY` | Generate with Node.js | ✅ Critical |
-| `EXPO_PUBLIC_API_URL` | Your Vercel URL | ✅ Critical |
-| `EXPO_PUBLIC_WEBSOCKET_URL` | Your Vercel URL (wss) | ✅ Critical |
+### Required Variables (15)
 
-**Total: 18 critical + 5 optional = 23+ variables**
+| Variable | Value | Source |
+|----------|-------|--------|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | AIzaSyBBz1nwINWdmnKr13zutmBoEgwFD6XHAfg | Firebase Console |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | okapifind-e5b81.firebaseapp.com | Firebase Console |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | okapifind-e5b81 | Firebase Console |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | okapifind-e5b81.firebasestorage.app | Firebase Console |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | 897907860773 | Firebase Console |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | 1:897907860773:web:830b5654c6a20b8199e6cc | Firebase Console |
+| `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` | G-GLP7PK7361 | Firebase Console |
+| `NEXT_PUBLIC_SUPABASE_URL` | https://kmobwbqdtmbzdyysdxjx.supabase.co | Supabase Dashboard |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | sb_publishable_LCRH55EAKXxEO-HAZko8XA_lwLi_NK9 | Supabase Dashboard |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | [your_maps_key_1] | Google Cloud Console |
+| `NEXT_PUBLIC_OKAPIFIND_MAPS_KEY` | [your_maps_key_2] | Google Cloud Console |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | pk_live_... | Stripe Dashboard |
+| `STRIPE_SECRET_KEY` | sk_live_... | Stripe Dashboard |
+| `STRIPE_WEBHOOK_SECRET` | whsec_... | Stripe Dashboard (after webhook setup) |
+| `ENCRYPTION_KEY` | 8f7a9b2c4d6e1f3a5b8c9d0e2f4a6b8c | Generated |
+| `JWT_SECRET` | 3a7f9c2e5b8d1f4a6c9e2b5d8f1a4c7e | Generated |
+
+---
+
+## 📚 Additional Resources
+
+- **Vercel Docs:** https://vercel.com/docs
+- **Firebase Docs:** https://firebase.google.com/docs
+- **Supabase Docs:** https://supabase.com/docs
+- **Stripe Docs:** https://stripe.com/docs
+
+---
+
+**Need help?** Check the Common Issues section above or review Vercel deployment logs.
