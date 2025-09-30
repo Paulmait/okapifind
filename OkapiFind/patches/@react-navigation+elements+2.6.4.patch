@@ -1,0 +1,19 @@
+diff --git a/node_modules/@react-navigation/elements/src/useFrameSize.tsx b/node_modules/@react-navigation/elements/src/useFrameSize.tsx
+index f09e5b6..536ecfe 100644
+--- a/node_modules/@react-navigation/elements/src/useFrameSize.tsx
++++ b/node_modules/@react-navigation/elements/src/useFrameSize.tsx
+@@ -12,12 +12,9 @@ import {
+ import useLatestCallback from 'use-latest-callback';
+ import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector';
+ 
+-// Load with require to avoid error from webpack due to missing export in older versions
++// Load with import to avoid webpack issues with require() in browser
+ // eslint-disable-next-line import-x/no-commonjs
+-const SafeAreaListener = require('react-native-safe-area-context')
+-  .SafeAreaListener as
+-  | typeof import('react-native-safe-area-context').SafeAreaListener
+-  | undefined;
++import { SafeAreaListener } from 'react-native-safe-area-context';
+ 
+ type Frame = {
+   width: number;
