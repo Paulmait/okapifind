@@ -81,6 +81,56 @@ config/*.local.js
 /android
 
 # ============================================
+# SECURITY - API KEYS & SECRETS
+# ============================================
+
+# Vercel
+.vercel/
+.vercel.json
+
+# Supabase
+supabase/.env
+.supabase/
+
+# Stripe
+stripe-cli/
+.stripe/
+
+# Sentry
+.sentryclirc
+
+# Additional secret patterns
+**/*secret*
+**/*private*
+**/*confidential*
+*_SECRET_*
+*_PRIVATE_*
+*_CONFIDENTIAL_*
+
+# Backup files that might contain secrets
+*.backup
+*.bak
+*.old
+*.orig
+*~
+*.swp
+*.swo
+
+# IDE configurations that might expose paths
+.idea/
+.vscode/settings.json
+*.sublime-workspace
+
+# Test data that might be sensitive
+/test-data/production/
+/fixtures/real/
+
+# Logs that might contain sensitive data
+*.log
+logs/
+*.log.*
+
+# ============================================
 # PROPRIETARY & CONFIDENTIAL FILES
 # ============================================
 
@@ -88,8 +138,6 @@ config/*.local.js
 PROPRIETARY_ALGORITHMS.md
 PROPRIETARY_*.md
 *_PROPRIETARY.*
-*_SECRET.*
-*_CONFIDENTIAL.*
 
 # Internal documentation
 TRADE_SECRETS.md
@@ -146,27 +194,3 @@ deployment-secrets.sh
 *.onnx
 *.tflite
 *.mlmodel
-
-# Encryption keys
-*.pem
-*.der
-*.crt
-*.cer
-*.pfx
-*.p12
-
-# Backup files that might contain secrets
-*.backup
-*.bak
-*.old
-*.orig
-*~
-
-# IDE configurations that might expose paths
-.idea/
-.vscode/settings.json
-*.sublime-workspace
-
-# Test data that might be sensitive
-/test-data/production/
-/fixtures/real/
