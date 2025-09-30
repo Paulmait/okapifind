@@ -1,5 +1,11 @@
-import NetInfo from '@react-native-netinfo';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Only import NetInfo on native platforms
+let NetInfo: any = null;
+if (Platform.OS !== 'web') {
+  NetInfo = require('@react-native-netinfo').default;
+}
 
 interface OfflineAction {
   id: string;
@@ -19,14 +25,33 @@ class OfflineModeService {
 
   private async initialize() {
     // Monitor network state
-    NetInfo.addEventListener(state => {
-      this.isOnline = state.isConnected ?? false;
-      this.notifyListeners();
+    if (Platform.OS === 'web') {
+      // Use browser's navigator.onLine for web
+      this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
 
-      if (this.isOnline) {
-        this.syncPendingActions();
+      if (typeof window !== 'undefined') {
+        window.addEventListener('online', () => {
+          this.isOnline = true;
+          this.notifyListeners();
+          this.syncPendingActions();
+        });
+
+        window.addEventListener('offline', () => {
+          this.isOnline = false;
+          this.notifyListeners();
+        });
       }
-    });
+    } else if (NetInfo) {
+      // Use NetInfo for native platforms
+      NetInfo.addEventListener((state: any) => {
+        this.isOnline = state.isConnected ?? false;
+        this.notifyListeners();
+
+        if (this.isOnline) {
+          this.syncPendingActions();
+        }
+      });
+    }
 
     // Load pending actions
     await this.loadPendingActions();
