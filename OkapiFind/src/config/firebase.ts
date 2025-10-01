@@ -27,8 +27,8 @@ const firebaseConfig = {
 
 // Google OAuth configuration
 export const GOOGLE_OAUTH_CONFIG = {
-  clientId: Constants.expoConfig?.extra?.googleClientId ||
-            process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '',
+  webClientId: Constants.expoConfig?.extra?.googleWebClientId ||
+               process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
   iosClientId: Constants.expoConfig?.extra?.googleIosClientId ||
                process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '',
   androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId ||
