@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OkapiFind - Environment Check</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007AFF;
+            padding-bottom: 10px;
+        }
+        .var-check {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .var-name {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #333;
+        }
+        .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .status.ok {
+            background: #34C759;
+            color: white;
+        }
+        .status.missing {
+            background: #FF3B30;
+            color: white;
+        }
+        .status.optional {
+            background: #FF9500;
+            color: white;
+        }
+        .summary {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .summary h2 {
+            margin-top: 0;
+            color: #007AFF;
+        }
+        .summary.error {
+            border-left: 5px solid #FF3B30;
+        }
+        .summary.success {
+            border-left: 5px solid #34C759;
+        }
+        .copy-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .copy-btn:hover {
+            background: #0051D5;
+        }
+        .instructions {
+            background: #FFF9E6;
+            border-left: 5px solid #FF9500;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 OkapiFind Environment Variables Check</h1>
+
+    <div id="summary" class="summary">
+        <h2>Checking...</h2>
+    </div>
+
+    <div id="instructions" class="instructions" style="display: none;">
+        <h3>⚠️ Missing Variables Detected</h3>
+        <p>To fix this, add the missing variables to your Vercel dashboard:</p>
+        <ol>
+            <li>Go to <a href="https://vercel.com/dashboard" target="_blank">Vercel Dashboard</a></li>
+            <li>Select your project → Settings → Environment Variables</li>
+            <li>Add each missing variable shown below</li>
+            <li>Set for: Production, Preview, AND Development</li>
+            <li>Redeploy without cache</li>
+        </ol>
+        <button class="copy-btn" onclick="copyMissingVars()">📋 Copy Missing Variable Names</button>
+    </div>
+
+    <h2>Required Variables</h2>
+    <div id="required-vars"></div>
+
+    <h2>Optional Variables</h2>
+    <div id="optional-vars"></div>
+
+    <script>
+        const requiredVars = [
+            'EXPO_PUBLIC_FIREBASE_API_KEY',
+            'EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN',
+            'EXPO_PUBLIC_FIREBASE_PROJECT_ID',
+            'EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET',
+            'EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+            'EXPO_PUBLIC_FIREBASE_APP_ID',
+            'EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID',
+            'EXPO_PUBLIC_SUPABASE_URL',
+            'EXPO_PUBLIC_SUPABASE_ANON_KEY',
+            'EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN',
+            'EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID',
+        ];
+
+        const optionalVars = [
+            'EXPO_PUBLIC_GOOGLE_MAPS_API_KEY',
+            'EXPO_PUBLIC_GEMINI_API_KEY',
+            'EXPO_PUBLIC_REVENUECAT_API_KEY_IOS',
+            'EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID',
+            'EXPO_PUBLIC_SENTRY_DSN',
+        ];
+
+        let missingRequired = [];
+        let missingOptional = [];
+
+        function checkVar(varName, isRequired) {
+            const value = process.env[varName];
+            const exists = value && value !== 'undefined' && value !== '';
+
+            if (!exists) {
+                if (isRequired) {
+                    missingRequired.push(varName);
+                } else {
+                    missingOptional.push(varName);
+                }
+            }
+
+            return {
+                name: varName,
+                exists,
+                status: exists ? 'ok' : (isRequired ? 'missing' : 'optional'),
+                statusText: exists ? '✅ SET' : (isRequired ? '❌ MISSING' : '⚠️ NOT SET')
+            };
+        }
+
+        function renderVar(varData) {
+            return `
+                <div class="var-check">
+                    <span class="var-name">${varData.name}</span>
+                    <span class="status ${varData.status}">${varData.statusText}</span>
+                </div>
+            `;
+        }
+
+        function renderResults() {
+            const requiredResults = requiredVars.map(v => checkVar(v, true));
+            const optionalResults = optionalVars.map(v => checkVar(v, false));
+
+            document.getElementById('required-vars').innerHTML = requiredResults.map(renderVar).join('');
+            document.getElementById('optional-vars').innerHTML = optionalResults.map(renderVar).join('');
+
+            const allMissing = [...missingRequired, ...missingOptional];
+            const summaryDiv = document.getElementById('summary');
+            const instructionsDiv = document.getElementById('instructions');
+
+            if (missingRequired.length === 0) {
+                summaryDiv.className = 'summary success';
+                summaryDiv.innerHTML = `
+                    <h2>✅ All Required Variables Set!</h2>
+                    <p><strong>${requiredVars.length} required variables</strong> are correctly configured.</p>
+                    ${missingOptional.length > 0 ? `<p>⚠️ ${missingOptional.length} optional variables are not set (app will work, but some features may be limited).</p>` : ''}
+                `;
+                instructionsDiv.style.display = 'none';
+            } else {
+                summaryDiv.className = 'summary error';
+                summaryDiv.innerHTML = `
+                    <h2>❌ Missing ${missingRequired.length} Required Variables</h2>
+                    <p>Your app cannot function without these variables.</p>
+                    <p><strong>Missing:</strong> ${missingRequired.join(', ')}</p>
+                `;
+                instructionsDiv.style.display = 'block';
+            }
+        }
+
+        function copyMissingVars() {
+            const text = [...missingRequired, ...missingOptional].join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Copied to clipboard!\n\nPaste these into Vercel Settings → Environment Variables');
+            });
+        }
+
+        // Run the check
+        renderResults();
+    </script>
+</body>
+</html>
