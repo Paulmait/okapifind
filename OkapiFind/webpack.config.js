@@ -22,6 +22,34 @@ module.exports = async function (env, argv) {
     argv
   );
 
+  // Configure resolve fallbacks for Node.js modules
+  config.resolve = config.resolve || {};
+  config.resolve.fallback = {
+    ...config.resolve.fallback,
+    fs: false,
+    path: false,
+    crypto: false,
+    stream: false,
+    buffer: false,
+    util: false,
+    process: false,
+    child_process: false,
+    zlib: false,
+    'node-cron': false,
+    'aws-sdk': false,
+    ioredis: false,
+  };
+
+  // Ignore Node.js-only modules
+  const existingExternals = Array.isArray(config.externals) ? config.externals : [];
+  config.externals = [
+    ...existingExternals,
+    {
+      'child_process': 'commonjs child_process',
+      'node-cron': 'commonjs node-cron',
+    },
+  ];
+
   // Use custom HTML template
   const HtmlWebpackPlugin = config.plugins.find(
     plugin => plugin.constructor.name === 'HtmlWebpackPlugin'
