@@ -80,15 +80,26 @@ module.exports = async function (env, argv) {
     ioredis: false,
   };
 
-  // Ignore Node.js-only modules
+  // Ignore Node.js-only modules and server-only services
   const existingExternals = Array.isArray(config.externals) ? config.externals : [];
   config.externals = [
     ...existingExternals,
     {
       'child_process': 'commonjs child_process',
       'node-cron': 'commonjs node-cron',
+      'ioredis': 'commonjs ioredis',
+      'aws-sdk': 'commonjs aws-sdk',
+      'redis': 'commonjs redis',
     },
   ];
+
+  // Exclude server-only services from web bundle
+  config.resolve.alias = {
+    ...config.resolve.alias,
+    // Replace server-only services with empty modules for web
+    '../services/enterpriseBackupSystem': false,
+    './services/enterpriseBackupSystem': false,
+  };
 
   // Use custom HTML template
   const HtmlWebpackPlugin = config.plugins.find(

@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd OkapiFind && npm install --legacy-peer-deps && npm run build:web",
+  "buildCommand": "cd OkapiFind && rm -rf node_modules/.cache web-build && npm install --legacy-peer-deps && npm run build:web",
   "outputDirectory": "OkapiFind/web-build",
   "installCommand": "echo 'Skipping root install'",
   "framework": null,
