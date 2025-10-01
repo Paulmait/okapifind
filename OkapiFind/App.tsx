@@ -208,12 +208,13 @@ export default function App() {
     >
       <SafeAreaProvider>
         <OfflineIndicator />
-        {/* Show mobile app promotion banner on web when authenticated */}
-        {Platform.OS === 'web' && isAuthenticated && <MobileAppPromotion />}
+        {/* Show mobile app promotion banner on web */}
+        {Platform.OS === 'web' && <MobileAppPromotion />}
         <NavigationContainer>
           <StatusBar style="auto" />
           <FirebaseConfigGuard>
-            {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+            {/* Always show MainNavigator - authentication is optional */}
+            <MainNavigator />
           </FirebaseConfigGuard>
         </NavigationContainer>
       </SafeAreaProvider>

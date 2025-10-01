@@ -343,22 +343,44 @@ const SettingsScreen: React.FC = () => {
         </View>
 
         {/* Account */}
-        {isAuthenticated && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Account</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account</Text>
 
-            <View style={styles.accountCard}>
-              <Text style={styles.accountEmail}>{currentUser?.email || 'No email'}</Text>
-              {currentUser?.displayName && (
-                <Text style={styles.accountName}>{currentUser.displayName}</Text>
-              )}
-            </View>
+          {isAuthenticated ? (
+            <>
+              <View style={styles.accountCard}>
+                <Text style={styles.accountEmail}>{currentUser?.email || 'No email'}</Text>
+                {currentUser?.displayName && (
+                  <Text style={styles.accountName}>{currentUser.displayName}</Text>
+                )}
+              </View>
 
-            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-              <Text style={styles.signOutButtonText}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+              <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+                <Text style={styles.signOutButtonText}>Sign Out</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <View style={styles.guestCard}>
+                <Text style={styles.guestTitle}>🚗 Using Guest Mode</Text>
+                <Text style={styles.guestDescription}>
+                  Sign in to sync your parking locations across devices and never lose your car again!
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.signInButton}
+                onPress={() => Alert.alert(
+                  'Sign In',
+                  'Sign in feature will be available in Settings soon. For now, enjoy using OkapiFind!',
+                  [{ text: 'OK' }]
+                )}
+              >
+                <Text style={styles.signInButtonText}>Sign In for Cloud Sync</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
 
         {/* About */}
         <View style={styles.section}>
@@ -602,6 +624,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signOutButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+  },
+  guestCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    borderStyle: 'dashed',
+  },
+  guestTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  guestDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  signInButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+  },
+  signInButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
