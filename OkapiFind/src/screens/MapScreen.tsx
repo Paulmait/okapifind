@@ -157,12 +157,21 @@ const MapScreen: React.FC = () => {
   }, [lastDetectedParking]);
 
   const handleSaveCarLocation = useCallback(async () => {
+    console.log('🚗 Save Location button clicked', { hasUserLocation: !!userLocation });
+
     if (!userLocation) {
+      console.warn('⚠️ No user location available');
       Alert.alert('Location Not Available', 'Please wait for your location to be determined.');
       return;
     }
 
     try {
+      console.log('📍 Saving location:', {
+        lat: userLocation.coords.latitude,
+        lng: userLocation.coords.longitude,
+        platform: Platform.OS
+      });
+
       await performance.measureAsync('save_car_location', async () => {
         await saveCarLocation(
           userLocation.coords.latitude,
@@ -182,8 +191,12 @@ const MapScreen: React.FC = () => {
         );
       });
 
-      // Haptic feedback on save
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      console.log('✅ Location saved successfully');
+
+      // Haptic feedback on save (skip on web)
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
 
       Alert.alert(
         'Location Saved',
@@ -191,6 +204,7 @@ const MapScreen: React.FC = () => {
         [{ text: 'OK' }]
       );
     } catch (error) {
+      console.error('❌ Error saving location:', error);
       Alert.alert('Error', 'Failed to save car location. Please try again.');
     }
   }, [userLocation, saveCarLocation]);
