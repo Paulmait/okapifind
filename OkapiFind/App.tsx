@@ -24,7 +24,9 @@ import { offlineModeService } from './src/services/offlineMode';
 import { FirebaseConfigGuard } from './src/components/FirebaseConfigGuard';
 import { OfflineIndicator } from './src/components/OfflineIndicator';
 import { ConfigDiagnostic } from './src/components/ConfigDiagnostic';
+import { MobileAppPromotion } from './src/components/MobileAppPromotion';
 import { isFirebaseConfigured } from './src/config/firebase';
+import { crossPlatformSync } from './src/services/crossPlatformSync';
 import './src/i18n'; // Initialize i18n
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -149,10 +151,18 @@ export default function App() {
     // Initialize offline mode
     offlineModeService.getNetworkState();
 
+    // Initialize cross-platform sync when user is authenticated
+    if (isAuthenticated && currentUser?.uid) {
+      crossPlatformSync.initialize(currentUser.uid).catch((error) => {
+        console.error('Failed to initialize cross-platform sync:', error);
+      });
+    }
+
     return () => {
       performance.endTimer('App_initialization');
+      crossPlatformSync.stopAutoSync();
     };
-  }, []);
+  }, [isAuthenticated, currentUser]);
 
   // Show diagnostic screen if Firebase not configured (especially important for web)
   if (!firebaseConfigured && Platform.OS === 'web') {
@@ -185,6 +195,8 @@ export default function App() {
     >
       <SafeAreaProvider>
         <OfflineIndicator />
+        {/* Show mobile app promotion banner on web when authenticated */}
+        {Platform.OS === 'web' && isAuthenticated && <MobileAppPromotion />}
         <NavigationContainer>
           <StatusBar style="auto" />
           <FirebaseConfigGuard>

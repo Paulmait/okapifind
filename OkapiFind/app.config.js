@@ -18,6 +18,10 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.okapi.find",
       usesAppleSignIn: true,
+      associatedDomains: [
+        "applinks:okapifind.com",
+        "applinks:okapifind.vercel.app"
+      ],
       infoPlist: {
         NSLocationWhenInUseUsageDescription: "OkapiFind needs access to your location to help you find items.",
         NSLocationAlwaysAndWhenInUseUsageDescription: "OkapiFind needs access to your location to help you find items.",
@@ -42,12 +46,36 @@ export default {
         "VIBRATE",
         "CAMERA",
         "ACTIVITY_RECOGNITION"
+      ],
+      intentFilters: [
+        {
+          action: "VIEW",
+          autoVerify: true,
+          data: [
+            {
+              scheme: "https",
+              host: "okapifind.com",
+              pathPrefix: "/"
+            },
+            {
+              scheme: "https",
+              host: "*.okapifind.vercel.app"
+            }
+          ],
+          category: ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
     web: {
       favicon: "./assets/favicon.png",
-      bundler: "webpack"
+      bundler: "webpack",
+      // Deep linking for web
+      config: {
+        // Allow opening the app from custom URLs
+        linkingEnabled: true
+      }
     },
+    scheme: "okapifind",
     plugins: [
       "expo-location",
       "expo-web-browser",
