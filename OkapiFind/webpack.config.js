@@ -23,28 +23,41 @@ module.exports = async function (env, argv) {
     argv
   );
 
-  // Inject only safe, public environment variables at build time
-  // SECURITY: Sensitive operations moved to /api serverless functions
+  // Inject environment variables at build time
+  // NOTE: Firebase client config is safe to expose (restricted by domain/API key restrictions)
+  // Sensitive operations should use backend API proxies in /api folder
   config.plugins.push(
     new webpack.DefinePlugin({
       // Platform detection
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
 
-      // Public configuration only (safe to expose)
+      // Firebase Configuration (client-side is safe when properly restricted)
+      'process.env.EXPO_PUBLIC_FIREBASE_API_KEY': JSON.stringify(process.env.EXPO_PUBLIC_FIREBASE_API_KEY),
       'process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN': JSON.stringify(process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN),
       'process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID': JSON.stringify(process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID),
+      'process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET': JSON.stringify(process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET),
+      'process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID),
+      'process.env.EXPO_PUBLIC_FIREBASE_APP_ID': JSON.stringify(process.env.EXPO_PUBLIC_FIREBASE_APP_ID),
+      'process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID': JSON.stringify(process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID),
+
+      // Supabase Configuration (anon key is safe to expose)
       'process.env.EXPO_PUBLIC_SUPABASE_URL': JSON.stringify(process.env.EXPO_PUBLIC_SUPABASE_URL),
       'process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY),
 
       // Map providers (restricted by domain in provider dashboards)
       'process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN': JSON.stringify(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN),
       'process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY': JSON.stringify(process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY),
+      'process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID': JSON.stringify(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID),
 
-      // Analytics (public keys)
+      // Analytics and monitoring (public keys)
       'process.env.EXPO_PUBLIC_SENTRY_DSN': JSON.stringify(process.env.EXPO_PUBLIC_SENTRY_DSN),
-      'process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID': JSON.stringify(process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID),
+      'process.env.EXPO_PUBLIC_GEMINI_API_KEY': JSON.stringify(process.env.EXPO_PUBLIC_GEMINI_API_KEY),
 
-      // API endpoint for backend proxy
+      // RevenueCat (public SDK keys)
+      'process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS': JSON.stringify(process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS),
+      'process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID': JSON.stringify(process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID),
+
+      // API endpoint for backend proxy (for sensitive operations)
       'process.env.EXPO_PUBLIC_API_URL': JSON.stringify(process.env.EXPO_PUBLIC_API_URL || '/api'),
     })
   );
