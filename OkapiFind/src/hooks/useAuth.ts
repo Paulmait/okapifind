@@ -16,6 +16,22 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Web-compatible storage
+const storage = Platform.OS === 'web'
+  ? {
+      getItem: async (name: string) => {
+        const value = localStorage.getItem(name);
+        return value;
+      },
+      setItem: async (name: string, value: string) => {
+        localStorage.setItem(name, value);
+      },
+      removeItem: async (name: string) => {
+        localStorage.removeItem(name);
+      },
+    }
+  : AsyncStorage;
+
 // Initialize Firestore
 const db = getFirestore(firebaseApp);
 
@@ -111,7 +127,7 @@ const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         userProfile: state.userProfile

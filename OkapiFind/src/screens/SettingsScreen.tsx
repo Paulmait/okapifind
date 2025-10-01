@@ -17,6 +17,7 @@ import { useParkingDetection } from '../hooks/useParkingDetection';
 import { useCarLocation } from '../hooks/useCarLocation';
 import { useFeatureGate, PremiumFeature } from '../hooks/useFeatureGate';
 import { usePremium } from '../hooks/usePremium';
+import { useAuth } from '../hooks/useAuth';
 import { RootStackParamList } from '../types/navigation';
 import { PRIVACY_POLICY_LAST_UPDATED } from '../data/privacyPolicy';
 import { TERMS_LAST_UPDATED } from '../data/termsOfService';
@@ -29,6 +30,7 @@ const SettingsScreen: React.FC = () => {
   const { clearCarLocation } = useCarLocation();
   const { isPremium } = usePremium();
   const { accessFeature } = useFeatureGate();
+  const { signOut, isAuthenticated, currentUser } = useAuth();
   const {
     settings,
     updateSettings,
@@ -133,6 +135,28 @@ const SettingsScreen: React.FC = () => {
     accessFeature(PremiumFeature.EXPORT_DATA, () => {
       Alert.alert('Export Data', 'Export your parking data!');
     });
+  };
+
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut();
+              Alert.alert('Signed Out', 'You have been signed out successfully');
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to sign out');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -317,6 +341,24 @@ const SettingsScreen: React.FC = () => {
             <Text style={styles.linkSubtitle}>Help us improve with your feedback</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Account */}
+        {isAuthenticated && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Account</Text>
+
+            <View style={styles.accountCard}>
+              <Text style={styles.accountEmail}>{currentUser?.email || 'No email'}</Text>
+              {currentUser?.displayName && (
+                <Text style={styles.accountName}>{currentUser.displayName}</Text>
+              )}
+            </View>
+
+            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+              <Text style={styles.signOutButtonText}>Sign Out</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* About */}
         <View style={styles.section}>
@@ -531,6 +573,38 @@ const styles = StyleSheet.create({
   lockIcon: {
     fontSize: 20,
     marginLeft: 12,
+  },
+  accountCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  accountEmail: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  accountName: {
+    fontSize: 14,
+    color: '#666',
+  },
+  signOutButton: {
+    backgroundColor: '#ff3b30',
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+  },
+  signOutButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
   },
 });
 
