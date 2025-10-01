@@ -179,9 +179,17 @@ export const useAuth = () => {
       try {
         clearTimeout(initTimeout); // Cancel timeout if auth state changes
 
+        console.log('🔥 Firebase onAuthStateChanged:', {
+          hasUser: !!user,
+          uid: user?.uid,
+          email: user?.email,
+        });
+
         if (user) {
           // User is signed in
           setCurrentUser(user);
+
+          console.log('✅ Setting current user in store');
 
           // Check/create user profile in Firestore
           await checkOrCreateUserProfile(user);
@@ -194,6 +202,7 @@ export const useAuth = () => {
           });
         } else {
           // User is signed out
+          console.log('🚪 User signed out');
           setCurrentUser(null);
           setUserProfile(null);
           analytics.setUserId(null);

@@ -71,6 +71,12 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
           // Sign in with Firebase using auth service
           const user = await authService.signInWithGoogleCredential(credential);
 
+          console.log('✅ Google Sign-In Success:', {
+            hasUser: !!user,
+            uid: user?.uid,
+            email: user?.email,
+          });
+
           // Call success callback if user was returned
           if (user) {
             onSuccess?.(user);

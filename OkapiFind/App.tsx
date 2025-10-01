@@ -136,6 +136,19 @@ export default function App() {
   // Check if Firebase is configured - show diagnostic if not
   const firebaseConfigured = isFirebaseConfigured();
 
+  // Debug logging for web
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      console.log('🔍 Auth Debug:', {
+        isLoading,
+        isAuthenticated,
+        isReady,
+        hasUser: !!currentUser,
+        userEmail: currentUser?.email,
+      });
+    }
+  }, [isLoading, isAuthenticated, isReady, currentUser]);
+
   useEffect(() => {
     // Initialize all services on app start
     analytics.initialize();

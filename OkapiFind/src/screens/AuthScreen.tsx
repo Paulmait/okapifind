@@ -9,6 +9,7 @@ import {
   useColorScheme,
   ScrollView,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GoogleLoginButton from '../components/GoogleLoginButton';
@@ -20,6 +21,22 @@ export default function AuthScreen() {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
   const [isLoading, setIsLoading] = useState(false);
+
+  const handlePrivacyPolicy = () => {
+    if (Platform.OS === 'web') {
+      window.open('https://okapifind.com/privacy', '_blank');
+    } else {
+      Linking.openURL('https://okapifind.com/privacy');
+    }
+  };
+
+  const handleTermsOfService = () => {
+    if (Platform.OS === 'web') {
+      window.open('https://okapifind.com/terms', '_blank');
+    } else {
+      Linking.openURL('https://okapifind.com/terms');
+    }
+  };
 
   const handleAuthSuccess = (user: any) => {
     analytics.logEvent('auth_success', {
@@ -145,9 +162,13 @@ export default function AuthScreen() {
           <View style={styles.legalSection}>
             <Text style={styles.legalText}>
               By signing in, you agree to our{'\n'}
-              <Text style={styles.legalLink}>Terms of Service</Text>
+              <Text style={styles.legalLink} onPress={handleTermsOfService}>
+                Terms of Service
+              </Text>
               {' and '}
-              <Text style={styles.legalLink}>Privacy Policy</Text>
+              <Text style={styles.legalLink} onPress={handlePrivacyPolicy}>
+                Privacy Policy
+              </Text>
             </Text>
           </View>
         </View>
