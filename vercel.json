@@ -1,5 +1,5 @@
 {
-  "buildCommand": "chmod +x OkapiFind/scripts/vercel-build.sh && cd OkapiFind && bash scripts/vercel-build.sh",
+  "buildCommand": "cd OkapiFind && npm ci --legacy-peer-deps && npx patch-package && npx expo export:web",
   "outputDirectory": "OkapiFind/web-build",
   "installCommand": "echo 'Skipping root install'",
   "framework": null,
