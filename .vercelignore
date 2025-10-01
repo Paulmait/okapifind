@@ -1,0 +1,70 @@
+# Vercel ignore file - exclude unnecessary files from deployment
+
+# Documentation
+*.md
+!README.md
+ACQUISITION_PITCH_DECK.md
+APP_STORE_LISTING.md
+COMPLETE_MAP_IMPLEMENTATION_SUMMARY.md
+CRITICAL_ENHANCEMENTS_ADDED.md
+DEVELOPMENT_DOCUMENTATION.md
+EAS_DEPLOYMENT_GUIDE.md
+ENV_VARS_CHECKLIST.md
+EXPERT_REVIEW_CHECKLIST.md
+FINAL_IMPLEMENTATION_GUIDE.md
+FINAL_PRODUCTION_CHECKLIST.md
+PHASE_1_IMPLEMENTATION_COMPLETE.md
+PHASE_2_IMPLEMENTATION_COMPLETE.md
+PRODUCTION_ENHANCEMENTS_EXPERT_RECOMMENDATIONS.md
+PRODUCTION_LAUNCH_CHECKLIST.md
+PRODUCTION_READINESS_REPORT.md
+REVENUE_STRATEGY_AND_PROJECTIONS.md
+STRATEGIC_PRODUCT_ROADMAP.md
+VERCEL_DEPLOYMENT.md
+VERCEL_DEPLOYMENT_GUIDE.md
+VERCEL_ENV_VARS_QUICK_START.md
+WEB_APP_STRATEGY.md
+WINDOWS_DEVELOPMENT_GUIDE.md
+
+# Scripts
+scripts/
+
+# Supabase
+supabase/
+
+# Environment files (managed in Vercel dashboard)
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Mobile-specific directories
+OkapiFind/ios/
+OkapiFind/android/
+OkapiFind/.expo/
+OkapiFind/dist/
+
+# Test files
+OkapiFind/__tests__/
+OkapiFind/**/*.test.ts
+OkapiFind/**/*.test.tsx
+OkapiFind/**/*.spec.ts
+OkapiFind/**/*.spec.tsx
+
+# Development files
+OkapiFind/.vscode/
+OkapiFind/.idea/
+
+# Build artifacts (will be rebuilt)
+OkapiFind/node_modules/
+OkapiFind/web-build/
+
+# Git
+.git/
+.gitignore
+
+# Misc
+*.log
+*.lock
+.DS_Store
+Thumbs.db
