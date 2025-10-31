@@ -108,7 +108,10 @@ class LocationFusionService {
 
       // 6. Detect floor if in parking garage
       if (snappedLocation.venue_name && this.isBarometerAvailable) {
-        snappedLocation.floor = await this.detectFloor();
+        const detectedFloor = await this.detectFloor();
+        if (detectedFloor) {
+          snappedLocation.floor = detectedFloor;
+        }
       }
 
       // 7. Add timestamp
@@ -374,17 +377,23 @@ class LocationFusionService {
     }
 
     try {
-      const { pressure } = await Barometer.readAsync();
+      // Get barometer reading using listener pattern
+      const data = await new Promise<{ pressure: number }>((resolve) => {
+        const sub = Barometer.addListener((reading) => {
+          sub.remove();
+          resolve({ pressure: reading.pressure });
+        });
+      });
 
       // If no baseline, assume ground floor
       if (!this.baselinePressure) {
-        this.baselinePressure = pressure;
+        this.baselinePressure = data.pressure;
         return 'G'; // Ground floor
       }
 
       // Calculate altitude change from baseline
       // Pressure decreases ~12 Pa per meter altitude gain
-      const pressureDiff = this.baselinePressure - pressure;
+      const pressureDiff = this.baselinePressure - data.pressure;
       const altitudeChange = pressureDiff / 12; // meters
 
       // Typical parking garage floor height: 3 meters
