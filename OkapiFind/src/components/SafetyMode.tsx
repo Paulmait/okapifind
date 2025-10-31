@@ -1,20 +1,3 @@
-/**
- * SafetyMode Component - DEPRECATED
- *
- * ⚠️ WARNING: This component uses Firebase Firestore for data storage,
- * which is inconsistent with the rest of the app using Supabase.
- *
- * TODO: Migrate to SafetyMode.v2.tsx which properly uses the Supabase
- * start-share Edge Function for consistent data storage and RLS enforcement.
- *
- * Issues with current implementation:
- * 1. Uses Firestore instead of Supabase (data fragmentation)
- * 2. Bypasses Supabase Row-Level Security
- * 3. Safety sessions not included in Supabase backups
- *
- * Use SafetyMode.v2.tsx for new implementations.
- */
-
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -31,24 +14,16 @@ import {
 import * as Location from 'expo-location';
 // TaskManager only works on native platforms
 const TaskManager = Platform.OS !== 'web' ? require('expo-task-manager') : null;
-import {
-  doc,
-  setDoc,
-  updateDoc,
-  serverTimestamp,
-  deleteDoc,
-  getFirestore
-} from 'firebase/firestore';
-import { firebaseApp } from '../config/firebase';
 import { useAuth } from '../hooks/useAuth';
-import { useFeatureGate } from '../hooks/useFeatureGate';
+import { useFeatureGate, PremiumFeature } from '../hooks/useFeatureGate';
 import { Colors } from '../constants/colors';
 import { analytics } from '../services/analytics';
+import { supabase } from '../lib/supabase-client';
 
 const LOCATION_TASK_NAME = 'safety-mode-location-tracking';
-const db = getFirestore(firebaseApp);
 
 interface SafetyModeProps {
+  sessionId: string; // Parking session ID
   destination: {
     latitude: number;
     longitude: number;
@@ -58,36 +33,21 @@ interface SafetyModeProps {
   isDarkMode?: boolean;
 }
 
-interface LiveSession {
-  userId: string;
-  userEmail: string;
-  userName?: string;
-  startLocation: {
-    latitude: number;
-    longitude: number;
-  };
-  destination: {
-    latitude: number;
-    longitude: number;
-    address?: string;
-  };
-  currentLocation: {
-    latitude: number;
-    longitude: number;
-    timestamp: any;
-  };
-  shareId: string;
-  createdAt: any;
-  expiresAt: any;
-  isActive: boolean;
-  estimatedArrival?: string;
+interface ShareSession {
+  share_id: string;
+  share_token: string;
+  share_url: string;
+  expires_at: string;
+  api_endpoint: string;
 }
 
 // Define the background task (only on native platforms)
 if (Platform.OS !== 'web' && TaskManager) {
   TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }: any) => {
     if (error) {
-      console.error('Safety Mode location error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Safety Mode location error:', error);
+      }
       return;
     }
 
@@ -96,22 +56,30 @@ if (Platform.OS !== 'web' && TaskManager) {
       const location = locations[0];
 
       if (location) {
-        // Get the session ID from AsyncStorage or a global state
-        // For now, we'll use a timestamp-based ID stored globally
-        const sessionId = (global as any).safetyModeSessionId;
+        // Get the share ID from global state
+        const shareId = (global as any).safetyModeShareId;
 
-        if (sessionId) {
+        if (shareId) {
           try {
-            await updateDoc(doc(db, 'safety_sessions', sessionId), {
-              currentLocation: {
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                timestamp: serverTimestamp(),
-              },
-              lastUpdate: serverTimestamp(),
-            });
+            // Insert new location point into Supabase
+            const { error: insertError } = await supabase
+              .from('share_locations')
+              .insert({
+                share_id: shareId,
+                at_point: `POINT(${location.coords.longitude} ${location.coords.latitude})`,
+                speed: location.coords.speed || null,
+                heading: location.coords.heading || null,
+                accuracy: location.coords.accuracy || null,
+                recorded_at: new Date().toISOString(),
+              });
+
+            if (insertError && process.env.NODE_ENV === 'development') {
+              console.error('Failed to update location:', insertError);
+            }
           } catch (error) {
-            console.error('Failed to update location:', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Failed to update location:', error);
+            }
           }
         }
       }
@@ -119,17 +87,17 @@ if (Platform.OS !== 'web' && TaskManager) {
   });
 }
 
-export const SafetyMode: React.FC<SafetyModeProps> = ({
-  destination,
+export const SafetyModeV2: React.FC<SafetyModeProps> = ({
+  sessionId,
+  destination: _destination, // Reserved for future use
   onComplete,
   isDarkMode = false
 }) => {
-  const { currentUser, userEmail, userName } = useAuth();
-  const { checkFeature } = useFeatureGate();
+  const { currentUser } = useAuth();
+  const { accessFeature } = useFeatureGate();
   const [isEnabled, setIsEnabled] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const [shareLink, setShareLink] = useState<string>('');
-  const [sessionId, setSessionId] = useState<string>('');
+  const [shareSession, setShareSession] = useState<ShareSession | null>(null);
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
 
   useEffect(() => {
@@ -143,19 +111,13 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
 
   const handleToggle = async (value: boolean) => {
     if (value) {
-      // Check if premium feature
-      const hasAccess = await checkFeature('safety_mode' as any);
-      if (!hasAccess) {
-        analytics.logEvent('safety_mode_premium_required');
-        return;
-      }
-    }
-    setIsEnabled(value);
-
-    if (value) {
-      analytics.logEvent('safety_mode_enabled');
-      startSharing();
+      // Check if premium feature using feature gate
+      accessFeature(PremiumFeature.SAFETY_MODE, () => {
+        setIsEnabled(true);
+        startSharing();
+      });
     } else {
+      setIsEnabled(false);
       analytics.logEvent('safety_mode_disabled');
       stopSharing();
     }
@@ -179,48 +141,55 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
         return;
       }
 
-      // Get current location
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
+      // Get current location (optional, server will use parking session location)
+      // Reserved for future use - could be used for real-time location updates
+      // await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
 
-      // Generate session ID
-      const newSessionId = `${currentUser.uid}_${Date.now()}`;
-      setSessionId(newSessionId);
+      // Get auth token
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      if (!authSession) {
+        Alert.alert('Authentication Error', 'Please sign in again');
+        setIsEnabled(false);
+        setIsSharing(false);
+        return;
+      }
 
-      // Store globally for background task
-      (global as any).safetyModeSessionId = newSessionId;
+      // Call Supabase Edge Function to start sharing
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/start-share`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authSession.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            session_id: sessionId,
+            expires_in: 120, // 2 hours
+          }),
+        }
+      );
 
-      // Create live session in Firestore
-      const sessionData: LiveSession = {
-        userId: currentUser.uid,
-        userEmail: userEmail || '',
-        userName: userName || 'OkapiFind User',
-        startLocation: {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        },
-        destination: {
-          latitude: destination.latitude,
-          longitude: destination.longitude,
-          address: destination.address,
-        },
-        currentLocation: {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          timestamp: serverTimestamp(),
-        },
-        shareId: newSessionId.substring(newSessionId.length - 8), // Short ID for sharing
-        createdAt: serverTimestamp(),
-        expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours expiry
-        isActive: true,
-      };
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
 
-      await setDoc(doc(db, 'safety_sessions', newSessionId), sessionData);
+        if (response.status === 402) {
+          // Premium required - should not happen if feature gate works
+          Alert.alert('Premium Required', 'Safety Mode requires a premium subscription');
+        } else {
+          Alert.alert('Error', errorData?.error || 'Failed to start Safety Mode');
+        }
 
-      // Generate share link
-      const link = `https://okapifind.com/track/${sessionData.shareId}`;
-      setShareLink(link);
+        setIsEnabled(false);
+        setIsSharing(false);
+        return;
+      }
+
+      const shareData: ShareSession = await response.json();
+      setShareSession(shareData);
+
+      // Store share ID globally for background task
+      (global as any).safetyModeShareId = shareData.share_id;
 
       // Start background location updates
       if (Platform.OS === 'ios' || Platform.OS === 'android') {
@@ -245,25 +214,30 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
             distanceInterval: 10,
           },
           async (newLocation) => {
-            await updateDoc(doc(db, 'safety_sessions', newSessionId), {
-              currentLocation: {
-                latitude: newLocation.coords.latitude,
-                longitude: newLocation.coords.longitude,
-                timestamp: serverTimestamp(),
-              },
-              lastUpdate: serverTimestamp(),
-            });
+            // Insert location update to Supabase
+            await supabase
+              .from('share_locations')
+              .insert({
+                share_id: shareData.share_id,
+                at_point: `POINT(${newLocation.coords.longitude} ${newLocation.coords.latitude})`,
+                speed: newLocation.coords.speed || null,
+                heading: newLocation.coords.heading || null,
+                accuracy: newLocation.coords.accuracy || null,
+                recorded_at: new Date().toISOString(),
+              });
           }
         );
       }
 
       analytics.logEvent('safety_mode_session_started', {
-        session_id: newSessionId,
+        share_id: shareData.share_id,
         has_destination: true,
       });
 
     } catch (error: any) {
-      console.error('Failed to start safety mode:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to start safety mode:', error);
+      }
       Alert.alert('Error', 'Failed to start Safety Mode. Please try again.');
       setIsEnabled(false);
       setIsSharing(false);
@@ -286,33 +260,36 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
         locationSubscription.current = null;
       }
 
-      // Mark session as inactive
-      if (sessionId) {
-        await updateDoc(doc(db, 'safety_sessions', sessionId), {
-          isActive: false,
-          endedAt: serverTimestamp(),
-        });
+      // Mark share session as inactive in Supabase
+      if (shareSession) {
+        await supabase
+          .from('safety_shares')
+          .update({ active: false })
+          .eq('id', shareSession.share_id);
 
-        // Clear global session ID
-        (global as any).safetyModeSessionId = null;
+        // Clear global share ID
+        (global as any).safetyModeShareId = null;
 
         analytics.logEvent('safety_mode_session_ended', {
-          session_id: sessionId,
+          share_id: shareSession.share_id,
         });
       }
 
       setIsSharing(false);
-      setShareLink('');
-      setSessionId('');
+      setShareSession(null);
       onComplete?.();
 
     } catch (error) {
-      console.error('Failed to stop safety mode:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to stop safety mode:', error);
+      }
     }
   };
 
   const shareViaWhatsApp = () => {
-    const message = `I'm walking to my car. Track my location for safety: ${shareLink}`;
+    if (!shareSession) return;
+
+    const message = `I'm walking to my car. Track my location for safety: ${shareSession.share_url}`;
     const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
 
     Linking.openURL(url).catch(() => {
@@ -321,12 +298,14 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
 
     analytics.logEvent('safety_mode_shared', {
       method: 'whatsapp',
-      session_id: sessionId,
+      share_id: shareSession.share_id,
     });
   };
 
   const shareViaSMS = () => {
-    const message = `I'm walking to my car. Track my location for safety: ${shareLink}`;
+    if (!shareSession) return;
+
+    const message = `I'm walking to my car. Track my location for safety: ${shareSession.share_url}`;
     const url = Platform.select({
       ios: `sms:&body=${encodeURIComponent(message)}`,
       android: `sms:?body=${encodeURIComponent(message)}`,
@@ -341,23 +320,27 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
 
     analytics.logEvent('safety_mode_shared', {
       method: 'sms',
-      session_id: sessionId,
+      share_id: shareSession.share_id,
     });
   };
 
   const shareGeneric = async () => {
+    if (!shareSession) return;
+
     try {
       await Share.share({
-        message: `I'm walking to my car. Track my location for safety: ${shareLink}`,
+        message: `I'm walking to my car. Track my location for safety: ${shareSession.share_url}`,
         title: 'OkapiFind Safety Mode',
       });
 
       analytics.logEvent('safety_mode_shared', {
         method: 'generic',
-        session_id: sessionId,
+        share_id: shareSession.share_id,
       });
     } catch (error) {
-      console.error('Share failed:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Share failed:', error);
+      }
     }
   };
 
@@ -366,226 +349,173 @@ export const SafetyMode: React.FC<SafetyModeProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <Text style={styles.icon}>🛡️</Text>
-          <Text style={styles.title}>Safety Mode</Text>
-          <Switch
-            value={isEnabled}
-            onValueChange={handleToggle}
-            trackColor={{
-              false: isDarkMode ? '#3A3A3A' : '#767577',
-              true: Colors.primary
-            }}
-            thumbColor={isEnabled ? '#FFF' : '#f4f3f4'}
-            ios_backgroundColor={isDarkMode ? '#3A3A3A' : '#767577'}
-            style={styles.switch}
-          />
-        </View>
-        <Text style={styles.subtitle}>
-          Share your live location with trusted contacts
-        </Text>
+        <Text style={styles.title}>Safety Mode</Text>
+        <Switch
+          value={isEnabled}
+          onValueChange={handleToggle}
+          trackColor={{ false: '#767577', true: Colors.primary }}
+          thumbColor={isEnabled ? Colors.primaryLight : '#f4f3f4'}
+        />
       </View>
 
       {isEnabled && (
         <View style={styles.content}>
-          {isSharing ? (
+          {isSharing && shareSession ? (
             <>
-              <View style={styles.activeSession}>
-                <View style={styles.pulsingDot} />
-                <Text style={styles.activeText}>Live tracking active</Text>
-              </View>
+              <Text style={styles.description}>
+                Your location is being shared. Anyone with the link can track your
+                journey to your car.
+              </Text>
 
-              <Text style={styles.sharePrompt}>Share your location:</Text>
+              <View style={styles.linkContainer}>
+                <Text style={styles.linkLabel}>Share Link:</Text>
+                <Text style={styles.link} numberOfLines={1}>
+                  {shareSession.share_url}
+                </Text>
+              </View>
 
               <View style={styles.shareButtons}>
                 <TouchableOpacity
-                  style={[styles.shareButton, styles.whatsappButton]}
+                  style={[styles.button, styles.whatsappButton]}
                   onPress={shareViaWhatsApp}
                 >
-                  <Text style={styles.shareButtonText}>📱 WhatsApp</Text>
+                  <Text style={styles.buttonText}>WhatsApp</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.shareButton, styles.smsButton]}
+                  style={[styles.button, styles.smsButton]}
                   onPress={shareViaSMS}
                 >
-                  <Text style={styles.shareButtonText}>💬 SMS</Text>
+                  <Text style={styles.buttonText}>SMS</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.shareButton, styles.moreButton]}
+                  style={[styles.button, styles.genericButton]}
                   onPress={shareGeneric}
                 >
-                  <Text style={styles.shareButtonText}>📤 More</Text>
+                  <Text style={styles.buttonText}>More</Text>
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.linkContainer}>
-                <Text style={styles.linkLabel}>Share link:</Text>
-                <Text style={styles.link} selectable>{shareLink}</Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.stopButton}
-                onPress={() => {
-                  setIsEnabled(false);
-                  stopSharing();
-                }}
-              >
-                <Text style={styles.stopButtonText}>Stop Sharing</Text>
-              </TouchableOpacity>
+              <Text style={styles.expiryText}>
+                Expires: {new Date(shareSession.expires_at).toLocaleTimeString()}
+              </Text>
             </>
           ) : (
-            <ActivityIndicator size="large" color={Colors.primary} />
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <Text style={styles.loadingText}>Starting Safety Mode...</Text>
+            </View>
           )}
         </View>
       )}
 
       {!isEnabled && (
-        <View style={styles.infoBox}>
-          <Text style={styles.infoText}>
-            🔒 Premium feature: Share your live location when walking to your car for added safety
-          </Text>
-        </View>
+        <Text style={styles.infoText}>
+          Enable Safety Mode to share your live location with trusted contacts
+          while walking to your car.
+        </Text>
       )}
     </View>
   );
 };
 
-const getStyles = (isDarkMode: boolean) => StyleSheet.create({
-  container: {
-    backgroundColor: isDarkMode ? Colors.surface : '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  header: {
-    marginBottom: 12,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  icon: {
-    fontSize: 24,
-    marginRight: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: isDarkMode ? Colors.textPrimary : '#000',
-    flex: 1,
-  },
-  switch: {
-    marginLeft: 'auto',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: isDarkMode ? Colors.textSecondary : '#666',
-    marginLeft: 32,
-  },
-  content: {
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: isDarkMode ? '#3A3A3A' : '#E0E0E0',
-  },
-  activeSession: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  pulsingDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#4CAF50',
-    marginRight: 8,
-  },
-  activeText: {
-    color: '#4CAF50',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  sharePrompt: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: isDarkMode ? Colors.textPrimary : '#000',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  shareButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 16,
-  },
-  shareButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    minWidth: 100,
-    alignItems: 'center',
-  },
-  whatsappButton: {
-    backgroundColor: '#25D366',
-  },
-  smsButton: {
-    backgroundColor: '#007AFF',
-  },
-  moreButton: {
-    backgroundColor: isDarkMode ? '#4A4A4A' : '#6C757D',
-  },
-  shareButtonText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  linkContainer: {
-    backgroundColor: isDarkMode ? '#2A2A2A' : '#F5F5F5',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  linkLabel: {
-    fontSize: 12,
-    color: isDarkMode ? Colors.textSecondary : '#666',
-    marginBottom: 4,
-  },
-  link: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-  },
-  stopButton: {
-    backgroundColor: '#DC3545',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  stopButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  infoBox: {
-    backgroundColor: isDarkMode ? '#2A2A2A' : '#FFF3CD',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: isDarkMode ? '#3A3A3A' : '#FFC107',
-  },
-  infoText: {
-    fontSize: 14,
-    color: isDarkMode ? Colors.textSecondary : '#856404',
-    lineHeight: 20,
-  },
-});
+const getStyles = (isDarkMode: boolean) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF',
+      borderRadius: 12,
+      padding: 16,
+      marginVertical: 8,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: isDarkMode ? '#FFFFFF' : '#000000',
+    },
+    content: {
+      marginTop: 8,
+    },
+    description: {
+      fontSize: 14,
+      color: isDarkMode ? '#EBEBF5' : '#3C3C43',
+      marginBottom: 16,
+      lineHeight: 20,
+    },
+    linkContainer: {
+      backgroundColor: isDarkMode ? '#2C2C2E' : '#F2F2F7',
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+    },
+    linkLabel: {
+      fontSize: 12,
+      color: isDarkMode ? '#EBEBF5' : '#3C3C43',
+      marginBottom: 4,
+      fontWeight: '500',
+    },
+    link: {
+      fontSize: 14,
+      color: Colors.primary,
+      fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    },
+    shareButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+    },
+    button: {
+      flex: 1,
+      paddingVertical: 12,
+      borderRadius: 8,
+      marginHorizontal: 4,
+      alignItems: 'center',
+    },
+    whatsappButton: {
+      backgroundColor: '#25D366',
+    },
+    smsButton: {
+      backgroundColor: Colors.primary,
+    },
+    genericButton: {
+      backgroundColor: '#8E8E93',
+    },
+    buttonText: {
+      color: '#FFFFFF',
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    expiryText: {
+      fontSize: 12,
+      color: isDarkMode ? '#EBEBF5' : '#8E8E93',
+      textAlign: 'center',
+    },
+    loadingContainer: {
+      alignItems: 'center',
+      paddingVertical: 24,
+    },
+    loadingText: {
+      marginTop: 12,
+      fontSize: 14,
+      color: isDarkMode ? '#EBEBF5' : '#8E8E93',
+    },
+    infoText: {
+      fontSize: 14,
+      color: isDarkMode ? '#EBEBF5' : '#8E8E93',
+      lineHeight: 20,
+    },
+  });
 
-export default SafetyMode;
+// Default export for backward compatibility
+export default SafetyModeV2;

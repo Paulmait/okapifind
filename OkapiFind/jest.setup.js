@@ -1,6 +1,11 @@
 // Jest setup file
 import 'react-native-gesture-handler/jestSetup';
 
+// ✅ FIX: Prevent "Cannot redefine property: window" error
+// This happens because React Native tries to redefine window
+// Save the original window before React Native setup
+global.___window = global.window;
+
 // Mock expo modules
 jest.mock('expo-constants', () => ({
   expoConfig: {
