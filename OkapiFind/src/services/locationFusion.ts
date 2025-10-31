@@ -111,41 +111,50 @@ class LocationFusionService {
         snappedLocation.floor = await this.detectFloor();
       }
 
+      // 7. Add timestamp
+      const fusedResult: FusedLocation = {
+        ...snappedLocation,
+        timestamp: Date.now(),
+      };
+
       const processingTime = Date.now() - startTime;
 
       // Log analytics
       analytics.logEvent('location_fusion_complete', {
-        accuracy: snappedLocation.accuracy,
-        sources_used: snappedLocation.sources.length,
-        snapped: snappedLocation.snapped,
-        has_floor: !!snappedLocation.floor,
-        has_venue: !!snappedLocation.venue_name,
+        accuracy: fusedResult.accuracy,
+        sources_used: fusedResult.sources.length,
+        snapped: fusedResult.snapped,
+        has_floor: !!fusedResult.floor,
+        has_venue: !!fusedResult.venue_name,
         processing_time_ms: processingTime,
       });
 
       if (process.env.NODE_ENV === 'development') {
         console.log('[LocationFusion] High-accuracy location obtained:', {
-          accuracy: snappedLocation.accuracy.toFixed(1) + 'm',
-          venue: snappedLocation.venue_name,
-          floor: snappedLocation.floor,
-          sources: snappedLocation.sources,
+          accuracy: fusedResult.accuracy.toFixed(1) + 'm',
+          venue: fusedResult.venue_name,
+          floor: fusedResult.floor,
+          sources: fusedResult.sources,
           time: processingTime + 'ms',
         });
       }
 
-      return snappedLocation;
+      return fusedResult;
 
     } catch (error) {
       console.error('[LocationFusion] Error:', error);
 
       // Fallback to basic GPS
       const gpsLocation = await this.getGPSLocation();
-      return {
-        ...gpsLocation,
+      const fallbackResult: FusedLocation = {
+        latitude: gpsLocation.latitude,
+        longitude: gpsLocation.longitude,
+        accuracy: gpsLocation.accuracy,
         snapped: false,
         sources: ['gps'],
         timestamp: Date.now(),
       };
+      return fallbackResult;
     }
   }
 
@@ -400,11 +409,18 @@ class LocationFusionService {
     }
 
     try {
-      const { pressure } = await Barometer.readAsync();
-      this.baselinePressure = pressure;
+      // Get a barometer reading
+      const data = await new Promise<{ pressure: number }>((resolve) => {
+        const sub = Barometer.addListener((reading) => {
+          sub.remove();
+          resolve({ pressure: reading.pressure });
+        });
+      });
+
+      this.baselinePressure = data.pressure;
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[LocationFusion] Barometer calibrated:', pressure);
+        console.log('[LocationFusion] Barometer calibrated:', data.pressure);
       }
 
       return true;

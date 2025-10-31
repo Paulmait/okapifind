@@ -75,7 +75,7 @@ describe('MapScreen', () => {
     fireEvent.press(saveButton);
 
     await waitFor(() => {
-      expect(mockSave).toHaveBeenCalled With(mockUserLocation);
+      expect(mockSave).toHaveBeenCalledWith(mockUserLocation);
     });
   });
 

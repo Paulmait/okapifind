@@ -49,7 +49,7 @@ export interface ParkingSession {
   car_point: { coordinates: [number, number] }
   car_address?: string
   saved_at: string
-  source: 'auto' | 'manual' | 'photo'
+  source: 'auto' | 'manual' | 'photo' | 'quick_park_button'
   floor?: string
   venue_id?: string
   venue_name?: string
