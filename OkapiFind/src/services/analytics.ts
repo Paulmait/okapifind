@@ -140,7 +140,10 @@ class Analytics {
    */
   setUserId(userId: string | null) {
     this.userId = userId;
-    console.log('[Analytics] User ID set:', userId ? 'user_' + userId.slice(0, 8) : 'anonymous');
+    // Do not log user IDs in production (privacy/GDPR compliance)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Analytics] User ID set:', userId ? 'user_' + userId.slice(0, 8) : 'anonymous');
+    }
   }
 
   /**

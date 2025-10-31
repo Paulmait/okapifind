@@ -1,3 +1,20 @@
+/**
+ * SafetyMode Component - DEPRECATED
+ *
+ * ⚠️ WARNING: This component uses Firebase Firestore for data storage,
+ * which is inconsistent with the rest of the app using Supabase.
+ *
+ * TODO: Migrate to SafetyMode.v2.tsx which properly uses the Supabase
+ * start-share Edge Function for consistent data storage and RLS enforcement.
+ *
+ * Issues with current implementation:
+ * 1. Uses Firestore instead of Supabase (data fragmentation)
+ * 2. Bypasses Supabase Row-Level Security
+ * 3. Safety sessions not included in Supabase backups
+ *
+ * Use SafetyMode.v2.tsx for new implementations.
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,

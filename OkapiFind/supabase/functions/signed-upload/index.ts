@@ -63,6 +63,23 @@ serve(async (req) => {
       return new Response('Unauthorized - not session owner', { status: 403 })
     }
 
+    // Check user's premium status (photo documentation is a premium feature)
+    const { data: settings } = await supabaseAdmin
+      .from('user_settings')
+      .select('premium')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!settings?.premium) {
+      return new Response(
+        JSON.stringify({ error: 'Photo documentation requires premium subscription' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 402
+        }
+      )
+    }
+
     // Generate unique filename
     const timestamp = Date.now()
     const randomStr = Math.random().toString(36).substring(2, 8)
