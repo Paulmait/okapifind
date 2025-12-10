@@ -86,7 +86,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "webpack",
+      "bundler": "metro",
       "name": "OkapiFind",
       "shortName": "OkapiFind",
       "lang": "en",

@@ -83,6 +83,7 @@
     "expo-status-bar": "~3.0.8",
     "expo-store-review": "^9.0.7",
     "expo-task-manager": "^14.0.7",
+    "expo-updates": "~29.0.15",
     "expo-web-browser": "~15.0.7",
     "express-rate-limit": "^8.1.0",
     "firebase": "^12.3.0",
@@ -116,7 +117,6 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@expo/webpack-config": "^19.0.1",
     "@testing-library/react-native": "^13.3.3",
     "@types/cors": "^2.8.19",
     "@types/jest": "^30.0.0",
@@ -138,8 +138,7 @@
     "postinstall-postinstall": "^2.1.0",
     "prettier": "^3.2.5",
     "sharp": "^0.34.4",
-    "typescript": "~5.9.2",
-    "workbox-webpack-plugin": "^7.3.0"
+    "typescript": "~5.9.2"
   },
   "private": true,
   "expo": {
