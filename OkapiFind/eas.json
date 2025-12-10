@@ -14,8 +14,7 @@
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
       "ios": {
-        "simulator": true,
-        "resourceClass": "m-medium"
+        "simulator": true
       },
       "android": {
         "buildType": "apk",
@@ -31,7 +30,6 @@
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
       "ios": {
-        "resourceClass": "m-medium",
         "simulator": false
       },
       "android": {
@@ -49,7 +47,6 @@
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
       "ios": {
-        "resourceClass": "large",
         "autoIncrement": true
       },
       "android": {
