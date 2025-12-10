@@ -49,19 +49,7 @@ jest.mock('firebase/auth', () => ({
   signOut: jest.fn(),
 }));
 
-// Mock Sentry
-jest.mock('sentry-expo', () => ({
-  init: jest.fn(),
-  Native: {
-    captureException: jest.fn(),
-    captureMessage: jest.fn(),
-    addBreadcrumb: jest.fn(),
-    setUser: jest.fn(),
-    setTag: jest.fn(),
-    setContext: jest.fn(),
-    withScope: jest.fn((callback) => callback({ setLevel: jest.fn(), setTag: jest.fn(), setContext: jest.fn() })),
-  },
-}));
+// Sentry mock removed - sentry-expo disabled for SDK 54 compatibility
 
 // Silence console during tests
 global.console = {

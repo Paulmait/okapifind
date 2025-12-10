@@ -68,7 +68,7 @@ export default {
     },
     web: {
       favicon: "./assets/favicon.png",
-      bundler: "webpack",
+      bundler: "metro",
       // Deep linking for web
       config: {
         // Allow opening the app from custom URLs
@@ -85,8 +85,7 @@ export default {
           icon: "./assets/notification-icon.png",
           color: "#FFD700"
         }
-      ],
-      "sentry-expo"
+      ]
     ],
     extra: {
       // URLs - Using GitHub Pages for legal documents
