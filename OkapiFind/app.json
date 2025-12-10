@@ -1,21 +1,18 @@
 {
   "expo": {
-    "name": "OkapiFind - Find My Car",
+    "name": "OkapiFind",
     "slug": "okapifind",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "okapifind",
-    "newArchEnabled": false,
-    "privacy": "public",
+    "newArchEnabled": true,
     "description": "Never forget where you parked. Save your parking spot with one tap and get turn-by-turn navigation back to your car.",
-    "primaryColor": "#4A90E2",
-    "githubUrl": "https://github.com/okapifind/okapifind",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0F1B2A"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -25,40 +22,49 @@
       "bundleIdentifier": "com.okapi.find",
       "buildNumber": "1",
       "requireFullScreen": false,
+      "usesAppleSignIn": true,
       "config": {
         "usesNonExemptEncryption": false
       },
-      "appStoreUrl": "https://apps.apple.com/app/okapifind/id123456789",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "OkapiFind needs your location to save where you parked and navigate you back to your car.",
-        "NSCameraUsageDescription": "OkapiFind uses your camera to take photos of your parking spot as a visual reminder.",
+        "NSLocationWhenInUseUsageDescription": "OkapiFind needs access to your location to save where you parked and navigate you back to your car.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "OkapiFind needs access to your location to help you find items even when the app is in the background.",
+        "NSLocationAlwaysUsageDescription": "OkapiFind needs background location access to detect when you park your car automatically.",
+        "NSCameraUsageDescription": "OkapiFind uses your camera to take photos of your parking spot as a visual reminder and to scan parking signs.",
+        "NSMicrophoneUsageDescription": "OkapiFind needs access to your microphone for voice directions and voice commands.",
+        "NSMotionUsageDescription": "OkapiFind uses motion detection to automatically detect when you park your car.",
         "ITSAppUsesNonExemptEncryption": false,
-        "LSApplicationQueriesSchemes": ["maps", "comgooglemaps"]
+        "LSApplicationQueriesSchemes": ["maps", "comgooglemaps", "waze"],
+        "UIBackgroundModes": ["location", "fetch", "processing"]
       },
-      "associatedDomains": ["applinks:okapifind.com"],
+      "associatedDomains": [
+        "applinks:okapifind.com",
+        "applinks:okapifind.vercel.app"
+      ],
       "entitlements": {
-        "com.apple.developer.associated-domains": ["applinks:okapifind.com"]
+        "com.apple.developer.associated-domains": [
+          "applinks:okapifind.com",
+          "applinks:okapifind.vercel.app"
+        ]
       }
     },
     "android": {
       "package": "com.okapi.find",
       "versionCode": 1,
-      "compileSdkVersion": 34,
-      "targetSdkVersion": 34,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
         "CAMERA",
+        "RECORD_AUDIO",
         "VIBRATE",
-        "INTERNET"
+        "INTERNET",
+        "ACTIVITY_RECOGNITION"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0F1B2A"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.okapi.find",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -66,7 +72,12 @@
           "data": [
             {
               "scheme": "https",
-              "host": "okapifind.com"
+              "host": "okapifind.com",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "https",
+              "host": "*.okapifind.vercel.app"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
@@ -75,12 +86,13 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
+      "bundler": "webpack",
       "name": "OkapiFind",
       "shortName": "OkapiFind",
       "lang": "en",
       "scope": "/",
-      "themeColor": "#007AFF",
-      "backgroundColor": "#ffffff",
+      "themeColor": "#0F1B2A",
+      "backgroundColor": "#0F1B2A",
       "display": "standalone",
       "orientation": "portrait",
       "startUrl": "/"
@@ -90,13 +102,20 @@
       "expo-web-browser",
       "expo-camera",
       "expo-sensors",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#FFD700"
+        }
+      ],
       "expo-store-review",
+      "sentry-expo",
       [
         "expo-build-properties",
         {
           "ios": {
-            "deploymentTarget": "13.0"
+            "deploymentTarget": "13.4"
           },
           "android": {
             "compileSdkVersion": 34,
@@ -109,13 +128,14 @@
     "experiments": {
       "typedRoutes": true
     },
+    "owner": "guampaul",
     "extra": {
       "eas": {
-        "projectId": "your-project-id-here"
+        "projectId": "9218d954-2ca6-4eb1-8f1e-4b4fd81d4812"
       },
-      "apiUrl": "https://api.okapifind.com",
-      "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY",
-      "mapboxApiKey": "YOUR_MAPBOX_API_KEY"
+      "privacyPolicyUrl": "https://github.com/Paulmait/okapifind/blob/main/PRIVACY_POLICY.md",
+      "termsOfServiceUrl": "https://github.com/Paulmait/okapifind/blob/main/TERMS_OF_SERVICE.md",
+      "supportUrl": "https://github.com/Paulmait/okapifind/issues"
     },
     "hooks": {
       "postPublish": [

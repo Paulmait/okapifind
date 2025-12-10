@@ -4,7 +4,7 @@
  * Cross-browser compatible
  */
 
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,18 +13,12 @@ import {
   Dimensions,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import { BrandConfig } from '../../config/brand';
 import { useAuth } from '../../hooks/useAuth';
-import { useLocation } from '../../hooks/useLocation';
 import { useParkingLocation } from '../../hooks/useParkingLocation';
 
-// Lazy load heavy components for performance
-const Map = lazy(() => import('../Map/ParkingMap'));
-const NavigationPanel = lazy(() => import('../Navigation/NavigationPanel'));
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 
 // Responsive breakpoints
 const getDeviceType = (width: number) => {
@@ -38,9 +32,8 @@ export const WebApp: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(deviceType === 'desktop');
   const [activeView, setActiveView] = useState<'map' | 'history' | 'profile'>('map');
 
-  const { user, isAuthenticated } = useAuth();
-  const { currentLocation } = useLocation();
-  const { parkingLocation, saveParkingLocation, isParked } = useParkingLocation();
+  const { currentUser, userProfile, isAuthenticated } = useAuth();
+  const { saveParkingLocation, isParked } = useParkingLocation();
 
   // Handle responsive layout
   useEffect(() => {
@@ -55,16 +48,14 @@ export const WebApp: React.FC = () => {
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
+    return undefined;
   }, []);
 
   // Main parking save action
   const handleSaveParking = async () => {
     try {
       await saveParkingLocation({
-        latitude: currentLocation?.latitude,
-        longitude: currentLocation?.longitude,
-        timestamp: Date.now(),
-        source: 'web_manual',
+        source: 'manual',
       });
     } catch (error) {
       console.error('Failed to save parking:', error);
@@ -105,7 +96,7 @@ export const WebApp: React.FC = () => {
             >
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  {userProfile?.displayName?.charAt(0).toUpperCase() || currentUser?.displayName?.charAt(0).toUpperCase() || 'U'}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -223,32 +214,28 @@ export const WebApp: React.FC = () => {
 
         {/* Main View Area */}
         <View style={styles.mainView}>
-          <Suspense fallback={<LoadingView />}>
-            {activeView === 'map' && (
-              <View style={styles.mapContainer}>
-                <Map
-                  currentLocation={currentLocation}
-                  parkingLocation={parkingLocation}
-                  style={styles.map}
-                />
-
-                {/* Floating Action Button (Mobile) */}
-                {deviceType === 'mobile' && !isParked && (
-                  <TouchableOpacity
-                    style={styles.fab}
-                    onPress={handleSaveParking}
-                    accessible={true}
-                    accessibilityLabel="Save parking location"
-                  >
-                    <Text style={styles.fabIcon}>P</Text>
-                  </TouchableOpacity>
-                )}
+          {activeView === 'map' && (
+            <View style={styles.mapContainer}>
+              <View style={styles.map}>
+                <Text style={styles.mapPlaceholder}>Map Component Placeholder</Text>
               </View>
-            )}
 
-            {activeView === 'history' && <HistoryView />}
-            {activeView === 'profile' && <ProfileView user={user} />}
-          </Suspense>
+              {/* Floating Action Button (Mobile) */}
+              {deviceType === 'mobile' && !isParked && (
+                <TouchableOpacity
+                  style={styles.fab}
+                  onPress={handleSaveParking}
+                  accessible={true}
+                  accessibilityLabel="Save parking location"
+                >
+                  <Text style={styles.fabIcon}>P</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {activeView === 'history' && <HistoryView />}
+          {activeView === 'profile' && <ProfileView userProfile={userProfile} currentUser={currentUser} />}
         </View>
       </View>
 
@@ -286,14 +273,6 @@ export const WebApp: React.FC = () => {
   );
 };
 
-// Loading Component
-const LoadingView = () => (
-  <View style={styles.loadingContainer}>
-    <ActivityIndicator size="large" color={BrandConfig.colors.primary} />
-    <Text style={styles.loadingText}>Loading...</Text>
-  </View>
-);
-
 // History View Component
 const HistoryView = () => (
   <ScrollView style={styles.historyContainer}>
@@ -303,12 +282,12 @@ const HistoryView = () => (
 );
 
 // Profile View Component
-const ProfileView = ({ user }: any) => (
+const ProfileView = ({ userProfile, currentUser }: { userProfile: any; currentUser: any }) => (
   <ScrollView style={styles.profileContainer}>
     <Text style={styles.pageTitle}>Profile</Text>
     <View style={styles.profileCard}>
-      <Text style={styles.profileName}>{user?.name || 'Guest User'}</Text>
-      <Text style={styles.profileEmail}>{user?.email || 'Not signed in'}</Text>
+      <Text style={styles.profileName}>{userProfile?.displayName || currentUser?.displayName || 'Guest User'}</Text>
+      <Text style={styles.profileEmail}>{userProfile?.email || currentUser?.email || 'Not signed in'}</Text>
     </View>
   </ScrollView>
 );
@@ -320,6 +299,7 @@ const styles = StyleSheet.create({
   },
   navbar: {
     height: 64,
+    // @ts-ignore - Platform.select with web-specific boxShadow
     ...Platform.select({
       web: {
         boxShadow: BrandConfig.shadows.md.web,
@@ -397,6 +377,7 @@ const styles = StyleSheet.create({
     zIndex: 100,
     width: '80%',
     maxWidth: 320,
+    // @ts-ignore - Platform.select with web-specific boxShadow
     ...Platform.select({
       web: {
         boxShadow: BrandConfig.shadows.xl.web,
@@ -488,6 +469,13 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: BrandConfig.colors.gray[100],
+  },
+  mapPlaceholder: {
+    fontSize: BrandConfig.fonts.sizes.lg.mobile,
+    color: BrandConfig.colors.text.secondary,
   },
   fab: {
     position: 'absolute',
@@ -499,6 +487,7 @@ const styles = StyleSheet.create({
     backgroundColor: BrandConfig.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    // @ts-ignore - Platform.select with web-specific boxShadow
     ...Platform.select({
       web: {
         boxShadow: BrandConfig.shadows.xl.web,
@@ -535,6 +524,7 @@ const styles = StyleSheet.create({
     backgroundColor: BrandConfig.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    // @ts-ignore - Platform.select with web-specific boxShadow
     ...Platform.select({
       web: {
         boxShadow: BrandConfig.shadows.lg.web,
@@ -555,15 +545,6 @@ const styles = StyleSheet.create({
     fontSize: BrandConfig.fonts.sizes.xs.mobile,
     color: BrandConfig.colors.text.secondary,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: BrandConfig.spacing.sm,
-    color: BrandConfig.colors.text.secondary,
-  },
   historyContainer: {
     flex: 1,
     padding: BrandConfig.spacing.md,
@@ -582,6 +563,7 @@ const styles = StyleSheet.create({
     backgroundColor: BrandConfig.colors.white,
     padding: BrandConfig.spacing.lg,
     borderRadius: BrandConfig.borderRadius.lg,
+    // @ts-ignore - Platform.select with web-specific boxShadow
     ...Platform.select({
       web: {
         boxShadow: BrandConfig.shadows.md.web,

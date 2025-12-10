@@ -134,7 +134,7 @@ export const MobileAppPromotion: React.FC<MobileAppPromotionProps> = ({
   }
 
   const mobileOS = detectMobileOS();
-  const preferredStore = mobileOS === 'ios' ? 'ios' : 'android';
+  const preferredStore: 'ios' | 'android' | 'unknown' = mobileOS === 'ios' ? 'ios' : mobileOS === 'android' ? 'android' : 'unknown';
 
   return (
     <Animated.View

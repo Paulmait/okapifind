@@ -23,16 +23,13 @@ import {
 import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Circle, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
 import { useCarLocation } from '../hooks/useCarLocation';
 import { useParkingDetection } from '../hooks/useParkingDetection';
 import { calculateDistance, formatDistance } from '../utils';
-import { RootStackParamList } from '../types/navigation';
 import { parkingDetection } from '../services/ParkingDetectionService';
 import { Colors } from '../constants/colors';
 import { performance, withPerformanceMonitoring } from '../services/performance';
-import { ClusteredMapView, MapMarker } from '../components/ClusteredMapView';
+import { MapMarker } from '../components/ClusteredMapView';
 import {
   directionsService,
   Route,
@@ -44,10 +41,7 @@ import {
   DownloadProgress
 } from '../services/offlineMap.service';
 
-type MapScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Map'>;
-
 const EnhancedMapScreen: React.FC = () => {
-  const navigation = useNavigation<MapScreenNavigationProp>();
   const mapRef = useRef<MapView>(null);
 
   // Location and permissions
@@ -59,7 +53,7 @@ const EnhancedMapScreen: React.FC = () => {
   const [showDetectionCard, setShowDetectionCard] = useState(false);
 
   // Navigation
-  const [currentRoute, setCurrentRoute] = useState<Route | null>(null);
+  const [_currentRoute, setCurrentRoute] = useState<Route | null>(null);
   const [navigationState, setNavigationState] = useState<NavigationState | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [routeCoordinates, setRouteCoordinates] = useState<Array<{ latitude: number; longitude: number }>>([]);
@@ -98,7 +92,6 @@ const EnhancedMapScreen: React.FC = () => {
     frequentLocations,
     startDetection,
     stopDetection,
-    updateSettings,
     confirmParking,
     dismissParking,
   } = useParkingDetection();
@@ -419,19 +412,17 @@ const EnhancedMapScreen: React.FC = () => {
     try {
       const cityName = addresses.get('current_location')?.split(',')[2]?.trim() || 'Current Area';
 
+      // Note: Progress tracking would need to be handled differently
+      // as downloadCurrentCity doesn't accept a progress callback
       await offlineMapService.downloadCurrentCity(
         userLocation.coords.latitude,
         userLocation.coords.longitude,
-        cityName,
-        {
-          onProgress: (progress) => {
-            setDownloadProgress(progress);
-          },
-        }
+        cityName
       );
 
       const regions = await offlineMapService.getDownloadedRegions();
       setOfflineRegions(regions);
+      setDownloadProgress(null);
 
       Alert.alert('Success', 'Offline map downloaded successfully!');
     } catch (error) {

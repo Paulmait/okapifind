@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   Alert,
   Platform,
   useColorScheme,
@@ -20,7 +19,7 @@ import { analytics } from '../services/analytics';
 export default function AuthScreen() {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, _setIsLoading] = useState(false);
 
   const handlePrivacyPolicy = () => {
     if (Platform.OS === 'web') {

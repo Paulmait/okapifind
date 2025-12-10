@@ -2,207 +2,580 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1.00001, viewport-fit=cover" />
-  <title>OkapiFind - Smart Parking App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OkapiFind - Never Lose Your Car Again</title>
+  <meta name="description" content="Save your parking spot with one tap. Get turn-by-turn walking directions back to your car. Works offline in parking garages." />
+  <meta name="keywords" content="parking app, find my car, parking locator, car finder, parking reminder" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="OkapiFind - Never Lose Your Car Again" />
+  <meta property="og:description" content="Save your parking spot with one tap. Get walking directions back to your car." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://okapifind.com" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* Base styles */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    html, body, #root {
-      width: 100%;
-      height: 100%;
-      -webkit-overflow-scrolling: touch;
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0f172a;
+      --accent: #fbbf24;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --bg: #ffffff;
+      --bg-alt: #f8fafc;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      flex-direction: column;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      background: var(--bg);
     }
 
-    #root {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Loading screen */
-    .app-loading {
+    /* Navigation */
+    nav {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 100;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      z-index: 9999;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--secondary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-light);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
       color: white;
     }
 
-    .app-loading-logo {
-      font-size: 80px;
-      margin-bottom: 20px;
-      animation: pulse 1.5s ease-in-out infinite;
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
     }
 
-    .app-loading-text {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 10px;
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid #e2e8f0;
     }
 
-    .app-loading-subtext {
-      font-size: 16px;
-      opacity: 0.8;
+    .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
-    .app-loading-spinner {
-      margin-top: 30px;
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s linear infinite;
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 24px 80px;
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
     }
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
+    .hero-content {
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .hero-text h1 {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--secondary);
+      margin-bottom: 24px;
     }
 
-    /* Error display */
-    .app-error {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 40px;
-      background: white;
-      border-radius: 12px;
-      max-width: 500px;
-      width: 90%;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    .hero-text h1 span {
+      color: var(--primary);
+    }
+
+    .hero-text p {
+      font-size: 20px;
+      color: var(--text-light);
+      margin-bottom: 32px;
+      max-width: 480px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .app-store-btn {
+      height: 52px;
+    }
+
+    .app-store-btn img {
+      height: 100%;
+    }
+
+    .hero-image {
+      position: relative;
+    }
+
+    .phone-mockup {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      display: block;
+      filter: drop-shadow(0 25px 50px rgba(0,0,0,0.15));
+    }
+
+    /* Features Section */
+    .features {
+      padding: 100px 24px;
+      background: var(--bg);
+    }
+
+    .section-header {
       text-align: center;
-      display: none;
+      max-width: 600px;
+      margin: 0 auto 64px;
     }
 
-    .app-error h1 {
-      color: #ef4444;
+    .section-header h2 {
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--secondary);
       margin-bottom: 16px;
-      font-size: 24px;
     }
 
-    .app-error p {
-      color: #666;
+    .section-header p {
+      color: var(--text-light);
+      font-size: 18px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      padding: 32px;
+      border-radius: 16px;
+      background: var(--bg-alt);
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    }
+
+    .feature-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--secondary);
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: var(--text-light);
+      font-size: 15px;
+    }
+
+    /* How It Works */
+    .how-it-works {
+      padding: 100px 24px;
+      background: var(--secondary);
+      color: white;
+    }
+
+    .how-it-works .section-header h2 {
+      color: white;
+    }
+
+    .how-it-works .section-header p {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .step {
+      text-align: center;
+      flex: 1;
+      max-width: 280px;
+    }
+
+    .step-number {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .step h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .step p {
+      color: rgba(255,255,255,0.7);
+      font-size: 15px;
+    }
+
+    /* CTA Section */
+    .cta {
+      padding: 100px 24px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+    }
+
+    .cta h2 {
+      font-size: 40px;
+      font-weight: 700;
       margin-bottom: 16px;
-      line-height: 1.5;
     }
 
-    .app-error code {
-      background: #f5f5f5;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #333;
+    .cta p {
+      font-size: 18px;
+      opacity: 0.9;
+      margin-bottom: 32px;
+    }
+
+    .cta .btn {
+      background: white;
+      color: var(--primary);
+    }
+
+    .cta .btn:hover {
+      background: var(--bg-alt);
+      transform: translateY(-2px);
+    }
+
+    /* Footer */
+    footer {
+      padding: 48px 24px;
+      background: var(--secondary);
+      color: rgba(255,255,255,0.7);
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    .footer-links a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 968px) {
+      .hero-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .hero-text h1 {
+        font-size: 40px;
+      }
+
+      .hero-text p {
+        margin: 0 auto 32px;
+      }
+
+      .hero-buttons {
+        justify-content: center;
+      }
+
+      .hero-image {
+        order: -1;
+      }
+
+      .phone-mockup {
+        max-width: 300px;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+      }
+
+      .steps {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-text h1 {
+        font-size: 32px;
+      }
+
+      .section-header h2,
+      .cta h2 {
+        font-size: 28px;
+      }
+
+      .footer-content {
+        flex-direction: column;
+        gap: 24px;
+        text-align: center;
+      }
     }
   </style>
 </head>
 <body>
-  <noscript>
-    <div style="padding: 40px; text-align: center; background: white; margin: 20px; border-radius: 12px;">
-      <h1 style="color: #ef4444; margin-bottom: 16px;">JavaScript Required</h1>
-      <p style="color: #666;">OkapiFind requires JavaScript to be enabled. Please enable JavaScript in your browser settings.</p>
+  <!-- Navigation -->
+  <nav>
+    <a href="/" class="logo">
+      <span>🚗</span> OkapiFind
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="mailto:support@okapifind.com">Contact</a>
+      <a href="#download" class="btn btn-primary">Download</a>
     </div>
-  </noscript>
+  </nav>
 
-  <!-- Loading Screen -->
-  <div id="loading" class="app-loading">
-    <div class="app-loading-logo">🚗</div>
-    <div class="app-loading-text">OkapiFind</div>
-    <div class="app-loading-subtext">Never lose your car again</div>
-    <div class="app-loading-spinner"></div>
-  </div>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1>Never Lose Your <span>Car</span> Again</h1>
+        <p>Save your parking spot with one tap. Get turn-by-turn walking directions back to your car. Works offline in parking garages.</p>
+        <div class="hero-buttons" id="download">
+          <a href="https://apps.apple.com/app/okapifind" class="app-store-btn" target="_blank">
+            <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on App Store" />
+          </a>
+          <a href="https://play.google.com/store/apps/details?id=com.okapi.find" class="app-store-btn" target="_blank">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" />
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <svg class="phone-mockup" viewBox="0 0 280 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Phone Frame -->
+          <rect x="2" y="2" width="276" height="556" rx="38" fill="#1e293b" stroke="#334155" stroke-width="4"/>
+          <!-- Screen -->
+          <rect x="12" y="12" width="256" height="536" rx="30" fill="#0f172a"/>
+          <!-- Notch -->
+          <rect x="90" y="18" width="100" height="28" rx="14" fill="#1e293b"/>
+          <!-- Map Background -->
+          <rect x="12" y="12" width="256" height="536" rx="30" fill="url(#mapGradient)"/>
+          <!-- Car Marker -->
+          <circle cx="140" cy="220" r="24" fill="#2563eb" stroke="white" stroke-width="4"/>
+          <text x="140" y="228" text-anchor="middle" font-size="24">🚗</text>
+          <!-- User Marker -->
+          <circle cx="180" cy="380" r="12" fill="#22c55e" stroke="white" stroke-width="3"/>
+          <!-- Route Line -->
+          <path d="M140 244 L140 300 L180 300 L180 368" stroke="#2563eb" stroke-width="4" stroke-dasharray="8 4" fill="none"/>
+          <!-- Bottom Card -->
+          <rect x="24" y="440" width="232" height="96" rx="16" fill="white"/>
+          <text x="40" y="470" fill="#1e293b" font-family="Inter, sans-serif" font-weight="600" font-size="16">Your Car</text>
+          <text x="40" y="492" fill="#64748b" font-family="Inter, sans-serif" font-size="12">250m away • 3 min walk</text>
+          <rect x="40" y="506" width="140" height="18" rx="9" fill="#2563eb"/>
+          <text x="110" y="519" fill="white" font-family="Inter, sans-serif" font-weight="600" font-size="11" text-anchor="middle">Navigate</text>
+          <defs>
+            <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#1e3a5f"/>
+              <stop offset="100%" style="stop-color:#0f172a"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </section>
 
-  <!-- Error Display -->
-  <div id="error" class="app-error">
-    <h1>⚠️ Configuration Required</h1>
-    <p>The app could not start. This usually means environment variables are missing.</p>
-    <p>Please check the browser console (F12) for error messages.</p>
-    <p>Missing: <code>EXPO_PUBLIC_FIREBASE_*</code> and <code>EXPO_PUBLIC_SUPABASE_*</code></p>
-  </div>
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="section-header">
+      <h2>Why OkapiFind?</h2>
+      <p>Simple, fast, and reliable. Everything you need to find your car.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📍</div>
+        <h3>One-Tap Save</h3>
+        <p>Save your parking spot instantly. No complicated setup or account required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧭</div>
+        <h3>Walking Directions</h3>
+        <p>Turn-by-turn navigation to guide you back to your car, even in unfamiliar areas.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📴</div>
+        <h3>Works Offline</h3>
+        <p>Find your car even without internet. Perfect for underground garages.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⏰</div>
+        <h3>Parking Timer</h3>
+        <p>Set reminders before your meter expires. Never get a ticket again.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📸</div>
+        <h3>Photo Notes</h3>
+        <p>Take photos of parking signs, floor numbers, or landmarks for easy reference.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏠</div>
+        <h3>Smart Locations</h3>
+        <p>Learns your frequent spots. No annoying prompts when you're at home or work.</p>
+      </div>
+    </div>
+  </section>
 
-  <!-- App Root -->
-  <div id="root"></div>
+  <!-- How It Works -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="section-header">
+      <h2>How It Works</h2>
+      <p>Finding your car has never been easier.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Park Your Car</h3>
+        <p>Open the app and tap "Save" when you park. Your location is stored instantly.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Go About Your Day</h3>
+        <p>Shop, work, or explore. OkapiFind remembers exactly where you parked.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Find Your Car</h3>
+        <p>Open the app and follow the walking directions back to your car.</p>
+      </div>
+    </div>
+  </section>
 
-  <script>
-    // Hide loading screen when React mounts
-    let loadingHidden = false;
+  <!-- CTA Section -->
+  <section class="cta">
+    <h2>Ready to Never Lose Your Car?</h2>
+    <p>Download OkapiFind for free and park with confidence.</p>
+    <a href="#download" class="btn">Download Now</a>
+  </section>
 
-    function hideLoadingScreen() {
-      if (loadingHidden) return;
-      loadingHidden = true;
-
-      const loading = document.getElementById('loading');
-      if (loading) {
-        loading.style.opacity = '0';
-        loading.style.transition = 'opacity 0.3s ease-out';
-        setTimeout(() => loading.remove(), 300);
-      }
-    }
-
-    // Check for React mount every 100ms
-    const checkReactMount = setInterval(() => {
-      const root = document.getElementById('root');
-      if (root && root.children.length > 0) {
-        console.log('✅ React mounted successfully');
-        clearInterval(checkReactMount);
-        hideLoadingScreen();
-      }
-    }, 100);
-
-    // Timeout after 10 seconds
-    setTimeout(() => {
-      console.log('⏱️ Loading timeout');
-      clearInterval(checkReactMount);
-      hideLoadingScreen();
-
-      // Show error if React didn't mount
-      const root = document.getElementById('root');
-      if (!root || root.children.length === 0) {
-        console.error('❌ React app failed to mount');
-        const error = document.getElementById('error');
-        if (error) error.style.display = 'block';
-      }
-    }, 10000);
-
-    // Log errors
-    window.addEventListener('error', (e) => {
-      console.error('💥 Error:', e.message, e.filename, e.lineno);
-    });
-
-    window.addEventListener('unhandledrejection', (e) => {
-      console.error('💥 Unhandled promise rejection:', e.reason);
-    });
-
-    console.log('🚀 OkapiFind starting...');
-  </script>
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div>© 2025 OkapiFind. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/terms.html">Terms of Service</a>
+        <a href="mailto:support@okapifind.com">Contact</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

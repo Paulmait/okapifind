@@ -41,8 +41,8 @@ interface LocationHeatmap {
 export const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [users, setUsers] = useState<UserMetrics[]>([]);
-  const [locations, setLocations] = useState<LocationHeatmap[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [_locations, setLocations] = useState<LocationHeatmap[]>([]);
+  const [_selectedUser, setSelectedUser] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({ start: new Date(), end: new Date() });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'locations' | 'analytics' | 'export'>('overview');

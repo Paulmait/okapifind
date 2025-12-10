@@ -50,11 +50,9 @@ const GuidanceScreen: React.FC = () => {
   const [currentLocation, setCurrentLocation] = useState(route.params.userLocation);
   const [heading, setHeading] = useState(0);
   const [distance, setDistance] = useState(0);
-  const [bearing, setBearing] = useState(0);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [hasTriggeredNearbyHaptic, setHasTriggeredNearbyHaptic] = useState(false);
   const [useMetric, setUseMetric] = useState(true);
-  const [showSafetyMode, setShowSafetyMode] = useState(false);
 
   const arrowRotation = useRef(new Animated.Value(0)).current;
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
@@ -92,7 +90,6 @@ const GuidanceScreen: React.FC = () => {
       carLocation.latitude,
       carLocation.longitude
     );
-    setBearing(calculatedBearing);
 
     // Update arrow rotation
     const relativeBearing = (calculatedBearing - heading + 360) % 360;
@@ -152,7 +149,7 @@ const GuidanceScreen: React.FC = () => {
     }
 
     Magnetometer.setUpdateInterval(100);
-    magnetometerSubscription.current = Magnetometer.addListener((data) => {
+    magnetometerSubscription.current = Magnetometer.addListener((data: { x: number; y: number; z: number }) => {
       let angle = Math.atan2(data.y, data.x);
       angle = angle * (180 / Math.PI);
       angle = angle + 90;
@@ -244,12 +241,13 @@ const GuidanceScreen: React.FC = () => {
         {/* Safety Mode Component */}
         {isAuthenticated && (
           <SafetyMode
+            sessionId="guidance-session"
             destination={{
               latitude: carLocation.latitude,
               longitude: carLocation.longitude,
-              address: carLocation.address,
+              address: (carLocation as any).address,
             }}
-            onComplete={() => setShowSafetyMode(false)}
+            onComplete={() => {}}
             isDarkMode={isDarkMode}
           />
         )}

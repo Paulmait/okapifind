@@ -7,10 +7,10 @@ import { ObjectType, Field, ID, InputType } from 'type-graphql';
 @ObjectType()
 export class User {
   @Field(() => ID)
-  id: string;
+  id!: string;
 
   @Field()
-  email: string;
+  email!: string;
 
   @Field({ nullable: true })
   name?: string;
@@ -19,22 +19,22 @@ export class User {
   photoURL?: string;
 
   @Field(() => UserStats)
-  stats: UserStats;
+  stats!: UserStats;
 
   @Field(() => UserPreferences)
-  preferences: UserPreferences;
+  preferences!: UserPreferences;
 
   @Field()
-  createdAt: Date;
+  createdAt!: Date;
 
   @Field()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Field({ nullable: true })
   lastActive?: Date;
 
   @Field()
-  isPremium: boolean;
+  isPremium!: boolean;
 
   @Field({ nullable: true })
   subscriptionExpiresAt?: Date;
@@ -43,19 +43,19 @@ export class User {
 @ObjectType()
 export class UserStats {
   @Field()
-  totalSessions: number;
+  totalSessions!: number;
 
   @Field()
-  totalPhotos: number;
+  totalPhotos!: number;
 
   @Field()
-  totalTimers: number;
+  totalTimers!: number;
 
   @Field()
-  averageSessionDuration: number;
+  averageSessionDuration!: number;
 
   @Field()
-  longestParkingSession: number;
+  longestParkingSession!: number;
 }
 
 @InputType()

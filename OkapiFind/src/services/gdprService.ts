@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, Share } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import { writeAsStringAsync, documentDirectory, EncodingType } from 'expo-file-system/legacy';
 import { auth } from '../config/firebase';
 
 export interface ConsentRecord {
@@ -310,12 +310,12 @@ class GDPRService {
 
       // Create JSON file
       const fileName = `okapifind_data_export_${Date.now()}.json`;
-      const filePath = `${FileSystem.documentDirectory}${fileName}`;
+      const filePath = `${documentDirectory}${fileName}`;
 
-      await FileSystem.writeAsStringAsync(
+      await writeAsStringAsync(
         filePath,
         JSON.stringify(exportData, null, 2),
-        { encoding: FileSystem.EncodingType.UTF8 }
+        { encoding: EncodingType.UTF8 }
       );
 
       // Share the file

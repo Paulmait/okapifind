@@ -4,7 +4,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Only import NetInfo on native platforms
 let NetInfo: any = null;
 if (Platform.OS !== 'web') {
-  NetInfo = require('@react-native-netinfo').default;
+  try {
+    NetInfo = require('@react-native-community/netinfo').default;
+  } catch {
+    console.warn('NetInfo module not available');
+  }
 }
 
 interface OfflineAction {

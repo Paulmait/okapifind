@@ -9,6 +9,7 @@ export const Colors = {
   backgroundLight: '#1A2B3D', // Slightly lighter navy
 
   // Text colors
+  text: '#FFFFFF', // Default text color (alias for textPrimary)
   textPrimary: '#FFFFFF', // White text
   textSecondary: '#B8C5D3', // Light gray-blue
   textDark: '#0F1B2A', // Dark text on light backgrounds

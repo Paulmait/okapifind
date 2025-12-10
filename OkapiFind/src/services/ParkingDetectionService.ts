@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { calculateDistance } from '../utils/calculateDistance';
 import { CarLocation } from '../hooks/useCarLocation';
+import { smartPOIService } from './smartPOIService';
 
 /**
  * Enhanced Parking Detection Service
@@ -389,9 +390,29 @@ class ParkingDetectionService {
 
   /**
    * Confirm and save parking location
+   * Integrates with Smart POI service to suppress at known locations (home, work, etc.)
    */
   private async confirmParking(location: Location.LocationObject): Promise<void> {
     if (!this.potentialParkingLocation || !this.parkingStartTime) return;
+
+    // SMART POI CHECK: Don't auto-save parking at known locations like home/work
+    try {
+      await smartPOIService.initialize();
+      const poiCheck = await smartPOIService.checkLocation(
+        location.coords.latitude,
+        location.coords.longitude
+      );
+
+      if (poiCheck.isAtKnownPOI && poiCheck.shouldSuppressAutoDetection) {
+        console.log(`Parking at known POI "${poiCheck.poi?.name}" - suppressing auto-save`);
+        // Reset detection state without saving
+        this.potentialParkingLocation = null;
+        this.parkingStartTime = null;
+        return;
+      }
+    } catch (error) {
+      console.log('Smart POI check failed, continuing with parking detection:', error);
+    }
 
     const confidence = this.calculateParkingConfidence(location);
 
@@ -741,6 +762,14 @@ class ParkingDetectionService {
     } catch (error) {
       console.log('No geofencing to stop');
     }
+  }
+
+  /**
+   * Cleanup method - stops all tracking and clears subscriptions
+   * Alias to stop() for compatibility with component cleanup patterns
+   */
+  public async cleanup(): Promise<void> {
+    await this.stop();
   }
 
   /**

@@ -61,23 +61,6 @@ const styles = StyleSheet.create({
 
 export default React.memo(SkeletonPlaceholder);
 
-// Map Screen Skeleton
-export const MapScreenSkeleton: React.FC = React.memo(() => (
-  <View style={styles.container}>
-    <View style={styles.mapSkeleton}>
-      <SkeletonPlaceholder height="100%" />
-    </View>
-    <View style={styles.bottomCardSkeleton}>
-      <SkeletonPlaceholder width="60%" height={24} style={{ marginBottom: 8 }} />
-      <SkeletonPlaceholder width="40%" height={16} style={{ marginBottom: 16 }} />
-      <View style={styles.buttonRowSkeleton}>
-        <SkeletonPlaceholder width="48%" height={48} borderRadius={12} />
-        <SkeletonPlaceholder width="48%" height={48} borderRadius={12} />
-      </View>
-    </View>
-  </View>
-));
-
 const skeletonStyles = StyleSheet.create({
   container: {
     flex: 1,
@@ -102,5 +85,22 @@ const skeletonStyles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 });
+
+// Map Screen Skeleton
+export const MapScreenSkeleton: React.FC = React.memo(() => (
+  <View style={skeletonStyles.container}>
+    <View style={skeletonStyles.mapSkeleton}>
+      <SkeletonPlaceholder height="100%" />
+    </View>
+    <View style={skeletonStyles.bottomCardSkeleton}>
+      <SkeletonPlaceholder width="60%" height={24} style={{ marginBottom: 8 }} />
+      <SkeletonPlaceholder width="40%" height={16} style={{ marginBottom: 16 }} />
+      <View style={skeletonStyles.buttonRowSkeleton}>
+        <SkeletonPlaceholder width="48%" height={48} borderRadius={12} />
+        <SkeletonPlaceholder width="48%" height={48} borderRadius={12} />
+      </View>
+    </View>
+  </View>
+));
 
 MapScreenSkeleton.displayName = 'MapScreenSkeleton';

@@ -4,8 +4,6 @@
  */
 
 import { Request } from 'express';
-import { getAuth } from 'firebase/auth';
-import { firebaseApp } from '../config/firebase';
 
 export interface Context {
   req: Request;
@@ -31,7 +29,8 @@ export async function createContext({ req }: { req: Request }): Promise<Context>
     // Verify token with Firebase Admin Auth (server-side)
     // Note: This requires Firebase Admin SDK for server-side token verification
     // For now, we'll implement a basic client-side verification approach
-    const auth = getAuth(firebaseApp);
+    // TODO: Replace with Firebase Admin SDK for proper server-side token verification
+    // const auth = getAuth(firebaseApp);
 
     // This is a simplified version - in production, use Firebase Admin SDK
     // for proper server-side token verification

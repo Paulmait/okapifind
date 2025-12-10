@@ -67,7 +67,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
     return {
       ...source,
-      cache: 'force-cache', // Enable caching
+      cache: 'force-cache' as const, // Enable caching
     };
   }, [source]);
 

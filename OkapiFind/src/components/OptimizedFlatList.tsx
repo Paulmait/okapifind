@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
-import { FlatList, FlatListProps, ViewToken } from 'react-native';
+import { FlatList, FlatListProps, ViewToken, ListRenderItemInfo } from 'react-native';
 import { performance } from '../services/performance';
 
 interface OptimizedFlatListProps<T> extends FlatListProps<T> {
@@ -34,11 +34,11 @@ function OptimizedFlatList<T>({
   }, [keyExtractor]);
 
   // Memoized renderItem with performance monitoring
-  const memoizedRenderItem = useCallback(({ item, index }: { item: T; index: number }) => {
-    const key = memoizedKeyExtractor(item, index);
+  const memoizedRenderItem = useCallback((info: ListRenderItemInfo<T>) => {
+    const key = memoizedKeyExtractor(info.item, info.index);
 
     return performance.measureSync(`render_item_${key}`, () => {
-      return renderItem?.({ item, index }) || null;
+      return renderItem?.(info) || null;
     });
   }, [renderItem, memoizedKeyExtractor]);
 
@@ -50,7 +50,7 @@ function OptimizedFlatList<T>({
 
     // Auto-generate getItemLayout if not provided and all items are same size
     if (estimatedItemSize > 0) {
-      return (data: T[] | null | undefined, index: number) => ({
+      return (_data: T[] | null | undefined, index: number) => ({
         length: estimatedItemSize,
         offset: estimatedItemSize * index,
         index,
@@ -83,30 +83,27 @@ function OptimizedFlatList<T>({
     };
   }, []);
 
-  return (
-    <FlatList
-      {...props}
-      data={data}
-      renderItem={memoizedRenderItem}
-      keyExtractor={memoizedKeyExtractor}
-      getItemLayout={optimizedGetItemLayout}
+  const flatListProps: any = {
+    ...props,
+    data,
+    renderItem: memoizedRenderItem,
+    keyExtractor: memoizedKeyExtractor,
+    windowSize,
+    maxToRenderPerBatch,
+    updateCellsBatchingPeriod,
+    removeClippedSubviews,
+    onViewableItemsChanged: handleViewableItemsChanged,
+    viewabilityConfig,
+    initialNumToRender: 10,
+    legacyImplementation: false,
+    disableVirtualization: false,
+  };
 
-      // Performance optimizations
-      windowSize={windowSize}
-      maxToRenderPerBatch={maxToRenderPerBatch}
-      updateCellsBatchingPeriod={updateCellsBatchingPeriod}
-      removeClippedSubviews={removeClippedSubviews}
+  if (optimizedGetItemLayout) {
+    flatListProps.getItemLayout = optimizedGetItemLayout;
+  }
 
-      // Viewability tracking
-      onViewableItemsChanged={handleViewableItemsChanged}
-      viewabilityConfig={viewabilityConfig}
-
-      // Memory management
-      initialNumToRender={10}
-      legacyImplementation={false}
-      disableVirtualization={false}
-    />
-  );
+  return <FlatList {...flatListProps} />;
 }
 
 export default React.memo(OptimizedFlatList) as <T>(props: OptimizedFlatListProps<T>) => React.ReactElement;

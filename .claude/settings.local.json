@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(if [ -f \"src/components/SafetyMode.deprecated.tsx\" ])",
+      "Bash(then mv \"src/components/SafetyMode.deprecated.tsx\" \"src/components/SafetyMode.deprecated.tsx.bak\")",
+      "Bash(else echo \"File not found\")",
+      "Bash(fi)",
+      "Bash(npx eas whoami)",
+      "Bash(eas whoami:*)",
+      "Bash(eas project:info:*)",
+      "Bash(eas project:init:*)",
+      "Bash(eas init:*)",
+      "Bash(eas project:list:*)",
+      "Bash(eas project:link:*)",
+      "Bash(eas build:configure:*)",
+      "Bash(npx expo export:*)",
+      "Bash(supabase --version:*)",
+      "Bash(npx supabase:*)",
+      "WebFetch(domain:okapifind.com)",
+      "Bash(git add:*)"
+    ]
+  }
+}

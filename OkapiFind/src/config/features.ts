@@ -30,34 +30,46 @@ export const FEATURES = {
   SAVE_CAR_LOCATION: {
     enabled: true,
     requiredTier: 'free',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   FIND_MY_CAR: {
     enabled: true,
     requiredTier: 'free',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Auto-detection
   AUTO_PARKING_DETECTION: {
     enabled: true,
     requiredTier: 'free',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Basic navigation
   AR_NAVIGATION: {
     enabled: true,
     requiredTier: 'free',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   COMPASS_GUIDANCE: {
     enabled: true,
     requiredTier: 'free',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Basic map
   BASIC_MAP_VIEW: {
     enabled: true,
     requiredTier: 'free',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // ============================================
@@ -68,38 +80,52 @@ export const FEATURES = {
   TRAFFIC_ALERTS: {
     enabled: true,
     requiredTier: 'plus',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   PARKING_RESTRICTION_ALERTS: {
     enabled: true,
     requiredTier: 'plus',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   METER_EXPIRATION_ALERTS: {
     enabled: true,
     requiredTier: 'plus',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   STREET_CLEANING_ALERTS: {
     enabled: true,
     requiredTier: 'plus',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // History
   SEARCH_HISTORY: {
     enabled: true,
     requiredTier: 'plus',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   PARKING_HISTORY: {
     enabled: true,
     requiredTier: 'plus',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Basic analytics
   PARKING_STATISTICS: {
     enabled: true,
     requiredTier: 'plus',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // ============================================
@@ -110,77 +136,105 @@ export const FEATURES = {
   PLACE_SEARCH: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   FAVORITES_SYSTEM: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Offline capability
   OFFLINE_MAPS: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   OFFLINE_MAP_DOWNLOAD: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Advanced comparison
   MULTI_PARKING_COMPARISON: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   PARK_AND_WALK_CALCULATOR: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   OPTIMAL_DEPARTURE_TIME: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Violation management
   VIOLATION_TRACKER: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   FINE_PAYMENT_REMINDERS: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Advanced features
   NEARBY_PARKING_SEARCH: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   PARKING_PRICE_COMPARISON: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   ADVANCED_STATISTICS: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Priority support
   PRIORITY_CUSTOMER_SUPPORT: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // Ad-free
   AD_FREE_EXPERIENCE: {
     enabled: true,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // ============================================
@@ -190,31 +244,43 @@ export const FEATURES = {
   API_ACCESS: {
     enabled: false, // Enable per customer
     requiredTier: 'enterprise',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   WHITE_LABEL_BRANDING: {
     enabled: false,
     requiredTier: 'enterprise',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   WEBHOOK_INTEGRATION: {
     enabled: false,
     requiredTier: 'enterprise',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   FLEET_MANAGEMENT: {
     enabled: false,
     requiredTier: 'enterprise',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   CUSTOM_ANALYTICS: {
     enabled: false,
     requiredTier: 'enterprise',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   DEDICATED_SUPPORT: {
     enabled: false,
     requiredTier: 'enterprise',
+    rolloutPercentage: 100,
+    beta: false,
   },
 
   // ============================================
@@ -231,24 +297,28 @@ export const FEATURES = {
   SOCIAL_PARKING_SHARING: {
     enabled: false,
     requiredTier: 'free',
+    rolloutPercentage: 100,
     beta: true,
   },
 
   CARPLAY_INTEGRATION: {
     enabled: false,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
     beta: true,
   },
 
   ANDROID_AUTO_INTEGRATION: {
     enabled: false,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
     beta: true,
   },
 
   APPLE_WATCH_APP: {
     enabled: false,
     requiredTier: 'plus',
+    rolloutPercentage: 100,
     beta: true,
   },
 
@@ -259,18 +329,21 @@ export const FEATURES = {
   AR_INDOOR_NAVIGATION: {
     enabled: false,
     requiredTier: 'pro',
+    rolloutPercentage: 100,
     beta: true,
   },
 
   BLOCKCHAIN_PARKING_VERIFICATION: {
     enabled: false,
     requiredTier: 'enterprise',
+    rolloutPercentage: 100,
     beta: true,
   },
 
   AUTONOMOUS_VEHICLE_INTEGRATION: {
     enabled: false,
     requiredTier: 'enterprise',
+    rolloutPercentage: 100,
     beta: true,
   },
 } as const;
@@ -317,7 +390,7 @@ export function canUseFeature(
 export function getFeaturesForTier(tier: SubscriptionTier): string[] {
   const availableFeatures: string[] = [];
 
-  for (const [featureName, config] of Object.entries(FEATURES)) {
+  for (const [featureName] of Object.entries(FEATURES)) {
     if (canUseFeature(featureName as keyof typeof FEATURES, tier)) {
       availableFeatures.push(featureName);
     }

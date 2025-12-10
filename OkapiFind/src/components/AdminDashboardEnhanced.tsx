@@ -28,9 +28,8 @@ import {
   FraudAlert,
   LiveMetrics,
   SystemHealth,
-  UserSegment,
 } from '../types/admin';
-import { supabase } from '../config/supabase';
+import { supabase } from '../lib/supabase-client';
 import { refundService } from '../services/refundService';
 import { complianceService } from '../services/complianceService';
 
@@ -43,7 +42,7 @@ interface AdminDashboardProps {
 
 const AdminDashboardEnhanced: React.FC<AdminDashboardProps> = ({ adminUser, onNavigate }) => {
   // State management
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [_metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [liveMetrics, setLiveMetrics] = useState<LiveMetrics | null>(null);
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +52,7 @@ const AdminDashboardEnhanced: React.FC<AdminDashboardProps> = ({ adminUser, onNa
   // Modal states
   const [showUserModal, setShowUserModal] = useState(false);
   const [showRefundModal, setShowRefundModal] = useState(false);
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [_showNotificationModal, setShowNotificationModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [selectedRefund, setSelectedRefund] = useState<RefundRequest | null>(null);
 
@@ -62,13 +61,13 @@ const AdminDashboardEnhanced: React.FC<AdminDashboardProps> = ({ adminUser, onNa
   const [pendingRefunds, setPendingRefunds] = useState<RefundRequest[]>([]);
   const [openTickets, setOpenTickets] = useState<SupportTicket[]>([]);
   const [fraudAlerts, setFraudAlerts] = useState<FraudAlert[]>([]);
-  const [activeTests, setActiveTests] = useState<ABTest[]>([]);
+  const [_activeTests, setActiveTests] = useState<ABTest[]>([]);
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([]);
 
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState('');
-  const [userFilter, setUserFilter] = useState<'all' | 'active' | 'at_risk' | 'churned'>('all');
-  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'quarter'>('week');
+  const [_userFilter, _setUserFilter] = useState<'all' | 'active' | 'at_risk' | 'churned'>('all');
+  const [_dateRange, _setDateRange] = useState<'today' | 'week' | 'month' | 'quarter'>('week');
 
   // Real-time updates
   useEffect(() => {
@@ -76,7 +75,7 @@ const AdminDashboardEnhanced: React.FC<AdminDashboardProps> = ({ adminUser, onNa
       // Live metrics updates
       const metricsChannel = supabase
         .channel('live-metrics')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'live_metrics' }, (payload) => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'live_metrics' }, (payload: any) => {
           setLiveMetrics(payload.new as LiveMetrics);
         })
         .subscribe();
@@ -84,7 +83,7 @@ const AdminDashboardEnhanced: React.FC<AdminDashboardProps> = ({ adminUser, onNa
       // Fraud alerts
       const fraudChannel = supabase
         .channel('fraud-alerts')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fraud_alerts' }, (payload) => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'fraud_alerts' }, (payload: any) => {
           const newAlert = payload.new as FraudAlert;
           setFraudAlerts(prev => [newAlert, ...prev]);
 
@@ -101,7 +100,7 @@ const AdminDashboardEnhanced: React.FC<AdminDashboardProps> = ({ adminUser, onNa
       // Support tickets
       const ticketsChannel = supabase
         .channel('support-tickets')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_tickets' }, (payload) => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_tickets' }, (payload: any) => {
           const newTicket = payload.new as SupportTicket;
           setOpenTickets(prev => [newTicket, ...prev]);
 
@@ -325,12 +324,13 @@ const AdminDashboardEnhanced: React.FC<AdminDashboardProps> = ({ adminUser, onNa
     }
   };
 
-  const handleSendNotification = async (notification: Partial<PushNotification>) => {
+  // @ts-expect-error - Function reserved for future use
+  const _handleSendNotification = async (_notification: Partial<PushNotification>) => {
     try {
       await supabase
         .from('push_notifications')
         .insert({
-          ...notification,
+          ..._notification,
           created_by: adminUser.id,
           status: 'scheduled',
         });

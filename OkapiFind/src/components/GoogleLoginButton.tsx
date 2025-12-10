@@ -6,12 +6,11 @@ import {
   ActivityIndicator,
   Alert,
   View,
-  Platform,
 } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { firebaseAuth, GOOGLE_OAUTH_CONFIG } from '../config/firebase';
+import { GoogleAuthProvider } from 'firebase/auth';
+import { GOOGLE_OAUTH_CONFIG } from '../config/firebase';
 import { analytics } from '../services/analytics';
 import { authService } from '../services/auth.service';
 import { Colors } from '../constants/colors';

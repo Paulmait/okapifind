@@ -5,21 +5,23 @@
 
 import { buildSchema } from 'type-graphql';
 import { UserResolver } from './resolvers/UserResolver';
-import { ParkingResolver } from './resolvers/ParkingResolver';
-import { NavigationResolver } from './resolvers/NavigationResolver';
-import { SubscriptionResolver } from './resolvers/SubscriptionResolver';
-import { AnalyticsResolver } from './resolvers/AnalyticsResolver';
-import { SafetyResolver } from './resolvers/SafetyResolver';
+// TODO: Implement missing resolvers
+// import { ParkingResolver } from './resolvers/ParkingResolver';
+// import { NavigationResolver } from './resolvers/NavigationResolver';
+// import { SubscriptionResolver } from './resolvers/SubscriptionResolver';
+// import { AnalyticsResolver } from './resolvers/AnalyticsResolver';
+// import { SafetyResolver } from './resolvers/SafetyResolver';
 
 export async function createSchema() {
   return await buildSchema({
     resolvers: [
       UserResolver,
-      ParkingResolver,
-      NavigationResolver,
-      SubscriptionResolver,
-      AnalyticsResolver,
-      SafetyResolver,
+      // TODO: Add remaining resolvers when implemented
+      // ParkingResolver,
+      // NavigationResolver,
+      // SubscriptionResolver,
+      // AnalyticsResolver,
+      // SafetyResolver,
     ],
     validate: true,
     authChecker: ({ context }) => {

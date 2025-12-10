@@ -13,7 +13,6 @@ import {
   AccessibleButton,
   AccessibleCard,
 } from '../components/AccessibleComponents';
-import { Colors } from '../constants/colors';
 
 const AccessibilitySettingsScreen: React.FC = () => {
   const { t } = useTranslation();

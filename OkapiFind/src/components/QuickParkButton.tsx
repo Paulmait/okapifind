@@ -11,19 +11,16 @@ import {
   Text,
   StyleSheet,
   Animated,
-  Dimensions,
-  AccessibilityInfo,
   Platform,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useParkingLocation } from '../hooks/useParkingLocation';
 import { useAccessibility } from '../hooks/useAccessibility';
 
-const { width: screenWidth } = Dimensions.get('window');
 const BUTTON_SIZE = 80;
-const EXPANDED_SIZE = 120;
 
 interface QuickParkButtonProps {
   onSuccess?: () => void;
@@ -40,7 +37,7 @@ export const QuickParkButton: React.FC<QuickParkButtonProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
 
   const { saveParkingLocation, isParked } = useParkingLocation();
-  const { isVoiceOverEnabled, announceForAccessibility } = useAccessibility();
+  const { isScreenReaderEnabled, announceToScreenReader } = useAccessibility();
 
   // Animations
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -87,6 +84,7 @@ export const QuickParkButton: React.FC<QuickParkButtonProps> = ({
       pulseAnimation.start();
       return () => pulseAnimation.stop();
     }
+    return undefined;
   }, [isParked, isSaving, pulseAnim]);
 
   const handlePressIn = () => {
@@ -132,8 +130,8 @@ export const QuickParkButton: React.FC<QuickParkButtonProps> = ({
     setIsSaving(true);
 
     // Announce for accessibility
-    if (isVoiceOverEnabled) {
-      announceForAccessibility('Saving parking location');
+    if (isScreenReaderEnabled) {
+      announceToScreenReader('Saving parking location');
     }
 
     // Strong haptic feedback
@@ -185,8 +183,8 @@ export const QuickParkButton: React.FC<QuickParkButtonProps> = ({
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
       // Announce success
-      if (isVoiceOverEnabled) {
-        announceForAccessibility('Parking location saved successfully');
+      if (isScreenReaderEnabled) {
+        announceToScreenReader('Parking location saved successfully');
       }
 
       onSuccess?.();
@@ -225,8 +223,8 @@ export const QuickParkButton: React.FC<QuickParkButtonProps> = ({
         }),
       ]).start();
 
-      if (isVoiceOverEnabled) {
-        announceForAccessibility('Failed to save parking location');
+      if (isScreenReaderEnabled) {
+        announceToScreenReader('Failed to save parking location');
       }
 
       onError?.(error as Error);

@@ -111,7 +111,8 @@ function MainNavigator() {
   );
 }
 
-function AuthNavigator() {
+// AuthNavigator - exported for use when authentication flow is enabled
+export function AuthNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -201,7 +202,7 @@ export default function App() {
     <ErrorBoundary
       userId={currentUser?.uid}
       screenName="App"
-      onError={(error, errorInfo) => {
+      onError={(error, _errorInfo) => {
         console.error('Critical app error:', error);
         // Additional error handling logic can go here
       }}

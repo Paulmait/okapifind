@@ -4,10 +4,9 @@
  */
 
 import { Resolver, Query, Mutation, Arg, Ctx, Authorized, Int } from 'type-graphql';
-import { User, UserPreferences, UserStats } from '../types/User';
+import { User, UserPreferences } from '../types/User';
 import { userService } from '../../services/userService';
-import { authService } from '../../services/auth.service';
-import { Context } from '../context';
+import type { Context } from '../context';
 
 @Resolver(User)
 export class UserResolver {
@@ -40,6 +39,7 @@ export class UserResolver {
     @Arg('photoURL', { nullable: true }) photoURL: string,
     @Ctx() ctx: Context
   ): Promise<User> {
+    if (!ctx.user) throw new Error('User not authenticated');
     return await userService.updateProfile(ctx.user.id, { name, photoURL });
   }
 
@@ -49,12 +49,14 @@ export class UserResolver {
     @Arg('preferences') preferences: UserPreferences,
     @Ctx() ctx: Context
   ): Promise<User> {
+    if (!ctx.user) throw new Error('User not authenticated');
     return await userService.updatePreferences(ctx.user.id, preferences);
   }
 
   @Mutation(() => Boolean)
   @Authorized()
   async deleteAccount(@Ctx() ctx: Context): Promise<boolean> {
+    if (!ctx.user) throw new Error('User not authenticated');
     await userService.deleteUser(ctx.user.id);
     return true;
   }

@@ -39,11 +39,32 @@ supabase functions deploy signed-upload
 supabase functions deploy start-share
 supabase functions deploy cron-reminders
 
-# Set function secrets
+# Deploy secure API proxy functions (API keys stay server-side)
+supabase functions deploy google-maps-proxy
+supabase functions deploy gemini-proxy
+supabase functions deploy secure-config
+
+# Set function secrets (REQUIRED - get these from respective dashboards)
 supabase secrets set REVENUECAT_WEBHOOK_SECRET=your-secret
 supabase secrets set CRON_SECRET=your-cron-secret
 supabase secrets set PUBLIC_SITE_URL=https://okapifind.com
+
+# CRITICAL: Set API keys for secure proxies (these NEVER go to client)
+supabase secrets set GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+supabase secrets set GEMINI_API_KEY=your-gemini-api-key
 ```
+
+### API Key Security
+
+The following API keys are secured via Edge Functions and NEVER exposed to the client:
+- `GOOGLE_MAPS_API_KEY` - Used by `google-maps-proxy` for directions, geocoding, places
+- `GEMINI_API_KEY` - Used by `gemini-proxy` for parking sign/meter AI analysis
+
+Client apps call these Edge Functions with their Supabase auth token. The Edge Functions:
+1. Verify the user is authenticated
+2. Make the API call with the secret key
+3. Return results to the client
+4. Log usage for analytics
 
 ### 4. Configure Cron Job
 

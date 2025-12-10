@@ -6,7 +6,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
-import { Colors } from '../constants/colors';
 
 export function OfflineIndicator() {
   const [isOffline, setIsOffline] = useState(false);

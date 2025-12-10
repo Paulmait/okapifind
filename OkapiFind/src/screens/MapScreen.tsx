@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Platform,
   Switch,
-  ScrollView,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -58,7 +57,6 @@ const MapScreen: React.FC = () => {
     frequentLocations,
     startDetection,
     stopDetection,
-    updateSettings,
     confirmParking,
     dismissParking,
   } = useParkingDetection();

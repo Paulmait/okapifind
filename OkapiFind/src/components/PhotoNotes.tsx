@@ -13,19 +13,15 @@ import {
   Image,
   TextInput,
   Alert,
-  Dimensions,
-  Platform,
   ActivityIndicator,
 } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Colors } from '../constants/colors';
 import { supabase } from '../lib/supabase-client';
 import { analytics } from '../services/analytics';
 import GeminiAI from '../services/geminiAI';
-
-const { width: screenWidth } = Dimensions.get('window');
 
 interface Photo {
   id: string;
@@ -100,7 +96,7 @@ export const PhotoNotes: React.FC<PhotoNotesProps> = ({
   };
 
   const takePhoto = async () => {
-    if (!cameraPermission) {
+    if (!permission?.granted) {
       Alert.alert('Permission Required', 'Camera permission is needed to take photos');
       return;
     }

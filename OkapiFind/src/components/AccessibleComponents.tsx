@@ -10,7 +10,7 @@ import {
   TextInputProps,
   StyleSheet,
 } from 'react-native';
-import { useAccessibility, useFocusManagement } from '../hooks/useAccessibility';
+import { useAccessibility, useFocusManagement, useAccessibleAnnouncements } from '../hooks/useAccessibility';
 import { useTranslation } from 'react-i18next';
 
 // Accessible Button Component
@@ -24,7 +24,7 @@ interface AccessibleButtonProps extends TouchableOpacityProps {
   accessibilityHint?: string;
 }
 
-export const AccessibleButton = forwardRef<TouchableOpacity, AccessibleButtonProps>(
+export const AccessibleButton = forwardRef<View, AccessibleButtonProps>(
   ({
     title,
     subtitle,
@@ -41,7 +41,7 @@ export const AccessibleButton = forwardRef<TouchableOpacity, AccessibleButtonPro
     const { settings, fontScale, contrastColors, getAccessibilityLabel, provideFeedback } = useAccessibility();
     const { t } = useTranslation();
 
-    const buttonRef = useRef<TouchableOpacity>(null);
+    const buttonRef = useRef<View>(null);
     useImperativeHandle(ref, () => buttonRef.current!);
 
     const handlePress = (event: any) => {
@@ -99,9 +99,9 @@ export const AccessibleButton = forwardRef<TouchableOpacity, AccessibleButtonPro
         <View style={styles.buttonContent}>
           {icon && <View style={styles.buttonIcon}>{icon}</View>}
           <View style={styles.buttonText}>
-            <Text style={getTextStyles()}>{title}</Text>
+            <Text style={getTextStyles() as any}>{title}</Text>
             {subtitle && (
-              <Text style={[getTextStyles(), { fontSize: 14 * fontScale, opacity: 0.8 }]}>
+              <Text style={[getTextStyles() as any, { fontSize: 14 * fontScale, opacity: 0.8 }]}>
                 {subtitle}
               </Text>
             )}
@@ -165,9 +165,9 @@ export const AccessibleText = forwardRef<Text, AccessibleTextProps>(
     return (
       <Text
         ref={ref}
-        style={[getTextStyles(), style]}
+        style={[getTextStyles() as any, style]}
         accessibilityRole={accessibilityRole}
-        accessibilityLevel={variant === 'heading' ? 1 : undefined}
+        aria-level={variant === 'heading' ? 1 : undefined}
         {...props}
       >
         {children}
@@ -223,12 +223,11 @@ export const AccessibleInput = forwardRef<TextInput, AccessibleInputProps>(
 
         <TextInput
           ref={inputRef}
-          style={[getInputStyles(), style]}
+          style={[getInputStyles() as any, style]}
           accessibilityLabel={accessibilityLabel}
           accessibilityHint={accessibilityHint}
           accessibilityState={{
             disabled: props.editable === false,
-            invalid: !!error
           }}
           onFocus={setFocus}
           {...props}
@@ -290,6 +289,8 @@ export const AccessibleCard = forwardRef<View, AccessibleCardProps>(
       : undefined;
 
     if (interactive && onPress) {
+      // Extract only View-compatible props for TouchableOpacity
+      const { onBlur, onFocus, ...touchableProps } = props as any;
       return (
         <TouchableOpacity
           ref={ref as any}
@@ -297,7 +298,7 @@ export const AccessibleCard = forwardRef<View, AccessibleCardProps>(
           onPress={handlePress}
           accessibilityRole="button"
           accessibilityLabel={accessibilityLabel}
-          {...props}
+          {...touchableProps}
         >
           <View>
             {title && <AccessibleText variant="subheading">{title}</AccessibleText>}

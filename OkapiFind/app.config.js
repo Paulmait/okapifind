@@ -127,7 +127,7 @@ export default {
 
       // EAS Configuration
       eas: {
-        projectId: process.env.EAS_PROJECT_ID
+        projectId: "9218d954-2ca6-4eb1-8f1e-4b4fd81d4812"
       },
 
       // Feature Flags

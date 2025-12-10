@@ -7,12 +7,11 @@ import {
   ScrollView,
   Alert,
   Share,
-  Dimensions,
   Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as FileSystem from 'expo-file-system';
+import { writeAsStringAsync, documentDirectory } from 'expo-file-system/legacy';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 
@@ -56,8 +55,6 @@ interface CrashReport {
   memoryUsage?: any;
   networkStatus?: string;
 }
-
-const { width: screenWidth } = Dimensions.get('window');
 
 class CrashFallback extends Component<CrashFallbackProps, CrashFallbackState> {
   private readonly STORAGE_KEYS = {
@@ -105,10 +102,10 @@ class CrashFallback extends Component<CrashFallbackProps, CrashFallbackState> {
     }
 
     // Auto-generate crash report
-    this.generateCrashReport(error, errorInfo);
+    this.generateCrashReport(error);
   }
 
-  private generateCrashReport = async (error: Error, errorInfo: any): Promise<void> => {
+  private generateCrashReport = async (error: Error): Promise<void> => {
     try {
       const userActions = await this.getUserActions();
       const deviceInfo = await this.getDeviceInfo();
@@ -278,9 +275,9 @@ class CrashFallback extends Component<CrashFallbackProps, CrashFallbackState> {
 
       // Save to file and share
       const fileName = `crash_report_${report.crashId}.txt`;
-      const filePath = `${FileSystem.documentDirectory}${fileName}`;
+      const filePath = `${documentDirectory}${fileName}`;
 
-      await FileSystem.writeAsStringAsync(filePath, reportText);
+      await writeAsStringAsync(filePath, reportText);
 
       await Share.share({
         url: filePath,

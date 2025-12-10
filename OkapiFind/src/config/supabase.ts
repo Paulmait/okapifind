@@ -22,6 +22,10 @@ export const SUPABASE_CONFIG = {
     signedUpload: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/signed-upload`,
     startShare: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/start-share`,
     cronReminders: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/cron-reminders`,
+    // Secure API proxies - API keys stay server-side
+    googleMapsProxy: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/google-maps-proxy`,
+    geminiProxy: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/gemini-proxy`,
+    secureConfig: `${Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''}/functions/v1/secure-config`,
   },
 
   // Storage buckets
