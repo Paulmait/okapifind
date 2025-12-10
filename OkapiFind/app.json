@@ -110,7 +110,6 @@
         }
       ],
       "expo-store-review",
-      "sentry-expo",
       [
         "expo-build-properties",
         {
@@ -136,17 +135,6 @@
       "privacyPolicyUrl": "https://github.com/Paulmait/okapifind/blob/main/PRIVACY_POLICY.md",
       "termsOfServiceUrl": "https://github.com/Paulmait/okapifind/blob/main/TERMS_OF_SERVICE.md",
       "supportUrl": "https://github.com/Paulmait/okapifind/issues"
-    },
-    "hooks": {
-      "postPublish": [
-        {
-          "file": "sentry-expo/upload-sourcemaps",
-          "config": {
-            "organization": "okapi",
-            "project": "okapifind"
-          }
-        }
-      ]
     }
   }
 }

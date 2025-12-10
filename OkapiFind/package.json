@@ -110,7 +110,6 @@
     "redis": "^5.8.2",
     "reflect-metadata": "^0.2.2",
     "resend": "^6.1.1",
-    "sentry-expo": "^7.2.0",
     "speakeasy": "^2.0.0",
     "type-graphql": "^2.0.0-rc.2",
     "zustand": "^5.0.8"

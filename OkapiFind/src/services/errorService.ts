@@ -1,12 +1,26 @@
 /**
  * Centralized Error Handling and Logging Service
  * Provides comprehensive error tracking, logging, and reporting
+ * Note: Sentry integration temporarily disabled for SDK 54 compatibility
  */
 
-import * as Sentry from 'sentry-expo';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Sentry placeholder - will be re-enabled when sentry-expo supports SDK 54
+const Sentry = {
+  init: () => {},
+  Native: {
+    setUser: (_user: any) => {},
+    addBreadcrumb: (_breadcrumb: any) => {},
+    withScope: (_callback: any) => {},
+    captureException: (_error: any) => {},
+    captureMessage: (_message: any) => {},
+  },
+};
+
+type SeverityLevel = 'info' | 'warning' | 'error' | 'fatal';
 
 export enum ErrorSeverity {
   LOW = 'low',
@@ -340,7 +354,7 @@ class ErrorService {
     });
   }
 
-  private mapSeverityToSentryLevel(severity: ErrorSeverity): Sentry.Native.SeverityLevel {
+  private mapSeverityToSentryLevel(severity: ErrorSeverity): SeverityLevel {
     switch (severity) {
       case ErrorSeverity.LOW:
         return 'info';

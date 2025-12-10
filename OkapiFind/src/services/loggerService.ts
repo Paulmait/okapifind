@@ -1,9 +1,15 @@
 /**
  * Logger Service
  * Centralized logging with multiple transports and structured logging
+ * Note: Sentry integration temporarily disabled for SDK 54 compatibility
  */
 
-import * as Sentry from '@sentry/react-native';
+// Sentry placeholder - will be re-enabled when sentry-expo supports SDK 54
+const Sentry = {
+  addBreadcrumb: (_breadcrumb: any) => {},
+  captureMessage: (_message: any, _level?: any) => {},
+  captureException: (_error: any, _options?: any) => {},
+};
 
 export enum LogLevel {
   DEBUG = 0,

@@ -128,12 +128,10 @@ class AppLaunchOptimizer {
         name: 'Sentry',
         priority: 'medium',
         load: async () => {
+          // Sentry temporarily disabled for SDK 54 compatibility
+          // Will be re-enabled when sentry-expo supports SDK 54
           if (!__DEV__) {
-            const Sentry = await import('sentry-expo');
-            return Sentry.init({
-              dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-              debug: false,
-            });
+            console.log('Sentry: disabled for SDK 54 compatibility');
           }
         },
       },

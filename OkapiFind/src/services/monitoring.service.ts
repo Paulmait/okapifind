@@ -4,9 +4,15 @@
  * Integrates with Datadog, New Relic, and custom monitoring
  */
 
-import * as Sentry from 'sentry-expo';
 import { Platform } from 'react-native';
 import { analytics } from './analytics';
+
+// Sentry placeholder - will be re-enabled when sentry-expo supports SDK 54
+const Sentry = {
+  Native: {
+    captureException: (_error: any, _options?: any) => {},
+  },
+};
 
 interface MonitoringConfig {
   enabled: boolean;
