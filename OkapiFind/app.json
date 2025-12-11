@@ -35,7 +35,7 @@
         "NSMotionUsageDescription": "OkapiFind uses motion detection to automatically detect when you park your car.",
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": ["maps", "comgooglemaps", "waze"],
-        "UIBackgroundModes": ["location", "fetch", "processing"]
+        "UIBackgroundModes": ["location", "fetch"]
       },
       "associatedDomains": [
         "applinks:okapifind.com",
