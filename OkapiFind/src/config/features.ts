@@ -288,9 +288,9 @@ export const FEATURES = {
   // ============================================
 
   AI_PARKING_PREDICTIONS: {
-    enabled: true,
+    enabled: false, // Disabled for v1.0 launch - re-enable after stabilization
     requiredTier: 'plus',
-    rolloutPercentage: 50, // 50% of plus users
+    rolloutPercentage: 0,
     beta: true,
   },
 
