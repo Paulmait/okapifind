@@ -21,7 +21,19 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\n🚀 Production Release Prep: Edge Functions, Landing Page & TypeScript Fixes\n\n## Supabase Edge Functions (Deployed)\n- google-maps-proxy: Secure proxy for Google Maps API\n- gemini-proxy: AI-powered parking sign/meter analysis\n- secure-config: Feature flags based on subscription\n\n## New Smart POI Feature\n- smartPOIService.ts: Auto-learn home/work locations\n- useSmartPOI.ts: React hook for POI management\n- SmartPOISetup.tsx: UI for POI configuration\n- Integration with ParkingDetectionService\n\n## Landing Page Redesign\n- Modern, clean design with Inter font\n- Hero section with SVG phone mockup\n- 6 feature cards highlighting key benefits\n- 3-step \"How It Works\" section\n- Fully responsive (tablet/mobile)\n\n## TypeScript & Config Fixes\n- Fixed colors.ts, App.tsx exports\n- Fixed AccessibleComponents props\n- Updated app.json with EAS project ID\n- Configured eas.json build profiles\n- Fixed offlineMode.ts NetInfo import\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git push:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\n🚀 New Premium Features: Share, History, Floor Detection & Review Prompts\n\n## Shareable Parking Location\n- shareLocationService.ts: Create shareable links (24hr expiry)\n- ShareLocationSheet.tsx: Beautiful bottom sheet with SMS, WhatsApp, Email options\n- Native share sheet integration with fallback to clipboard\n\n## Parking History with Search\n- parkingHistoryService.ts: Full CRUD for parking history (500 entries)\n- Search by address, notes, date range, tags\n- Statistics: total parks, avg duration, top locations\n- ParkingHistoryScreen.tsx: Browse/search history UI with filters\n\n## Floor/Level Detection\n- floorDetectionService.ts: Barometric pressure sensor integration\n- Calibration system for parking garages\n- Underground floor detection (B1, B2, etc)\n- High/medium/low confidence readings\n\n## App Review Prompts\n- appReviewService.ts: Smart review timing\n- Triggers after 3 successful navigations\n- Respects 60-day cooldown between prompts\n- Max 3 lifetime prompts\n- Native StoreReview API integration\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\n🚀 New Premium Features: Share, History, Floor Detection & Review Prompts\n\n## Shareable Parking Location\n- shareLocationService.ts: Create shareable links (24hr expiry)\n- ShareLocationSheet.tsx: Beautiful bottom sheet with SMS, WhatsApp, Email options\n- Native share sheet integration with fallback to clipboard\n\n## Parking History with Search\n- parkingHistoryService.ts: Full CRUD for parking history (500 entries)\n- Search by address, notes, date range, tags\n- Statistics: total parks, avg duration, top locations\n- ParkingHistoryScreen.tsx: Browse/search history UI with filters\n\n## Floor/Level Detection\n- floorDetectionService.ts: Barometric pressure sensor integration\n- Calibration system for parking garages\n- Underground floor detection (B1, B2, etc)\n- High/medium/low confidence readings\n\n## App Review Prompts\n- appReviewService.ts: Smart review timing\n- Triggers after 3 successful navigations\n- Respects 60-day cooldown between prompts\n- Max 3 lifetime prompts\n- Native StoreReview API integration\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(eas build:*)",
+      "Bash(git commit:*)",
+      "Bash(cat:*)",
+      "Bash(eas credentials:*)",
+      "Bash(eas credentials:list:*)",
+      "WebFetch(domain:expo.dev)",
+      "Bash(eas build:list:*)",
+      "Bash(npm view:*)",
+      "Bash(eas build:view:*)",
+      "Bash(npm ci:*)",
+      "Bash(npm install)",
+      "Bash(git restore:*)"
     ]
   }
 }
