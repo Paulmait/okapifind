@@ -23,8 +23,9 @@ jest.mock('react-native', () => ({
 
 // Mock components
 jest.mock('../../components/GoogleLoginButton', () => {
+  const mockReact = require('react');
   return function MockGoogleLoginButton({ onSuccess, onError, onCancel, disabled }: any) {
-    return React.createElement('TouchableOpacity', {
+    return mockReact.createElement('TouchableOpacity', {
       testID: 'google-login-button',
       onPress: () => {
         if (disabled) return;
@@ -42,8 +43,9 @@ jest.mock('../../components/GoogleLoginButton', () => {
 });
 
 jest.mock('../../components/AppleLoginButton', () => {
+  const mockReact = require('react');
   return function MockAppleLoginButton({ onSuccess, onError, onCancel, disabled }: any) {
-    return React.createElement('TouchableOpacity', {
+    return mockReact.createElement('TouchableOpacity', {
       testID: 'apple-login-button',
       onPress: () => {
         if (disabled) return;

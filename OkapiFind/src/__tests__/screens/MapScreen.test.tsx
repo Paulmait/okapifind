@@ -45,17 +45,20 @@ jest.mock('../../utils', () => ({
 }));
 
 // Mock react-native-maps
-jest.mock('react-native-maps', () => ({
-  __esModule: true,
-  default: ({ children, testID, onPress, ...props }: any) =>
-    React.createElement('MockMapView', { testID, onPress, ...props }, children),
-  Marker: ({ testID, onPress, ...props }: any) =>
-    React.createElement('MockMarker', { testID, onPress, ...props }),
-  Circle: ({ testID, ...props }: any) =>
-    React.createElement('MockCircle', { testID, ...props }),
-  PROVIDER_DEFAULT: 'default',
-  PROVIDER_GOOGLE: 'google',
-}));
+jest.mock('react-native-maps', () => {
+  const mockReact = require('react');
+  return {
+    __esModule: true,
+    default: ({ children, testID, onPress, ...props }: any) =>
+      mockReact.createElement('MockMapView', { testID, onPress, ...props }, children),
+    Marker: ({ testID, onPress, ...props }: any) =>
+      mockReact.createElement('MockMarker', { testID, onPress, ...props }),
+    Circle: ({ testID, ...props }: any) =>
+      mockReact.createElement('MockCircle', { testID, ...props }),
+    PROVIDER_DEFAULT: 'default',
+    PROVIDER_GOOGLE: 'google',
+  };
+});
 
 describe('MapScreen', () => {
   const mockUserLocation = {

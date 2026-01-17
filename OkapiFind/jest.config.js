@@ -5,7 +5,8 @@ module.exports = {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   testMatch: [
-    '**/__tests__/**/*.(ts|tsx|js)',
+    '**/__tests__/**/*.test.(ts|tsx|js)',
+    '**/__tests__/**/*.spec.(ts|tsx|js)',
     '**/?(*.)+(spec|test).(ts|tsx|js)',
   ],
   moduleNameMapper: {
@@ -58,9 +59,9 @@ module.exports = {
   ],
   setupFilesAfterEnv: [
     '<rootDir>/jest.setup.js',
-    '<rootDir>/__tests__/utils/setupTests.ts',
   ],
-  testEnvironment: 'jsdom',
+  // Use node environment - React Native preset handles the rest
+  testEnvironment: 'node',
   testTimeout: 30000,
   // Ignore patterns for test discovery
   testPathIgnorePatterns: [
@@ -70,10 +71,16 @@ module.exports = {
     '/.expo/',
     '/web-build/',
     '/dist/',
+    '/__tests__/mocks/',
+    '/__tests__/utils/',
+    '/__tests__/globalSetup.js',
+    '/__tests__/globalTeardown.js',
+    '/__tests__/testResultsProcessor.js',
+    '/e2e/',
   ],
   // Transform ignore patterns - allow transforming some node_modules
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|expo|@expo|@react-navigation|react-native-maps|@react-native-async-storage|react-native-purchases|@supabase)/)',
+    'node_modules/(?!(react-native|@react-native|expo|@expo|expo-notifications|expo-device|expo-constants|expo-location|expo-sensors|expo-haptics|@react-navigation|react-native-maps|@react-native-async-storage|react-native-purchases|@supabase)/)',
   ],
   // Global setup and teardown
   globalSetup: '<rootDir>/__tests__/globalSetup.js',
