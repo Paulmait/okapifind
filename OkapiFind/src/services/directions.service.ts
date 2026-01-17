@@ -6,6 +6,7 @@
 
 import { analytics } from './analytics';
 import * as Location from 'expo-location';
+import { mapFallbackService } from './mapFallback.service';
 
 export interface DirectionsRequest {
   origin: {
@@ -100,11 +101,14 @@ class DirectionsService {
 
   /**
    * Get directions between two points
+   * Falls back to OSRM (OpenStreetMap) when Google Directions is unavailable
    */
   async getDirections(request: DirectionsRequest): Promise<Route[]> {
+    // First, try Google Directions API
     try {
       if (!this.API_KEY) {
-        throw new Error('Google Maps API key not configured');
+        console.warn('Google Maps API key not configured, using OSRM fallback');
+        return this.getDirectionsOSRMFallback(request);
       }
 
       const params = new URLSearchParams({
@@ -132,7 +136,8 @@ class DirectionsService {
       const data = await response.json();
 
       if (data.status !== 'OK') {
-        throw new Error(`Directions API error: ${data.status} - ${data.error_message || ''}`);
+        console.warn(`Google Directions API error: ${data.status}, falling back to OSRM`);
+        return this.getDirectionsOSRMFallback(request);
       }
 
       const routes = data.routes.map((route: any, index: number) => this.parseRoute(route, index));
@@ -142,18 +147,117 @@ class DirectionsService {
         destination: `${request.destination.latitude},${request.destination.longitude}`,
         mode: request.mode || 'driving',
         routes_count: routes.length,
+        provider: 'google',
       });
 
       return routes;
     } catch (error) {
-      console.error('Error fetching directions:', error);
+      console.error('Error fetching Google directions, trying OSRM fallback:', error);
 
-      analytics.logEvent('directions_error', {
-        error: (error as Error).message,
+      // Try OSRM fallback
+      try {
+        return await this.getDirectionsOSRMFallback(request);
+      } catch (osrmError) {
+        console.error('OSRM fallback also failed:', osrmError);
+
+        analytics.logEvent('directions_error', {
+          error: (error as Error).message,
+          fallback_error: (osrmError as Error).message,
+        });
+
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Get directions using OSRM (OpenStreetMap) as fallback
+   */
+  private async getDirectionsOSRMFallback(request: DirectionsRequest): Promise<Route[]> {
+    const mode = request.mode === 'walking' ? 'walking' : 'driving';
+
+    const osrmResult = await mapFallbackService.getDirectionsOSRM(
+      { lat: request.origin.latitude, lng: request.origin.longitude },
+      { lat: request.destination.latitude, lng: request.destination.longitude },
+      mode
+    );
+
+    if (osrmResult.status === 'ERROR' || osrmResult.routes.length === 0) {
+      // If OSRM also fails, generate simple directions
+      const simpleResult = mapFallbackService.generateSimpleDirections(
+        { lat: request.origin.latitude, lng: request.origin.longitude },
+        { lat: request.destination.latitude, lng: request.destination.longitude }
+      );
+
+      analytics.logEvent('directions_fetched', {
+        origin: `${request.origin.latitude},${request.origin.longitude}`,
+        destination: `${request.destination.latitude},${request.destination.longitude}`,
+        mode: mode,
+        provider: 'simple_fallback',
       });
 
-      throw error;
+      return [this.convertOSRMToRoute(simpleResult.routes[0], 0)];
     }
+
+    analytics.logEvent('directions_fetched', {
+      origin: `${request.origin.latitude},${request.origin.longitude}`,
+      destination: `${request.destination.latitude},${request.destination.longitude}`,
+      mode: mode,
+      routes_count: osrmResult.routes.length,
+      provider: 'osrm',
+    });
+
+    return osrmResult.routes.map((route, index) => this.convertOSRMToRoute(route, index));
+  }
+
+  /**
+   * Convert OSRM route format to our Route format
+   */
+  private convertOSRMToRoute(osrmRoute: any, index: number): Route {
+    const leg = osrmRoute.legs[0];
+
+    const steps: RouteStep[] = leg.steps.map((step: any) => ({
+      instruction: step.instruction,
+      distance: step.distance.value,
+      duration: step.duration.value,
+      startLocation: {
+        latitude: step.startLocation.lat,
+        longitude: step.startLocation.lng,
+      },
+      endLocation: {
+        latitude: step.endLocation.lat,
+        longitude: step.endLocation.lng,
+      },
+      polyline: '',
+      maneuver: step.maneuver,
+      travelMode: 'WALKING',
+    }));
+
+    const routeLeg: RouteLeg = {
+      steps,
+      distance: leg.distance.value,
+      duration: leg.duration.value,
+      startAddress: 'Current Location',
+      endAddress: 'Your Car',
+      startLocation: steps[0]?.startLocation || { latitude: 0, longitude: 0 },
+      endLocation: steps[steps.length - 1]?.endLocation || { latitude: 0, longitude: 0 },
+    };
+
+    return {
+      id: `osrm_route_${index}_${Date.now()}`,
+      summary: 'Route via OpenStreetMap',
+      legs: [routeLeg],
+      overviewPolyline: osrmRoute.polyline || '',
+      bounds: {
+        northeast: routeLeg.endLocation,
+        southwest: routeLeg.startLocation,
+      },
+      copyrights: '© OpenStreetMap contributors',
+      warnings: ['Using fallback routing (OpenStreetMap/OSRM)'],
+      waypointOrder: [],
+      totalDistance: leg.distance.value,
+      totalDuration: leg.duration.value,
+    };
   }
 
   /**
