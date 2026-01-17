@@ -32,6 +32,13 @@ const PREMIUM_FEATURES = [
   { icon: '✓', title: 'Priority Support', description: 'Get help when you need it most' },
 ];
 
+// Package type constants
+const PACKAGE_TYPES = {
+  MONTHLY: 'MONTHLY',
+  ANNUAL: 'ANNUAL',
+  LIFETIME: 'LIFETIME',
+} as const;
+
 export default function PaywallScreen() {
   const navigation = useNavigation<PaywallScreenNavigationProp>();
   const colorScheme = useColorScheme();
@@ -181,6 +188,7 @@ export default function PaywallScreen() {
 
   const monthlyPackage = packages.find(pkg => pkg.packageType === 'MONTHLY');
   const annualPackage = packages.find(pkg => pkg.packageType === 'ANNUAL');
+  const lifetimePackage = packages.find(pkg => pkg.packageType === 'LIFETIME');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -271,6 +279,31 @@ export default function PaywallScreen() {
                 <View style={[
                   styles.radio,
                   selectedPackage === monthlyPackage && styles.radioSelected
+                ]} />
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {lifetimePackage && (
+            <TouchableOpacity
+              style={[
+                styles.packageCard,
+                selectedPackage === lifetimePackage && styles.packageCardSelected
+              ]}
+              onPress={() => {
+                setSelectedPackage(lifetimePackage);
+                analytics.logPackageSelected(lifetimePackage.identifier, 'LIFETIME');
+              }}
+            >
+              <View style={styles.packageContent}>
+                <Text style={styles.packageTitle}>Lifetime Access</Text>
+                <Text style={styles.packagePrice}>{lifetimePackage.product.priceString}</Text>
+                <Text style={styles.packageDescription}>One-time payment, forever yours</Text>
+              </View>
+              <View style={styles.radioContainer}>
+                <View style={[
+                  styles.radio,
+                  selectedPackage === lifetimePackage && styles.radioSelected
                 ]} />
               </View>
             </TouchableOpacity>
