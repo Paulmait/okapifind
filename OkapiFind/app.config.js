@@ -29,7 +29,7 @@ export default {
         NSMicrophoneUsageDescription: "OkapiFind needs access to your microphone for voice directions.",
         NSMotionUsageDescription: "OkapiFind uses motion detection to help detect when you park.",
         NSCameraUsageDescription: "OkapiFind needs camera access to scan parking signs and meters.",
-        UIBackgroundModes: ["location", "fetch", "processing"]
+        UIBackgroundModes: ["location", "fetch"]
       }
     },
     android: {
@@ -95,7 +95,7 @@ export default {
       websiteUrl: 'https://github.com/Paulmait/okapifind',
 
       // App Store URLs
-      appStoreUrl: 'https://apps.apple.com/app/okapifind/id1234567890',
+      appStoreUrl: 'https://apps.apple.com/app/okapifind/id6756395219',
       playStoreUrl: 'https://play.google.com/store/apps/details?id=com.okapi.find',
 
       // Firebase Configuration

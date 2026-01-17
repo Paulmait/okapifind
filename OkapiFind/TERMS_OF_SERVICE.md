@@ -1,6 +1,6 @@
 # Terms of Service - OkapiFind
 
-**Last Updated: December 10, 2025**
+**Last Updated: January 17, 2026**
 
 ## 1. Acceptance of Terms
 
@@ -91,4 +91,4 @@ For questions about these Terms, contact us at:
 
 ---
 
-© 2025 CIEN RIOS, LLC. All rights reserved.
+© 2026 CIEN RIOS, LLC. All rights reserved.

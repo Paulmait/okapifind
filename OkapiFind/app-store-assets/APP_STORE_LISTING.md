@@ -142,7 +142,7 @@ Content Descriptions - Select "None" for all:
 
 ## COPYRIGHT
 ```
-© 2025 CIEN RIOS, LLC
+© 2026 CIEN RIOS, LLC
 ```
 
 ---
@@ -272,9 +272,9 @@ Everything in Plus, plus offline maps, parking comparison, advanced statistics, 
 6. ✅ Privacy URL: `https://github.com/Paulmait/okapifind/blob/main/PRIVACY_POLICY.md`
 7. ✅ Category: Navigation
 8. ✅ Age Rating: 4+
-9. ✅ Copyright: `© 2025 CIEN RIOS, LLC`
+9. ✅ Copyright: `© 2026 CIEN RIOS, LLC`
 10. ✅ Screenshots uploaded
 
 ---
 
-*Generated for OkapiFind v1.0 - December 2025*
+*Generated for OkapiFind v1.0 - January 2026*

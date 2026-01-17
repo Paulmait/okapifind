@@ -61,7 +61,8 @@
     "production": {
       "ios": {
         "appleId": "guampaul@gmail.com",
-        "appleTeamId": "LFB9Z5Q3Y9"
+        "appleTeamId": "LFB9Z5Q3Y9",
+        "ascAppId": "6756395219"
       },
       "android": {
         "track": "production",

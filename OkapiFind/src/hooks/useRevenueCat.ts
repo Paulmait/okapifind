@@ -6,9 +6,13 @@ import Purchases, {
   PurchasesOfferings,
 } from 'react-native-purchases';
 import { Platform, Alert } from 'react-native';
+import Constants from 'expo-constants';
 
-const REVENUCAT_API_KEY_IOS = 'your_ios_api_key_here';
-const REVENUCAT_API_KEY_ANDROID = 'your_android_api_key_here';
+// Load API keys from environment variables via Expo Constants
+const REVENUCAT_API_KEY_IOS = Constants.expoConfig?.extra?.revenueCatApiKeyIos ||
+                              process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS || '';
+const REVENUCAT_API_KEY_ANDROID = Constants.expoConfig?.extra?.revenueCatApiKeyAndroid ||
+                                   process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID || '';
 
 interface RevenueCatState {
   isInitialized: boolean;
@@ -390,8 +394,8 @@ export const initializeRevenueCat = async () => {
   try {
     const apiKey = Platform.OS === 'ios' ? REVENUCAT_API_KEY_IOS : REVENUCAT_API_KEY_ANDROID;
 
-    if (apiKey === 'your_ios_api_key_here' || apiKey === 'your_android_api_key_here') {
-      console.warn('RevenueCat API keys not configured. Please add your API keys to useRevenueCat.ts');
+    if (!apiKey || apiKey.length === 0) {
+      console.warn('RevenueCat API keys not configured. Please add EXPO_PUBLIC_REVENUECAT_API_KEY_IOS and EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID to your environment variables.');
       return;
     }
 
