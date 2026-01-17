@@ -29,7 +29,8 @@ export default {
         NSMicrophoneUsageDescription: "OkapiFind needs access to your microphone for voice directions.",
         NSMotionUsageDescription: "OkapiFind uses motion detection to help detect when you park.",
         NSCameraUsageDescription: "OkapiFind needs camera access to scan parking signs and meters.",
-        UIBackgroundModes: ["location", "fetch"]
+        UIBackgroundModes: ["location", "fetch"],
+        ITSAppUsesNonExemptEncryption: false
       }
     },
     android: {
