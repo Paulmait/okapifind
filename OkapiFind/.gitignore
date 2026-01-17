@@ -47,6 +47,14 @@ GoogleService-Info.plist
 firebase-config.js
 firebase-config.ts
 
+# Documentation with potential secrets (prevent re-adding)
+DEPLOYMENT_STATUS.md
+VERCEL_SETUP_STEP_BY_STEP.md
+COMPLETE_ENV_VARIABLES.md
+eas.secrets.md
+*SECRETS*.md
+*secrets*.md
+
 # API keys and secrets
 *.secret
 *.private
