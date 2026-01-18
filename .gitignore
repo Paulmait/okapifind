@@ -1,3 +1,6 @@
+# Claude Code local settings (may contain permission approvals with sensitive data)
+.claude/
+
 # Environment variables
 .env
 .env.*

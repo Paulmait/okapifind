@@ -27,17 +27,7 @@
       "env": {
         "APP_ENV": "preview",
         "EXPO_PUBLIC_ENV": "preview",
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyD819O4tKalvnzxafQlgwpNy-bBdCgjq-Q",
-        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "okapifind-e5b81.firebaseapp.com",
-        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "okapifind-e5b81",
-        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "okapifind-e5b81.appspot.com",
-        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "897907860773",
-        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:897907860773:web:830b5654c6a20b8199e6cc",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://kmobwbqdtmbzdyysdxjx.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2J3YnFkdG1iemR5eXNkeGp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0Nzk0NzEsImV4cCI6MjA3NDA1NTQ3MX0.8RsGnae-OGpGUZmtEc2aiP6ICU4WctqefhSHav4SibQ",
-        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyB2SGV6WqOPuK02dBAx8665FdOPmU0Vqho",
-        "EXPO_PUBLIC_REVENUECAT_API_KEY_IOS": "appl_VZWlOGhnbsBeeNRwpvUTZxWyNNz"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
       "ios": {
         "simulator": false
