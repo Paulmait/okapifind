@@ -36,6 +36,7 @@ interface OnboardingSlide {
   backgroundColor: string;
   feature?: 'voice' | 'shake' | 'photo' | 'share' | 'premium';
   action?: () => void;
+  showHeroImage?: boolean;
 }
 
 const slides: OnboardingSlide[] = [
@@ -46,6 +47,7 @@ const slides: OnboardingSlide[] = [
     description: 'The smartest way to remember where you parked',
     icon: '🚗',
     backgroundColor: Colors.primary,
+    showHeroImage: true,
   },
   {
     id: 'voice',
@@ -298,21 +300,32 @@ export default function OnboardingScreen() {
             },
           ]}
         >
-          {/* Icon with animation */}
-          <View style={styles.iconContainer}>
-            <Animated.Text
-              style={[
-                styles.icon,
-                {
-                  transform: [
-                    { rotate: slide.feature === 'shake' && shakeDetected ? '15deg' : '0deg' },
-                  ],
-                },
-              ]}
-            >
-              {slide.icon}
-            </Animated.Text>
-          </View>
+          {/* Hero image for welcome slide */}
+          {slide.showHeroImage ? (
+            <View style={styles.heroImageContainer}>
+              <Image
+                source={require('../../assets/images/onboarding-hero.png')}
+                style={styles.heroImage}
+                resizeMode="contain"
+              />
+            </View>
+          ) : (
+            /* Icon with animation */
+            <View style={styles.iconContainer}>
+              <Animated.Text
+                style={[
+                  styles.icon,
+                  {
+                    transform: [
+                      { rotate: slide.feature === 'shake' && shakeDetected ? '15deg' : '0deg' },
+                    ],
+                  },
+                ]}
+              >
+                {slide.icon}
+              </Animated.Text>
+            </View>
+          )}
 
           {/* Title and description */}
           <Text style={styles.title}>{slide.title}</Text>
@@ -446,6 +459,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 40,
+  },
+  heroImageContainer: {
+    width: screenWidth * 0.6,
+    height: screenHeight * 0.4,
+    marginBottom: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
   },
   icon: {
     fontSize: 60,
