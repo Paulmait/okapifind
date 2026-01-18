@@ -21,15 +21,13 @@ import { logEvent, AnalyticsEvent, analytics } from '../services/analytics';
 
 type PaywallScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Paywall'>;
 
+// v1.0 MVP Features - Only show what's actually available
 const PREMIUM_FEATURES = [
   { icon: '✓', title: 'Unlimited Parking Saves', description: 'Save as many locations as you need' },
-  { icon: '✓', title: 'OCR Timer', description: 'Scan parking signs & set automatic reminders' },
-  { icon: '✓', title: 'Safety Mode', description: 'Extra security features for night parking' },
-  { icon: '✓', title: 'Photo Documentation', description: 'Capture and store parking photos' },
-  { icon: '✓', title: 'Offline Maps', description: 'Find your car without internet' },
-  { icon: '✓', title: 'Family Sharing', description: 'Share parking locations with loved ones' },
+  { icon: '✓', title: 'Photo Notes', description: 'Add photos to remember parking details' },
   { icon: '✓', title: 'Parking History', description: 'View all your previous parking spots' },
-  { icon: '✓', title: 'Priority Support', description: 'Get help when you need it most' },
+  { icon: '✓', title: 'Safety Sharing', description: 'Share your location with trusted contacts' },
+  { icon: '✓', title: 'Priority Support', description: 'Get help when you need it' },
 ];
 
 // Package type constants

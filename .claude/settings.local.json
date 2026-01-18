@@ -52,7 +52,25 @@
       "Bash(curl:*)",
       "Bash(npx eas:*)",
       "Bash(npx expo:*)",
-      "Bash(timeout 30 tail:*)"
+      "Bash(timeout 30 tail:*)",
+      "WebFetch(domain:job-logs.eascdn.net)",
+      "Bash(git rm:*)",
+      "Bash(cmd /c \"cd C:\\\\Users\\\\maito\\\\okapifind\\\\OkapiFind && npx eas build:view 93121613-9e97-4026-9d3a-ded5a870da76 --json\")",
+      "Bash(powershell -Command \"cd C:\\\\Users\\\\maito\\\\okapifind\\\\OkapiFind; npx eas build:list --platform ios --limit 3 --json 2>&1\")",
+      "Bash(powershell -Command \"cd C:\\\\Users\\\\maito\\\\okapifind\\\\OkapiFind; npx eas build:list --platform ios --limit 3 2>&1\")",
+      "Bash(powershell -Command \"cd C:\\\\Users\\\\maito\\\\okapifind\\\\OkapiFind; npx eas build --platform ios --profile preview --non-interactive 2>&1\")",
+      "Bash(powershell -Command \"cd C:\\\\Users\\\\maito\\\\okapifind\\\\OkapiFind; npx tsc --noEmit 2>&1 | Select-Object -First 30\")",
+      "WebSearch",
+      "WebFetch(domain:docs.expo.dev)",
+      "Bash(cd:*)",
+      "Bash(node scripts/generate-screenshots.js:*)",
+      "Bash(echo:*)",
+      "Bash(dir \"%APPDATA%\\\\supabase\")",
+      "Bash(pushd:*)",
+      "Bash(popd)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(netstat:*)"
     ]
   }
 }

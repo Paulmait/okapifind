@@ -1,149 +1,248 @@
-# OkapiFind Stripe Pricing Strategy
+# OkapiFind Pricing Setup (All Platforms)
 
-## Recommended Pricing Tiers
+> **Uniform Pricing**: These prices are identical across iOS (RevenueCat/App Store), Android (RevenueCat/Play Store), and Web (Stripe).
 
-### 1. **Free Tier** (Freemium Model)
-- **Price**: $0/month
+## v1.0 MVP Pricing Structure
+
+### 1. **Free Tier**
+- **Price**: $0
 - **Features**:
-  - Save 1 parking location at a time
-  - Basic navigation back to car
+  - 5 parking saves per month
+  - Basic compass navigation back to car
   - Manual parking save only
   - Standard map view
-  - 7-day parking history
-- **Stripe Product ID**: `prod_free` (no payment required)
 
-### 2. **OkapiFind Plus** (Most Popular)
-- **Price**: $2.99/month or $29.99/year (17% discount)
+### 2. **Premium Monthly**
+- **Price**: $2.99/month
+- **RevenueCat Product ID**: `okapifind_premium_monthly`
+- **Stripe Price ID**: `price_okapifind_monthly`
+- **App Store Product ID**: `com.okapi.find.premium.monthly`
 - **Features**:
   - Unlimited parking saves
-  - Automatic parking detection
-  - 30-day parking history
   - Photo notes for parking spots
-  - Voice navigation
-  - Share parking location
-  - No ads
-  - Widget support
-- **Stripe Price IDs**:
-  - Monthly: `price_plus_monthly`
-  - Yearly: `price_plus_yearly`
+  - Parking history (all previous spots)
+  - Safety sharing (share location link)
+  - Priority email support
 
-### 3. **OkapiFind Pro** (Power Users)
-- **Price**: $4.99/month or $49.99/year (17% discount)
-- **Features**:
-  - Everything in Plus
-  - Unlimited parking history
-  - AR navigation (iOS)
-  - Multi-car support (up to 5 cars)
-  - Parking meter reminders
-  - Export parking data
-  - Priority support
-  - Early access to new features
-- **Stripe Price IDs**:
-  - Monthly: `price_pro_monthly`
-  - Yearly: `price_pro_yearly`
+### 3. **Premium Annual** (Best Value)
+- **Price**: $19.99/year (44% savings vs monthly)
+- **RevenueCat Product ID**: `okapifind_premium_annual`
+- **Stripe Price ID**: `price_okapifind_annual`
+- **App Store Product ID**: `com.okapi.find.premium.annual`
+- **Features**: Same as Premium Monthly
+- **Savings Badge**: "Save 44%"
 
-### 4. **Family Plan** (Best Value)
-- **Price**: $7.99/month or $79.99/year
-- **Features**:
-  - All Pro features
-  - Up to 6 family members
-  - Shared parking locations
-  - Family car tracking
-  - Centralized billing
-- **Stripe Price IDs**:
-  - Monthly: `price_family_monthly`
-  - Yearly: `price_family_yearly`
+### 4. **Lifetime Access**
+- **Price**: $39.99 one-time
+- **RevenueCat Product ID**: `okapifind_premium_lifetime`
+- **Stripe Price ID**: `price_okapifind_lifetime`
+- **App Store Product ID**: `com.okapi.find.premium.lifetime`
+- **Features**: All premium features, forever
+- **Type**: One-time purchase (non-recurring)
 
-## Stripe Setup Commands
+---
+
+## Platform Setup Instructions
+
+### RevenueCat Setup (iOS & Android)
+
+1. **Create Products in App Store Connect / Google Play Console**
+   - Monthly: `com.okapi.find.premium.monthly` - $2.99
+   - Annual: `com.okapi.find.premium.annual` - $19.99
+   - Lifetime: `com.okapi.find.premium.lifetime` - $39.99
+
+2. **Configure RevenueCat Dashboard**
+   - Create Entitlement: `premium`
+   - Create Products and link to store products
+   - Create Offering: `default`
+   - Add packages: Monthly, Annual, Lifetime
+
+3. **Environment Variables**
+   ```env
+   EXPO_PUBLIC_REVENUECAT_API_KEY_IOS=appl_xxxxxxxxxx
+   EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID=goog_xxxxxxxxxx
+   ```
+
+### Stripe Setup (Web)
 
 ```javascript
-// Create products in Stripe Dashboard or via API:
-
-// 1. OkapiFind Plus
-stripe.products.create({
-  name: 'OkapiFind Plus',
-  description: 'Never lose your car with automatic parking detection',
+// Create the main product
+const product = await stripe.products.create({
+  name: 'OkapiFind Premium',
+  description: 'Never lose your car again with unlimited parking saves',
   metadata: {
-    tier: 'plus',
-    features: 'unlimited_saves,auto_detect,photo_notes,voice_nav'
+    app: 'okapifind',
+    tier: 'premium',
   }
 });
 
-// 2. Plus Monthly Price
-stripe.prices.create({
-  product: 'prod_xxxxx', // Your Plus product ID
+// Monthly Price - $2.99
+await stripe.prices.create({
+  product: product.id,
   unit_amount: 299, // $2.99 in cents
   currency: 'usd',
-  recurring: {
-    interval: 'month'
-  },
+  recurring: { interval: 'month' },
+  lookup_key: 'okapifind_monthly',
   metadata: {
-    tier: 'plus',
-    period: 'monthly'
+    tier: 'premium',
+    period: 'monthly',
   }
 });
 
-// 3. Plus Yearly Price
-stripe.prices.create({
-  product: 'prod_xxxxx', // Your Plus product ID
-  unit_amount: 2999, // $29.99 in cents
+// Annual Price - $19.99
+await stripe.prices.create({
+  product: product.id,
+  unit_amount: 1999, // $19.99 in cents
   currency: 'usd',
-  recurring: {
-    interval: 'year'
-  },
+  recurring: { interval: 'year' },
+  lookup_key: 'okapifind_annual',
   metadata: {
-    tier: 'plus',
-    period: 'yearly',
-    savings: '17_percent'
+    tier: 'premium',
+    period: 'annual',
+    savings_percent: '44',
+  }
+});
+
+// Lifetime Price - $39.99 (one-time)
+const lifetimeProduct = await stripe.products.create({
+  name: 'OkapiFind Lifetime',
+  description: 'One-time payment for lifetime premium access',
+  metadata: {
+    app: 'okapifind',
+    tier: 'lifetime',
+  }
+});
+
+await stripe.prices.create({
+  product: lifetimeProduct.id,
+  unit_amount: 3999, // $39.99 in cents
+  currency: 'usd',
+  lookup_key: 'okapifind_lifetime',
+  metadata: {
+    tier: 'lifetime',
+    period: 'once',
   }
 });
 ```
 
-## Revenue Projections
+**Environment Variables**
+```env
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_MONTHLY=price_...
+STRIPE_PRICE_ANNUAL=price_...
+STRIPE_PRICE_LIFETIME=price_...
+```
 
-### Conservative Scenario (Year 1)
-- 100,000 downloads
-- 2% conversion to paid (2,000 users)
-- 70% choose Plus, 20% Pro, 10% Family
-- Monthly Revenue: ~$7,000
-- Annual Revenue: ~$84,000
+---
 
-### Realistic Scenario (Year 2)
-- 500,000 total downloads
-- 3% conversion to paid (15,000 users)
-- Distribution: 60% Plus, 25% Pro, 15% Family
-- Monthly Revenue: ~$55,000
-- Annual Revenue: ~$660,000
+## Pricing Comparison Table
 
-### Optimistic Scenario (Year 3)
-- 1,000,000+ downloads
-- 5% conversion (50,000 users)
-- Monthly Revenue: ~$200,000
-- Annual Revenue: ~$2.4M
+| Plan | iOS | Android | Web |
+|------|-----|---------|-----|
+| Monthly | $2.99/mo | $2.99/mo | $2.99/mo |
+| Annual | $19.99/yr | $19.99/yr | $19.99/yr |
+| Lifetime | $39.99 | $39.99 | $39.99 |
 
-## Trial Period Strategy
+---
 
-- **7-day free trial** for all paid tiers
-- No credit card required for free tier
-- Auto-convert to paid after trial
-- Grace period of 3 days for payment issues
+## Entitlements
 
-## Promotional Strategies
+All platforms use the same entitlement ID: `premium`
 
-1. **Launch Offer**: 50% off first 3 months
-2. **Referral Program**: Give 1 month free, get 1 month free
-3. **Seasonal**: Black Friday - 40% off yearly plans
-4. **Student Discount**: 20% off with .edu email
-5. **Early Bird**: Lifetime 30% off for first 1000 users
+When a user subscribes via any platform:
+1. The entitlement `premium` is granted
+2. Cross-platform sync is handled by RevenueCat (mobile) or Supabase (web)
+3. User ID must be consistent across platforms
+
+---
+
+## Growth Strategy & Feature Roadmap
+
+### v1.0 (Current) - Core MVP
+**Price**: $2.99/mo | $19.99/yr | $39.99 lifetime
+
+**Features included**:
+- Unlimited parking saves
+- Photo notes
+- Parking history
+- Safety sharing (basic link sharing)
+- Priority email support
+
+### v1.5 (Planned) - Enhanced Features
+**Price increase**: $3.99/mo | $24.99/yr | $49.99 lifetime (new users only)
+
+**New features to add**:
+- OCR parking sign scanner with automatic timer
+- Offline maps (cached tiles)
+- Enhanced voice-guided navigation
+
+### v2.0 (Future) - Pro Tier
+**Consider adding Pro tier**: $5.99/mo | $39.99/yr | $79.99 lifetime
+
+**Pro-exclusive features**:
+- Family sharing (up to 5 members)
+- Auto-parking detection
+- Smart parking predictions
+- Multi-vehicle support
+- API access
+
+### Grandfathering Policy
+- Existing subscribers keep their original price forever
+- Price increases only affect new subscribers
+- Lifetime purchases include all future features at no extra cost
+- This creates loyal advocates and positive word-of-mouth
+
+---
+
+## Testing
+
+### Stripe Test Mode
+Use test card numbers:
+- Success: `4242 4242 4242 4242`
+- Declined: `4000 0000 0000 0002`
+- Requires authentication: `4000 0025 0000 3155`
+
+### RevenueCat Sandbox
+- iOS: Use Sandbox Apple ID
+- Android: Use license testers in Play Console
+
+---
 
 ## Implementation Checklist
 
-- [ ] Create products in Stripe Dashboard
-- [ ] Set up webhook endpoints in Supabase
-- [ ] Implement subscription management UI
-- [ ] Add receipt validation
-- [ ] Set up dunning emails for failed payments
-- [ ] Configure tax settings (Stripe Tax)
-- [ ] Enable SCA/3D Secure for EU customers
-- [ ] Set up refund policy (14-day money back)
-- [ ] Add subscription analytics tracking
+### App Store Connect (iOS)
+- [ ] Create auto-renewable subscription group
+- [ ] Add monthly product ($2.99)
+- [ ] Add annual product ($19.99)
+- [ ] Add non-consumable lifetime product ($39.99)
+- [ ] Submit for review
+
+### Google Play Console (Android)
+- [ ] Create subscription products
+- [ ] Add monthly ($2.99)
+- [ ] Add annual ($19.99)
+- [ ] Add one-time lifetime ($39.99)
+- [ ] Configure license testers
+
+### RevenueCat Dashboard
+- [ ] Create `premium` entitlement
+- [ ] Link iOS products
+- [ ] Link Android products
+- [ ] Create `default` offering
+- [ ] Configure webhooks (optional)
+
+### Stripe Dashboard
+- [ ] Create products in test mode
+- [ ] Create prices matching structure above
+- [ ] Set up webhook endpoint
+- [ ] Test checkout flow
+- [ ] Switch to live mode for production
+
+### Code Updates
+- [x] Update PaywallScreen with v1.0 features
+- [x] Update pricing documentation
+- [ ] Test purchase flow on iOS
+- [ ] Test purchase flow on Android
+- [ ] Test Stripe checkout on web

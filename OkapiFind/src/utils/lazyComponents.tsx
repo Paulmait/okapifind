@@ -58,9 +58,8 @@ export const LazyARNavigationScreen = Platform.OS === 'web'
   ? React.lazy(() => import('../screens/WebMapScreen')) // AR not supported on web
   : React.lazy(() => import('../screens/ARNavigationScreen'));
 
-export const LazyLiveTrackingScreen = Platform.OS === 'web'
-  ? React.lazy(() => import('../screens/WebMapScreen')) // Use web map for tracking
-  : React.lazy(() => import('../screens/LiveTrackingScreen'));
+// LiveTrackingScreen disabled - uses react-native-maps which is incompatible with SDK 54
+export const LazyLiveTrackingScreen = React.lazy(() => import('../screens/WebMapScreen'));
 
 // Wrapped lazy components with performance monitoring
 export const MapScreen = withLazyLoading(LazyMapScreen, undefined, 'MapScreen');

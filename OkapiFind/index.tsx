@@ -1,10 +1,8 @@
 import { registerRootComponent } from 'expo';
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Platform, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-
-// Import all the modules that passed
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Colors } from './src/constants/colors';
@@ -23,86 +21,71 @@ import './src/i18n';
 
 const Stack = createStackNavigator();
 
-// Test stages
-type TestStage =
-  | 'initial'
-  | 'safearea'
-  | 'navigation'
-  | 'errorBoundary'
-  | 'firebaseGuard'
-  | 'fullApp';
+// Loading screen component
+const LoadingScreen: React.FC = () => (
+  <View style={styles.loadingContainer}>
+    <ActivityIndicator size="large" color={Colors.primary} />
+    <Text style={styles.loadingText}>Loading OkapiFind...</Text>
+  </View>
+);
 
-const RenderTest: React.FC = () => {
-  const [stage, setStage] = useState<TestStage>('initial');
-  const [error, setError] = useState<string | null>(null);
-  const [testResults, setTestResults] = useState<{stage: string; status: string}[]>([]);
+// App component with safe initialization
+const App: React.FC = () => {
+  const [isReady, setIsReady] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
 
-  const addResult = (stageName: string, status: string) => {
-    setTestResults(prev => [...prev, { stage: stageName, status }]);
-  };
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Initialize analytics (non-blocking)
+        try {
+          await analytics.initialize();
+          analytics.trackEvent('app_launched', {
+            platform: Platform.OS,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (analyticsError) {
+          console.warn('Analytics initialization failed:', analyticsError);
+          // Don't block app startup for analytics
+        }
 
-  const runTest = async (testStage: TestStage) => {
-    try {
-      setStage(testStage);
-      addResult(testStage, '✅ Rendered');
-    } catch (e: any) {
-      setError(`Stage "${testStage}" failed: ${e.message}`);
-      addResult(testStage, `❌ ${e.message}`);
-    }
-  };
+        setIsReady(true);
+      } catch (error) {
+        console.error('App initialization error:', error);
+        setInitError(error instanceof Error ? error.message : 'Unknown error');
+        // Still mark as ready to show error UI
+        setIsReady(true);
+      }
+    };
 
-  // Initial test content
-  if (stage === 'initial') {
+    initializeApp();
+  }, []);
+
+  // Show loading screen while initializing
+  if (!isReady) {
     return (
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scroll}>
-          <Text style={styles.title}>Render Test</Text>
-          <Text style={styles.subtitle}>Testing component rendering stages</Text>
-
-          <TouchableOpacity style={styles.button} onPress={() => runTest('safearea')}>
-            <Text style={styles.buttonText}>Test 1: SafeAreaProvider</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={() => runTest('navigation')}>
-            <Text style={styles.buttonText}>Test 2: NavigationContainer</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={() => runTest('errorBoundary')}>
-            <Text style={styles.buttonText}>Test 3: ErrorBoundary</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={() => runTest('firebaseGuard')}>
-            <Text style={styles.buttonText}>Test 4: FirebaseConfigGuard</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={() => runTest('fullApp')}>
-            <Text style={styles.buttonText}>Test 5: Full App (MapScreen)</Text>
-          </TouchableOpacity>
-
-          {testResults.map((result, i) => (
-            <View key={i} style={styles.resultRow}>
-              <Text style={styles.resultText}>{result.stage}: {result.status}</Text>
-            </View>
-          ))}
-
-          {error && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          )}
-        </ScrollView>
-      </View>
+      <SafeAreaProvider>
+        <LoadingScreen />
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
     );
   }
 
-  // Test SafeAreaProvider
-  if (stage === 'safearea') {
+  // Show error screen if initialization failed critically
+  if (initError) {
     return (
       <SafeAreaProvider>
-        <View style={styles.container}>
-          <Text style={styles.success}>✅ SafeAreaProvider works!</Text>
-          <TouchableOpacity style={styles.button} onPress={() => setStage('initial')}>
-            <Text style={styles.buttonText}>Back to Tests</Text>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>{initError}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => {
+              setInitError(null);
+              setIsReady(false);
+            }}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
         <StatusBar style="auto" />
@@ -110,67 +93,10 @@ const RenderTest: React.FC = () => {
     );
   }
 
-  // Test NavigationContainer
-  if (stage === 'navigation') {
-    return (
-      <SafeAreaProvider>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Test">
-              {() => (
-                <View style={styles.container}>
-                  <Text style={styles.success}>✅ NavigationContainer works!</Text>
-                  <TouchableOpacity style={styles.button} onPress={() => setStage('initial')}>
-                    <Text style={styles.buttonText}>Back to Tests</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </Stack.Screen>
-          </Stack.Navigator>
-        </NavigationContainer>
-        <StatusBar style="auto" />
-      </SafeAreaProvider>
-    );
-  }
-
-  // Test ErrorBoundary
-  if (stage === 'errorBoundary') {
-    return (
-      <ErrorBoundary screenName="Test">
-        <SafeAreaProvider>
-          <View style={styles.container}>
-            <Text style={styles.success}>✅ ErrorBoundary works!</Text>
-            <TouchableOpacity style={styles.button} onPress={() => setStage('initial')}>
-              <Text style={styles.buttonText}>Back to Tests</Text>
-            </TouchableOpacity>
-          </View>
-          <StatusBar style="auto" />
-        </SafeAreaProvider>
-      </ErrorBoundary>
-    );
-  }
-
-  // Test FirebaseConfigGuard
-  if (stage === 'firebaseGuard') {
-    return (
-      <SafeAreaProvider>
-        <FirebaseConfigGuard>
-          <View style={styles.container}>
-            <Text style={styles.success}>✅ FirebaseConfigGuard works!</Text>
-            <TouchableOpacity style={styles.button} onPress={() => setStage('initial')}>
-              <Text style={styles.buttonText}>Back to Tests</Text>
-            </TouchableOpacity>
-          </View>
-        </FirebaseConfigGuard>
-        <StatusBar style="auto" />
-      </SafeAreaProvider>
-    );
-  }
-
-  // Test Full App with MapScreen
-  if (stage === 'fullApp') {
-    return (
-      <ErrorBoundary screenName="App">
+  // Main app with full navigation
+  return (
+    <ErrorBoundary screenName="App">
+      <FirebaseConfigGuard>
         <SafeAreaProvider>
           <OfflineIndicator />
           <NavigationContainer>
@@ -179,99 +105,121 @@ const RenderTest: React.FC = () => {
               screenOptions={{
                 headerStyle: { backgroundColor: Colors.background },
                 headerTintColor: Colors.primary,
+                headerTitleStyle: { fontWeight: '600' },
               }}
             >
               <Stack.Screen
                 name="Map"
                 component={MapScreen}
-                options={{
+                options={({ navigation }) => ({
                   title: 'OkapiFind',
                   headerTitleAlign: 'center',
                   headerRight: () => (
-                    <TouchableOpacity style={{ marginRight: 16 }}>
-                      <Text style={{ color: Colors.primary, fontSize: 28 }}>⚙</Text>
+                    <TouchableOpacity
+                      style={styles.headerButton}
+                      onPress={() => navigation.navigate('Settings')}
+                      accessibilityLabel="Settings"
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.headerButtonText}>Settings</Text>
                     </TouchableOpacity>
                   ),
+                })}
+              />
+              <Stack.Screen
+                name="Guidance"
+                component={GuidanceScreen}
+                options={{
+                  title: 'Navigate to Car',
+                  headerBackTitle: 'Back',
                 }}
               />
-              <Stack.Screen name="Guidance" component={GuidanceScreen} />
-              <Stack.Screen name="Settings" component={SettingsScreen} />
-              <Stack.Screen name="Legal" component={LegalScreen} />
-              <Stack.Screen name="Paywall" component={PaywallScreen} />
+              <Stack.Screen
+                name="Settings"
+                component={SettingsScreen}
+                options={{
+                  title: 'Settings',
+                  headerBackTitle: 'Back',
+                }}
+              />
+              <Stack.Screen
+                name="Legal"
+                component={LegalScreen}
+                options={{
+                  title: 'Legal',
+                  headerBackTitle: 'Back',
+                }}
+              />
+              <Stack.Screen
+                name="Paywall"
+                component={PaywallScreen}
+                options={{
+                  title: 'Upgrade to Premium',
+                  headerBackTitle: 'Back',
+                }}
+              />
             </Stack.Navigator>
           </NavigationContainer>
           <StatusBar style="auto" />
         </SafeAreaProvider>
-      </ErrorBoundary>
-    );
-  }
-
-  return null;
+      </FirebaseConfigGuard>
+    </ErrorBoundary>
+  );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
-    backgroundColor: '#0F1B2A',
-    paddingTop: 60,
+    backgroundColor: Colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  scroll: {
-    padding: 20,
+  loadingText: {
+    color: Colors.primary,
+    fontSize: 18,
+    marginTop: 16,
+    fontWeight: '500',
   },
-  title: {
-    fontSize: 28,
+  errorContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  errorTitle: {
+    color: '#FF6B6B',
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFD700',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  button: {
-    backgroundColor: '#2a3a4a',
-    padding: 16,
-    borderRadius: 8,
     marginBottom: 12,
   },
-  primaryButton: {
-    backgroundColor: '#FFD700',
-  },
-  buttonText: {
+  errorMessage: {
     color: '#FFFFFF',
     fontSize: 16,
     textAlign: 'center',
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: Colors.background,
+    fontSize: 16,
     fontWeight: '600',
   },
-  success: {
-    fontSize: 24,
-    color: '#00FF00',
-    textAlign: 'center',
-    marginBottom: 20,
+  headerButton: {
+    marginRight: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
-  resultRow: {
-    backgroundColor: '#1a2a3a',
-    padding: 10,
-    borderRadius: 6,
-    marginTop: 8,
-  },
-  resultText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-  },
-  errorBox: {
-    backgroundColor: '#3a1a1a',
-    padding: 15,
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  errorText: {
-    color: '#FF6B6B',
-    fontSize: 14,
+  headerButtonText: {
+    color: Colors.primary,
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
 
-registerRootComponent(RenderTest);
+registerRootComponent(App);

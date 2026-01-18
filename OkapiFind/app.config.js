@@ -8,7 +8,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true,
+    newArchEnabled: true, // Required for expo-maps (SwiftUI)
     splash: {
       image: "./assets/splash-icon.png",
       resizeMode: "contain",
@@ -86,7 +86,8 @@ export default {
           icon: "./assets/notification-icon.png",
           color: "#FFD700"
         }
-      ]
+      ],
+      "expo-maps"
     ],
     extra: {
       // URLs - Using GitHub Pages for legal documents

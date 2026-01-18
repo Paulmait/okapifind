@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from 'react';
 import { Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -232,9 +233,6 @@ export function withPerformanceMonitoring<P extends object>(
   const displayName = componentName || WrappedComponent.displayName || WrappedComponent.name || 'Component';
 
   const PerformanceWrappedComponent: React.FC<P> = (props) => {
-    const React = require('react');
-    const { useEffect, useRef } = React;
-
     const renderStartTime = useRef<number>(Date.now());
 
     useEffect(() => {

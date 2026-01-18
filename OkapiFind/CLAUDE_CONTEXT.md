@@ -341,6 +341,62 @@ if (isSupabaseConfigured()) { /* use supabase */ }
 
 ---
 
+## Database Security Status
+
+### Supabase Security Fixes Applied (Jan 17, 2026)
+
+| Issue | Status | Migration |
+|-------|--------|-----------|
+| RLS Disabled | FIXED | `001_security_fixes.sql` |
+| Function search_path mutable | FIXED | `20260117160000_security_hardening.sql` |
+| Multiple permissive policies | FIXED | `20260117170000_performance_optimization.sql` |
+| auth.uid() performance | FIXED | `20260117170000_performance_optimization.sql` |
+| Duplicate indexes | FIXED | `20260117170000_performance_optimization.sql` |
+| Leaked Password Protection | ENABLED | Dashboard (manual) |
+| Extensions in public schema | WARN | Low-risk, PostGIS can't be moved |
+| spatial_ref_sys RLS | N/A | System table, owned by PostGIS |
+
+### Manual Dashboard Settings
+- **Leaked Password Protection:** Enabled in Authentication > Providers > Email
+- **MFA:** TOTP enabled (optional for users)
+- **URL Configuration:** `okapifind://auth/callback` added to allowed redirects
+
+---
+
+## App Store Submission Checklist
+
+### Completed
+- [x] App icon (1024x1024) created
+- [x] iPhone screenshots (6.5", 6.7", 6.9") generated
+- [x] Privacy Policy URL: https://okapifind.com/privacy
+- [x] Terms of Service URL: https://okapifind.com/terms
+- [x] Support URL configured
+- [x] Database RLS enabled on all tables
+- [x] Security functions hardened
+- [x] Leaked password protection enabled
+- [x] RevenueCat configured with products
+- [x] EAS build profiles configured
+- [x] Bundle ID: com.okapi.find
+- [x] Apple Team: LFB9Z5Q3Y9 (CIEN RIOS, LLC)
+- [x] New Architecture enabled
+
+### Ready for Testing
+- [ ] Test full payment flow in sandbox
+- [ ] Verify Google OAuth on physical device
+- [ ] Test Apple Sign-In flow
+- [ ] Verify push notifications work
+- [ ] Test offline mode in parking garage
+
+### Pre-Submission
+- [ ] Run `eas build --profile production --platform ios`
+- [ ] Test production build on physical device
+- [ ] Prepare App Store Connect metadata
+- [ ] Answer export compliance (No encryption = exempt)
+- [ ] Set age rating (4+, no objectionable content)
+- [ ] Submit for review
+
+---
+
 ## Known Issues & TODOs
 
 ### High Priority

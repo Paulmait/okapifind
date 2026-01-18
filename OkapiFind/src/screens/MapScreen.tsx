@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,144 +7,86 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
-  Switch,
+  Modal,
+  ScrollView,
+  TextInput,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Circle } from 'react-native-maps';
+import { AppleMaps } from 'expo-maps';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useCarLocation } from '../hooks/useCarLocation';
-import { useParkingDetection } from '../hooks/useParkingDetection';
-import { calculateDistance, formatDistance } from '../utils';
 import { RootStackParamList } from '../types/navigation';
-import { parkingDetection } from '../services/ParkingDetectionService';
 import { Colors } from '../constants/colors';
-import { performance, withPerformanceMonitoring } from '../services/performance';
 
 type MapScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Map'>;
+
+// Floor/Level options for parking garages
+const FLOOR_OPTIONS = [
+  { label: 'Street Level', value: 'street' },
+  { label: 'Rooftop', value: 'rooftop' },
+  { label: 'Level 1', value: 'L1' },
+  { label: 'Level 2', value: 'L2' },
+  { label: 'Level 3', value: 'L3' },
+  { label: 'Level 4', value: 'L4' },
+  { label: 'Level 5', value: 'L5' },
+  { label: 'P1 (Underground 1)', value: 'P1' },
+  { label: 'P2 (Underground 2)', value: 'P2' },
+  { label: 'P3 (Underground 3)', value: 'P3' },
+  { label: 'P4 (Underground 4)', value: 'P4' },
+];
+
+interface CarLocation {
+  latitude: number;
+  longitude: number;
+  timestamp: number;
+  floor?: string;
+  notes?: string;
+}
 
 const MapScreen: React.FC = () => {
   const navigation = useNavigation<MapScreenNavigationProp>();
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [locationPermission, setLocationPermission] = useState(false);
-  const [showDetectionCard, setShowDetectionCard] = useState(false);
+  const [carLocation, setCarLocation] = useState<CarLocation | null>(null);
 
-  // Performance monitoring (with error handling)
-  useEffect(() => {
-    try {
-      performance.startTimer('MapScreen_mount');
-      performance.logMemoryUsage('MapScreen');
-    } catch (e) {
-      console.warn('Performance monitoring failed:', e);
-    }
-
-    return () => {
-      try {
-        performance.endTimer('MapScreen_mount');
-      } catch (e) {
-        // Ignore cleanup errors
-      }
-    };
-  }, []);
-
-  // Use the car location hook
-  const {
-    carLocation,
-    saveCarLocation,
-    getFormattedTime,
-    isLoading: carLocationLoading,
-  } = useCarLocation();
-
-  // Use parking detection hook
-  const {
-    isTracking,
-    settings,
-    lastDetectedParking,
-    frequentLocations,
-    startDetection,
-    stopDetection,
-    confirmParking,
-    dismissParking,
-  } = useParkingDetection();
+  // Save location modal state
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [selectedFloor, setSelectedFloor] = useState<string>('street');
+  const [customNotes, setCustomNotes] = useState<string>('');
 
   useEffect(() => {
-    let locationSubscription: Location.LocationSubscription | null = null;
     let isMounted = true;
 
     const setupLocation = async () => {
       try {
-        // Request location permissions
         const { status } = await Location.requestForegroundPermissionsAsync();
 
         if (!isMounted) return;
 
         if (status !== 'granted') {
-          Alert.alert(
-            'Permission Denied',
-            'Location permission is required to use this feature.',
-            [{ text: 'OK' }]
-          );
           setLoading(false);
           return;
         }
 
         setLocationPermission(true);
 
-        // Get current location with optimized settings
-        const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced, // Changed from High to Balanced for better battery life
-        });
+        try {
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
 
-        if (isMounted) {
-          setUserLocation(location);
-          setLoading(false);
+          if (isMounted) {
+            setUserLocation(location);
+          }
+        } catch (locError: any) {
+          console.warn('Error getting current position:', locError);
         }
-
-        // Set up location tracking with optimized intervals
-        locationSubscription = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.Balanced, // Optimized for battery
-            timeInterval: 10000, // Increased from 5000ms to 10000ms
-            distanceInterval: 20, // Increased from 10m to 20m
-          },
-          (newLocation) => {
-            if (!isMounted) return;
-
-            // Only update if significant change
-            setUserLocation(prevLocation => {
-              if (!prevLocation) return newLocation;
-              const distance = calculateDistance(
-                prevLocation.coords.latitude,
-                prevLocation.coords.longitude,
-                newLocation.coords.latitude,
-                newLocation.coords.longitude
-              );
-              // Only update if moved more than 5 meters
-              return distance > 5 ? newLocation : prevLocation;
-            });
-          }
-        );
-
-        // Initialize parking detection if enabled (with error handling)
-        if (settings.enabled && isMounted) {
-          try {
-            await parkingDetection.initialize();
-          } catch (detectionError) {
-            console.warn('Parking detection initialization failed:', detectionError);
-            // Don't block the app - parking detection is optional
-          }
-        }
-      } catch (error) {
+      } catch (err: any) {
+        console.error('Error in location setup:', err);
+      } finally {
         if (isMounted) {
-          console.error('Error getting location:', error);
-          // Don't show alert for common errors - just log and continue
-          if ((error as any)?.code === 'E_LOCATION_UNAVAILABLE') {
-            console.warn('Location temporarily unavailable');
-          } else {
-            Alert.alert('Location Error', 'Could not get your location. Some features may be limited.');
-          }
           setLoading(false);
         }
       }
@@ -152,87 +94,56 @@ const MapScreen: React.FC = () => {
 
     setupLocation();
 
-    // Cleanup function
     return () => {
       isMounted = false;
-      if (locationSubscription) {
-        locationSubscription.remove();
-      }
-      // Clean up parking detection
-      if (parkingDetection && parkingDetection.cleanup) {
-        parkingDetection.cleanup();
-      }
     };
   }, []);
 
-  // Handle detected parking notification
-  useEffect(() => {
-    if (lastDetectedParking && !showDetectionCard) {
-      setShowDetectionCard(true);
-    }
-  }, [lastDetectedParking]);
-
-  const handleSaveCarLocation = useCallback(async () => {
-    console.log('🚗 Save Location button clicked', { hasUserLocation: !!userLocation });
-
+  // Open save modal
+  const handleSaveCarLocation = useCallback(() => {
     if (!userLocation) {
-      console.warn('⚠️ No user location available');
       Alert.alert('Location Not Available', 'Please wait for your location to be determined.');
       return;
     }
+    setShowSaveModal(true);
+  }, [userLocation]);
+
+  // Confirm save with floor and notes
+  const confirmSaveLocation = useCallback(async () => {
+    if (!userLocation) return;
 
     try {
-      console.log('📍 Saving location:', {
-        lat: userLocation.coords.latitude,
-        lng: userLocation.coords.longitude,
-        platform: Platform.OS
-      });
+      const floorLabel = FLOOR_OPTIONS.find(f => f.value === selectedFloor)?.label || selectedFloor;
+      const newCarLocation: CarLocation = {
+        latitude: userLocation.coords.latitude,
+        longitude: userLocation.coords.longitude,
+        timestamp: Date.now(),
+        floor: selectedFloor,
+        notes: customNotes || `Parked at ${floorLabel}`,
+      };
 
-      await performance.measureAsync('save_car_location', async () => {
-        await saveCarLocation(
-          userLocation.coords.latitude,
-          userLocation.coords.longitude,
-          {
-            notes: 'Manually saved',
-          }
-        );
+      setCarLocation(newCarLocation);
+      setShowSaveModal(false);
+      setCustomNotes('');
 
-        // Also save to parking detection service
-        await parkingDetection.manualSaveParking(
-          {
-            latitude: userLocation.coords.latitude,
-            longitude: userLocation.coords.longitude,
-          },
-          'Manually saved from map'
-        );
-      });
-
-      console.log('✅ Location saved successfully');
-
-      // Haptic feedback on save (skip on web)
       if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        try {
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } catch (e) {
+          // Ignore haptic errors
+        }
       }
 
-      Alert.alert(
-        'Location Saved',
-        'Your car location has been saved successfully.',
-        [{ text: 'OK' }]
-      );
-    } catch (error) {
-      console.error('❌ Error saving location:', error);
-      Alert.alert('Error', 'Failed to save car location. Please try again.');
+      Alert.alert('Location Saved', `Your car location has been saved at ${floorLabel}.`);
+    } catch (err) {
+      console.error('Error saving location:', err);
+      Alert.alert('Error', 'Failed to save car location.');
     }
-  }, [userLocation, saveCarLocation]);
+  }, [userLocation, selectedFloor, customNotes]);
 
   const handleGuideMe = useCallback(() => {
-    if (!userLocation) {
-      Alert.alert('Location Not Available', 'Please wait for your location to be determined.');
-      return;
-    }
-
-    if (!carLocation) {
-      Alert.alert('No Car Location', 'Please set your car location first.');
+    if (!userLocation || !carLocation) {
+      Alert.alert('Missing Location', 'Please save your car location first.');
       return;
     }
 
@@ -248,38 +159,19 @@ const MapScreen: React.FC = () => {
     });
   }, [navigation, userLocation, carLocation]);
 
-  const toggleAutoDetection = useCallback(async () => {
-    try {
-      await performance.measureAsync('toggle_auto_detection', async () => {
-        if (isTracking) {
-          await stopDetection();
-        } else {
-          await startDetection();
-        }
-      });
-    } catch (error) {
-      console.error('Error toggling auto detection:', error);
-    }
-  }, [isTracking, startDetection, stopDetection]);
+  const formatTime = (timestamp: number): string => {
+    const diff = Date.now() - timestamp;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins} min ago`;
+    const hours = Math.floor(mins / 60);
+    return `${hours}h ago`;
+  };
 
-  const handleConfirmDetectedParking = useCallback(async () => {
-    if (lastDetectedParking) {
-      await confirmParking(lastDetectedParking);
-      setShowDetectionCard(false);
-    }
-  }, [lastDetectedParking, confirmParking]);
-
-  const handleDismissDetectedParking = useCallback(async () => {
-    if (lastDetectedParking) {
-      await dismissParking(lastDetectedParking.id);
-      setShowDetectionCard(false);
-    }
-  }, [lastDetectedParking, dismissParking]);
-
-  if (loading || carLocationLoading) {
+  if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={Colors.primary} />
         <Text style={styles.loadingText}>Getting your location...</Text>
       </View>
     );
@@ -294,183 +186,75 @@ const MapScreen: React.FC = () => {
     );
   }
 
-  // Memoized calculations
-  const initialRegion = useMemo(() => {
-    if (userLocation) {
-      return {
-        latitude: userLocation.coords.latitude,
-        longitude: userLocation.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      };
-    }
-    if (carLocation) {
-      return {
+  // Build markers array for expo-maps
+  const markers: AppleMaps.Marker[] = [];
+
+  if (carLocation) {
+    const floorLabel = carLocation.floor
+      ? FLOOR_OPTIONS.find(f => f.value === carLocation.floor)?.label || carLocation.floor
+      : '';
+    markers.push({
+      id: 'car',
+      coordinates: {
         latitude: carLocation.latitude,
         longitude: carLocation.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      };
-    }
-    return {
+      },
+      title: 'Your Car',
+      snippet: floorLabel ? `${floorLabel} - ${formatTime(carLocation.timestamp)}` : `Saved ${formatTime(carLocation.timestamp)}`,
+      color: 'red',
+    });
+  }
+
+  // Initial camera position
+  const cameraPosition = userLocation ? {
+    coordinates: {
+      latitude: userLocation.coords.latitude,
+      longitude: userLocation.coords.longitude,
+    },
+    zoom: 15,
+  } : {
+    coordinates: {
       latitude: 37.78825,
       longitude: -122.4324,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    };
-  }, [userLocation, carLocation]);
-
-  const distance = useMemo(() => {
-    if (!userLocation || !carLocation) return 0;
-
-    try {
-      return calculateDistance(
-        userLocation.coords.latitude,
-        userLocation.coords.longitude,
-        carLocation.latitude,
-        carLocation.longitude
-      );
-    } catch (error) {
-      console.warn('Distance calculation failed:', error);
-      return 0;
-    }
-  }, [userLocation, carLocation]);
-
-  const formattedDistance = useMemo(() => {
-    try {
-      return formatDistance(distance, false);
-    } catch (error) {
-      console.warn('Distance formatting failed:', error);
-      return '-- m';
-    }
-  }, [distance]);
+    },
+    zoom: 15,
+  };
 
   return (
     <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
-        initialRegion={initialRegion}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
-        showsCompass={true}
-        followsUserLocation={true}
-      >
-        {/* Car Location Marker */}
-        {carLocation && (
-          <Marker
-            coordinate={{
-              latitude: carLocation.latitude,
-              longitude: carLocation.longitude,
-            }}
-            title="Your Car"
-            description={carLocation.notes || getFormattedTime()}
-            pinColor="red"
-          />
-        )}
-
-        {/* Detected Parking Marker */}
-        {lastDetectedParking && showDetectionCard && (
-          <>
-            <Marker
-              coordinate={{
-              latitude: lastDetectedParking.location.latitude,
-              longitude: lastDetectedParking.location.longitude,
-            }}
-            title="Detected Parking"
-            description={`Confidence: ${Math.round(lastDetectedParking.confidence * 100)}%`}
-            pinColor="orange"
-          />
-            <Circle
-              center={{
-                latitude: lastDetectedParking.location.latitude,
-                longitude: lastDetectedParking.location.longitude,
-              }}
-              radius={50}
-              fillColor="rgba(255, 165, 0, 0.2)"
-              strokeColor="rgba(255, 165, 0, 0.5)"
-              strokeWidth={2}
-            />
-          </>
-        )}
-
-        {/* Frequent Location Markers */}
-        {frequentLocations.map((location) => (
-          <Marker
-            key={location.id}
-            coordinate={{
-              latitude: location.location.latitude,
-              longitude: location.location.longitude,
-            }}
-            title={location.name || 'Frequent Parking'}
-            description={`Visited ${location.visitCount} times`}
-            pinColor="green"
-            opacity={0.7}
-          />
-        ))}
-
-        {/* User Location Marker (custom, in addition to showsUserLocation) */}
-        {userLocation && (
-          <Marker
-            coordinate={{
-              latitude: userLocation.coords.latitude,
-              longitude: userLocation.coords.longitude,
-            }}
-            title="You are here"
-            pinColor="blue"
-          />
-        )}
-      </MapView>
-
-      {/* Auto Detection Toggle */}
-      <View style={styles.detectionToggle}>
-        <Text style={styles.detectionLabel}>Auto-Detect Parking</Text>
-        <Switch
-          value={isTracking}
-          onValueChange={toggleAutoDetection}
-          trackColor={{ false: '#767577', true: '#007AFF' }}
-          thumbColor={isTracking ? '#fff' : '#f4f3f4'}
+      {Platform.OS === 'ios' ? (
+        <AppleMaps.View
+          style={styles.map}
+          cameraPosition={cameraPosition}
+          markers={markers}
+          properties={{
+            isMyLocationEnabled: true,
+            showsCompass: true,
+          }}
         />
-      </View>
-
-      {/* Detected Parking Card */}
-      {showDetectionCard && lastDetectedParking && (
-        <View style={styles.detectionCard}>
-          <Text style={styles.detectionTitle}>🚗 Parking Detected!</Text>
-          <Text style={styles.detectionSubtitle}>
-            Confidence: {Math.round(lastDetectedParking.confidence * 100)}%
+      ) : (
+        <View style={styles.mapPlaceholder}>
+          <Text style={styles.placeholderText}>Map view</Text>
+          <Text style={styles.placeholderSubtext}>
+            {userLocation ?
+              `${userLocation.coords.latitude.toFixed(4)}, ${userLocation.coords.longitude.toFixed(4)}` :
+              'Getting location...'}
           </Text>
-          {lastDetectedParking.address && (
-            <Text style={styles.detectionAddress}>{lastDetectedParking.address}</Text>
-          )}
-          <View style={styles.detectionButtons}>
-            <TouchableOpacity
-              style={[styles.detectionButton, styles.dismissButton]}
-              onPress={handleDismissDetectedParking}
-            >
-              <Text style={styles.dismissButtonText}>Dismiss</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.detectionButton, styles.confirmButton]}
-              onPress={handleConfirmDetectedParking}
-            >
-              <Text style={styles.confirmButtonText}>Save</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       )}
 
-      {/* Bottom Card with Actions */}
+      {/* Bottom Card */}
       <View style={styles.bottomCard}>
         {carLocation ? (
           <>
             <View style={styles.cardContent}>
               <Text style={styles.cardTitle}>Your Car</Text>
-              <Text style={styles.cardSubtitle}>Parked {getFormattedTime()}</Text>
-              {userLocation && (
-                <Text style={styles.distanceText}>
-                  {formattedDistance}
-                </Text>
+              <Text style={styles.cardSubtitle}>
+                {carLocation.floor && FLOOR_OPTIONS.find(f => f.value === carLocation.floor)?.label}
+                {carLocation.floor ? ' - ' : ''}Parked {formatTime(carLocation.timestamp)}
+              </Text>
+              {carLocation.notes && carLocation.notes !== `Parked at ${FLOOR_OPTIONS.find(f => f.value === carLocation.floor)?.label}` && (
+                <Text style={styles.cardNotes}>{carLocation.notes}</Text>
               )}
             </View>
             <View style={styles.buttonContainer}>
@@ -478,7 +262,7 @@ const MapScreen: React.FC = () => {
                 style={[styles.actionButton, styles.saveButton]}
                 onPress={handleSaveCarLocation}
               >
-                <Text style={styles.saveButtonText}>Update Location</Text>
+                <Text style={styles.saveButtonText}>Update</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, styles.guideButton]}
@@ -492,19 +276,84 @@ const MapScreen: React.FC = () => {
           <>
             <View style={styles.cardContent}>
               <Text style={styles.cardTitle}>No Car Location Set</Text>
-              <Text style={styles.cardSubtitle}>
-                {isTracking ? 'Auto-detection is active' : 'Save your car\'s current location'}
-              </Text>
+              <Text style={styles.cardSubtitle}>Save your car's current location</Text>
             </View>
             <TouchableOpacity
               style={styles.fullWidthButton}
               onPress={handleSaveCarLocation}
             >
-              <Text style={styles.guideButtonText}>Set Car Location</Text>
+              <Text style={styles.guideButtonText}>Save Car Location</Text>
             </TouchableOpacity>
           </>
         )}
       </View>
+
+      {/* Save Location Modal with Floor Selector */}
+      <Modal
+        visible={showSaveModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowSaveModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Save Car Location</Text>
+            <Text style={styles.modalSubtitle}>Select the floor/level where you parked</Text>
+
+            <ScrollView style={styles.floorList} showsVerticalScrollIndicator={false}>
+              {FLOOR_OPTIONS.map((floor) => (
+                <TouchableOpacity
+                  key={floor.value}
+                  style={[
+                    styles.floorOption,
+                    selectedFloor === floor.value && styles.floorOptionSelected,
+                  ]}
+                  onPress={() => setSelectedFloor(floor.value)}
+                >
+                  <Text
+                    style={[
+                      styles.floorOptionText,
+                      selectedFloor === floor.value && styles.floorOptionTextSelected,
+                    ]}
+                  >
+                    {floor.label}
+                  </Text>
+                  {selectedFloor === floor.value && (
+                    <Text style={styles.checkmark}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TextInput
+              style={styles.notesInput}
+              placeholder="Add notes (optional) - e.g., 'Near elevator', 'Section B'"
+              placeholderTextColor="#999"
+              value={customNotes}
+              onChangeText={setCustomNotes}
+              multiline
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => {
+                  setShowSaveModal(false);
+                  setCustomNotes('');
+                }}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalSaveButton}
+                onPress={confirmSaveLocation}
+              >
+                <Text style={styles.modalSaveButtonText}>Save Location</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -516,106 +365,44 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
+  mapPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#1a2a3a',
+  },
+  placeholderText: {
+    fontSize: 24,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  placeholderSubtext: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 8,
+  },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.background,
+    padding: 20,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: Colors.textSecondary,
   },
   errorText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: Colors.textPrimary,
     marginBottom: 8,
   },
   subText: {
     fontSize: 14,
-    color: '#666',
+    color: Colors.textSecondary,
     textAlign: 'center',
-    paddingHorizontal: 32,
-  },
-  detectionToggle: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
-    right: 20,
-    backgroundColor: Colors.cardBackground,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  detectionLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginRight: 8,
-    color: '#333',
-  },
-  detectionCard: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 110 : 90,
-    left: 20,
-    right: 20,
-    backgroundColor: Colors.cardBackground,
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 5,
-  },
-  detectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  detectionSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  detectionAddress: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 12,
-  },
-  detectionButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  detectionButton: {
-    flex: 1,
-    borderRadius: 8,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  dismissButton: {
-    backgroundColor: '#f0f0f0',
-  },
-  dismissButtonText: {
-    color: '#666',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  confirmButton: {
-    backgroundColor: Colors.primary,
-  },
-  confirmButtonText: {
-    color: Colors.background,
-    fontSize: 14,
-    fontWeight: '600',
   },
   bottomCard: {
     position: 'absolute',
@@ -629,10 +416,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     paddingHorizontal: 20,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
@@ -643,18 +427,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
   cardSubtitle: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  distanceText: {
-    fontSize: 16,
-    color: Colors.primary,
-    fontWeight: '500',
+    color: Colors.textSecondary,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -688,6 +466,109 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
   },
+  cardNotes: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.cardBackground,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 24,
+    paddingHorizontal: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  floorList: {
+    maxHeight: 250,
+    marginBottom: 16,
+  },
+  floorOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 8,
+    backgroundColor: '#f5f5f5',
+  },
+  floorOptionSelected: {
+    backgroundColor: Colors.primary,
+  },
+  floorOptionText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  floorOptionTextSelected: {
+    color: Colors.background,
+    fontWeight: '600',
+  },
+  checkmark: {
+    fontSize: 18,
+    color: Colors.background,
+    fontWeight: 'bold',
+  },
+  notesInput: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 15,
+    color: '#333',
+    marginBottom: 20,
+    minHeight: 60,
+    textAlignVertical: 'top',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: '#e0e0e0',
+    alignItems: 'center',
+  },
+  modalCancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
+  },
+  modalSaveButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+  },
+  modalSaveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.background,
+  },
 });
 
-export default withPerformanceMonitoring(React.memo(MapScreen), 'MapScreen');
+export default React.memo(MapScreen);

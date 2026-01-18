@@ -11,6 +11,8 @@ import {
   Switch,
   ScrollView,
   useColorScheme,
+  Linking,
+  Alert,
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -218,6 +220,54 @@ const GuidanceScreen: React.FC = () => {
     navigation.goBack();
   };
 
+  // Open in external maps app
+  const openInMaps = () => {
+    const { latitude, longitude } = carLocation;
+    const label = 'My Parked Car';
+
+    Alert.alert(
+      'Open in Maps',
+      'Choose your preferred maps app for turn-by-turn directions',
+      [
+        {
+          text: 'Apple Maps',
+          onPress: () => {
+            const url = `maps://?daddr=${latitude},${longitude}&dirflg=w`;
+            Linking.canOpenURL(url).then((supported) => {
+              if (supported) {
+                Linking.openURL(url);
+              } else {
+                // Fallback to web
+                Linking.openURL(`https://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=w`);
+              }
+            });
+          },
+        },
+        {
+          text: 'Google Maps',
+          onPress: () => {
+            const url = `comgooglemaps://?daddr=${latitude},${longitude}&directionsmode=walking`;
+            Linking.canOpenURL(url).then((supported) => {
+              if (supported) {
+                Linking.openURL(url);
+              } else {
+                // Fallback to web
+                Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=walking`);
+              }
+            });
+          },
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
+  // Calculate estimated walk time (average walking speed ~1.4 m/s)
+  const estimatedWalkTime = Math.ceil(distance / 1.4 / 60); // in minutes
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? Colors.background : '#f5f5f5' }]}>
       <View style={[styles.header, { backgroundColor: isDarkMode ? Colors.surface : 'white' }]}>
@@ -231,12 +281,34 @@ const GuidanceScreen: React.FC = () => {
         <View style={[styles.distanceContainer, { backgroundColor: isDarkMode ? Colors.surface : 'white' }]}>
           <Text style={[styles.distanceLabel, { color: isDarkMode ? Colors.textSecondary : '#666' }]}>Distance to Car</Text>
           <Text style={[styles.distanceValue, { color: Colors.primary }]}>{formatDistance(distance, !useMetric)}</Text>
+          {estimatedWalkTime > 0 && (
+            <Text style={[styles.walkTime, { color: isDarkMode ? Colors.textSecondary : '#666' }]}>
+              ~{estimatedWalkTime} min walk
+            </Text>
+          )}
           <TouchableOpacity onPress={() => setUseMetric(!useMetric)}>
             <Text style={[styles.unitToggle, { color: Colors.primary }]}>
               Switch to {useMetric ? 'Imperial' : 'Metric'}
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Open in Maps Button */}
+        <TouchableOpacity
+          style={[styles.openMapsButton, { backgroundColor: isDarkMode ? Colors.surface : 'white' }]}
+          onPress={openInMaps}
+        >
+          <Text style={styles.openMapsIcon}>🗺️</Text>
+          <View style={styles.openMapsTextContainer}>
+            <Text style={[styles.openMapsTitle, { color: isDarkMode ? Colors.textPrimary : '#333' }]}>
+              Open in Maps
+            </Text>
+            <Text style={[styles.openMapsSubtitle, { color: isDarkMode ? Colors.textSecondary : '#666' }]}>
+              Get turn-by-turn directions
+            </Text>
+          </View>
+          <Text style={[styles.openMapsArrow, { color: Colors.primary }]}>→</Text>
+        </TouchableOpacity>
 
         {/* Safety Mode Component */}
         {isAuthenticated && (
@@ -372,6 +444,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#007AFF',
     textDecorationLine: 'underline',
+  },
+  walkTime: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 8,
+  },
+  openMapsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  openMapsIcon: {
+    fontSize: 28,
+    marginRight: 12,
+  },
+  openMapsTextContainer: {
+    flex: 1,
+  },
+  openMapsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  openMapsSubtitle: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 2,
+  },
+  openMapsArrow: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#007AFF',
   },
   compassContainer: {
     alignItems: 'center',

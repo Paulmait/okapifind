@@ -7,14 +7,25 @@ import { analytics } from '../services/analytics';
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 export enum PremiumFeature {
-  OCR_TIMER = 'ocr_timer',
-  SAFETY_MODE = 'safety_mode',
+  // v1.0 MVP Features (Available Now)
   UNLIMITED_SAVES = 'unlimited_saves',
-  PHOTO_DOCUMENTATION = 'photo_documentation',
-  OFFLINE_MAPS = 'offline_maps',
-  FAMILY_SHARING = 'family_sharing',
+  PHOTO_NOTES = 'photo_notes',
   PARKING_HISTORY = 'parking_history',
+  SAFETY_SHARING = 'safety_sharing',
+
+  // v1.5 Features (Deferred)
+  OCR_TIMER = 'ocr_timer',
+  OFFLINE_MAPS = 'offline_maps',
+  VOICE_NAVIGATION = 'voice_navigation',
+
+  // v2.0 Features (Future)
+  FAMILY_SHARING = 'family_sharing',
+  AUTO_DETECTION = 'auto_detection',
   EXPORT_DATA = 'export_data',
+
+  // Legacy - kept for backwards compatibility
+  SAFETY_MODE = 'safety_mode', // renamed to SAFETY_SHARING
+  PHOTO_DOCUMENTATION = 'photo_documentation', // renamed to PHOTO_NOTES
 }
 
 interface FeatureGateResult {
@@ -29,15 +40,22 @@ export const useFeatureGate = (): FeatureGateResult => {
   const { isPremium } = usePremium();
 
   const checkFeature = (feature: PremiumFeature): boolean => {
-    // List of features that require premium
+    // v1.0 MVP Premium Features
     const premiumFeatures = [
-      PremiumFeature.OCR_TIMER,
-      PremiumFeature.SAFETY_MODE,
+      // Available now
       PremiumFeature.UNLIMITED_SAVES,
-      PremiumFeature.PHOTO_DOCUMENTATION,
-      PremiumFeature.OFFLINE_MAPS,
-      PremiumFeature.FAMILY_SHARING,
+      PremiumFeature.PHOTO_NOTES,
       PremiumFeature.PARKING_HISTORY,
+      PremiumFeature.SAFETY_SHARING,
+      // Legacy aliases
+      PremiumFeature.SAFETY_MODE,
+      PremiumFeature.PHOTO_DOCUMENTATION,
+      // Future features (still gated for when they're added)
+      PremiumFeature.OCR_TIMER,
+      PremiumFeature.OFFLINE_MAPS,
+      PremiumFeature.VOICE_NAVIGATION,
+      PremiumFeature.FAMILY_SHARING,
+      PremiumFeature.AUTO_DETECTION,
       PremiumFeature.EXPORT_DATA,
     ];
 
