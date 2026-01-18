@@ -11,15 +11,6 @@ export interface CarLocation {
 
 const STORAGE_KEY = '@OkapiFind:carLocation';
 
-// Mock car location for demo purposes (San Francisco area)
-const MOCK_CAR_LOCATION: CarLocation = {
-  latitude: 37.78825,
-  longitude: -122.4324,
-  timestamp: Date.now(),
-  address: 'Mock Location - San Francisco',
-  notes: 'Demo car location',
-};
-
 export const useCarLocation = () => {
   const [carLocation, setCarLocation] = useState<CarLocation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,14 +36,14 @@ export const useCarLocation = () => {
         const parsed = JSON.parse(savedLocation) as CarLocation;
         setCarLocation(parsed);
       } else {
-        // Use mock location if no saved location exists
-        setCarLocation(MOCK_CAR_LOCATION);
+        // No saved location - start fresh
+        setCarLocation(null);
       }
     } catch (err) {
       console.error('Error loading car location:', err);
       setError('Failed to load car location');
-      // Fallback to mock location on error
-      setCarLocation(MOCK_CAR_LOCATION);
+      // No fallback - keep null state
+      setCarLocation(null);
     } finally {
       setIsLoading(false);
     }
@@ -106,8 +97,8 @@ export const useCarLocation = () => {
 
       await AsyncStorage.removeItem(STORAGE_KEY);
 
-      // Reset to mock location
-      setCarLocation(MOCK_CAR_LOCATION);
+      // Reset to null - no saved location
+      setCarLocation(null);
 
       console.log('Car location cleared');
     } catch (err) {
@@ -119,43 +110,14 @@ export const useCarLocation = () => {
 
   /**
    * Get car location from external API (placeholder for future implementation)
-   * For now, returns the mock location
-   * @param vehicleId - Vehicle identifier for API lookup
+   * Currently not implemented - reserved for connected car integrations
+   * @param _vehicleId - Vehicle identifier for API lookup
    */
-  const fetchCarLocationFromAPI = useCallback(async (vehicleId?: string): Promise<CarLocation> => {
-    // TODO: Implement actual API call to Google Maps or other service
-    // For now, simulate API delay and return mock data
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // In future, this would be an actual API call like:
-      // const response = await fetch(`https://api.example.com/vehicles/${vehicleId}/location`);
-      // const data = await response.json();
-
-      const apiLocation: CarLocation = {
-        ...MOCK_CAR_LOCATION,
-        timestamp: Date.now(),
-        notes: vehicleId ? `Vehicle ID: ${vehicleId}` : 'API mock location',
-      };
-
-      setCarLocation(apiLocation);
-
-      // Also save to storage
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(apiLocation));
-
-      return apiLocation;
-    } catch (err) {
-      console.error('Error fetching from API:', err);
-      setError('Failed to fetch car location from API');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+  const fetchCarLocationFromAPI = useCallback(async (_vehicleId?: string): Promise<CarLocation | null> => {
+    // This feature is reserved for future connected car integrations
+    // (e.g., Tesla, BMW, Mercedes APIs)
+    setError('Connected car feature not yet available');
+    return null;
   }, []);
 
   /**

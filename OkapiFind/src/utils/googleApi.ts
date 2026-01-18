@@ -35,15 +35,15 @@ const STORAGE_KEYS = {
 
 // Google API Configuration
 export const GOOGLE_CONFIG = {
-  // Replace with your actual OAuth client IDs
-  CLIENT_ID: process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
+  // OAuth client IDs - Configure via environment variables
+  CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
 
   // For Expo Go development
-  EXPO_CLIENT_ID: process.env.EXPO_GOOGLE_CLIENT_ID || 'YOUR_EXPO_CLIENT_ID.apps.googleusercontent.com',
+  EXPO_CLIENT_ID: process.env.EXPO_GOOGLE_CLIENT_ID || '',
 
   // For production builds
-  IOS_CLIENT_ID: process.env.IOS_GOOGLE_CLIENT_ID || 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
-  ANDROID_CLIENT_ID: process.env.ANDROID_GOOGLE_CLIENT_ID || 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+  IOS_CLIENT_ID: process.env.IOS_GOOGLE_CLIENT_ID || '',
+  ANDROID_CLIENT_ID: process.env.ANDROID_GOOGLE_CLIENT_ID || '',
 
   // API endpoints
   TOKEN_ENDPOINT: 'https://oauth2.googleapis.com/token',

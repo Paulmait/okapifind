@@ -5,9 +5,9 @@
  */
 
 export const MAPBOX_CONFIG = {
-  // Access token - Add your Mapbox token here
+  // Access token - Configure via EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN env var
   // Get token from: https://account.mapbox.com/access-tokens/
-  accessToken: process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || 'pk.YOUR_MAPBOX_TOKEN',
+  accessToken: process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || '',
 
   // Style URLs for different map themes
   styles: {
