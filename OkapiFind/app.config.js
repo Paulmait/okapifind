@@ -80,11 +80,26 @@ export default {
     plugins: [
       "expo-location",
       "expo-web-browser",
+      "expo-camera",
+      "expo-sensors",
       [
         "expo-notifications",
         {
           icon: "./assets/notification-icon.png",
           color: "#FFD700"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            deploymentTarget: "13.4"
+          },
+          android: {
+            compileSdkVersion: 34,
+            targetSdkVersion: 34,
+            minSdkVersion: 23
+          }
         }
       ],
       "expo-maps",
