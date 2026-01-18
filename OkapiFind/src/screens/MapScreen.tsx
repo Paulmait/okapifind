@@ -31,13 +31,21 @@ const MapScreen: React.FC = () => {
   const [locationPermission, setLocationPermission] = useState(false);
   const [showDetectionCard, setShowDetectionCard] = useState(false);
 
-  // Performance monitoring
+  // Performance monitoring (with error handling)
   useEffect(() => {
-    performance.startTimer('MapScreen_mount');
-    performance.logMemoryUsage('MapScreen');
+    try {
+      performance.startTimer('MapScreen_mount');
+      performance.logMemoryUsage('MapScreen');
+    } catch (e) {
+      console.warn('Performance monitoring failed:', e);
+    }
 
     return () => {
-      performance.endTimer('MapScreen_mount');
+      try {
+        performance.endTimer('MapScreen_mount');
+      } catch (e) {
+        // Ignore cleanup errors
+      }
     };
   }, []);
 
@@ -119,14 +127,24 @@ const MapScreen: React.FC = () => {
           }
         );
 
-        // Initialize parking detection if enabled
+        // Initialize parking detection if enabled (with error handling)
         if (settings.enabled && isMounted) {
-          await parkingDetection.initialize();
+          try {
+            await parkingDetection.initialize();
+          } catch (detectionError) {
+            console.warn('Parking detection initialization failed:', detectionError);
+            // Don't block the app - parking detection is optional
+          }
         }
       } catch (error) {
         if (isMounted) {
           console.error('Error getting location:', error);
-          Alert.alert('Error', 'Failed to get your location. Please try again.');
+          // Don't show alert for common errors - just log and continue
+          if ((error as any)?.code === 'E_LOCATION_UNAVAILABLE') {
+            console.warn('Location temporarily unavailable');
+          } else {
+            Alert.alert('Location Error', 'Could not get your location. Some features may be limited.');
+          }
           setLoading(false);
         }
       }
@@ -305,18 +323,26 @@ const MapScreen: React.FC = () => {
   const distance = useMemo(() => {
     if (!userLocation || !carLocation) return 0;
 
-    return performance.measureSync('calculate_distance', () =>
-      calculateDistance(
+    try {
+      return calculateDistance(
         userLocation.coords.latitude,
         userLocation.coords.longitude,
         carLocation.latitude,
         carLocation.longitude
-      )
-    );
+      );
+    } catch (error) {
+      console.warn('Distance calculation failed:', error);
+      return 0;
+    }
   }, [userLocation, carLocation]);
 
   const formattedDistance = useMemo(() => {
-    return formatDistance(distance, false);
+    try {
+      return formatDistance(distance, false);
+    } catch (error) {
+      console.warn('Distance formatting failed:', error);
+      return '-- m';
+    }
   }, [distance]);
 
   return (

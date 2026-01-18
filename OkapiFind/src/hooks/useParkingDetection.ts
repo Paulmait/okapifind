@@ -27,9 +27,26 @@ interface UseParkingDetectionReturn {
  */
 export const useParkingDetection = (): UseParkingDetectionReturn => {
   const [isTracking, setIsTracking] = useState(false);
-  const [settings, setSettings] = useState<DetectionSettings>(
-    parkingDetection.getSettings()
-  );
+
+  // Safely get initial settings with fallback
+  const getInitialSettings = (): DetectionSettings => {
+    try {
+      return parkingDetection.getSettings();
+    } catch (error) {
+      console.warn('Failed to get parking detection settings:', error);
+      return {
+        enabled: false,
+        autoSave: false,
+        minConfidence: 0.7,
+        notifyOnDetection: true,
+        useGeofencing: false,
+        frequentLocationsEnabled: false,
+        backgroundTracking: false,
+      };
+    }
+  };
+
+  const [settings, setSettings] = useState<DetectionSettings>(getInitialSettings());
   const [parkingHistory, setParkingHistory] = useState<ParkingEvent[]>([]);
   const [frequentLocations, setFrequentLocations] = useState<FrequentLocation[]>([]);
   const [lastDetectedParking, setLastDetectedParking] = useState<ParkingEvent | null>(null);
