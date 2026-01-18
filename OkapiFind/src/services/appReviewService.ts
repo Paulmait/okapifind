@@ -221,7 +221,7 @@ class AppReviewService {
 
       // Fallback to store URL
       const storeUrl = Platform.select({
-        ios: 'https://apps.apple.com/app/okapifind/id123456789', // Replace with actual ID
+        ios: 'https://apps.apple.com/app/okapifind/id6756395219',
         android: 'https://play.google.com/store/apps/details?id=com.okapi.find',
         default: 'https://okapifind.com',
       });

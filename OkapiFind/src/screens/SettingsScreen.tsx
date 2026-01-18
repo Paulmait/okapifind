@@ -108,7 +108,7 @@ const SettingsScreen: React.FC = () => {
   const handleRateApp = () => {
     if (Platform.OS === 'ios') {
       // Replace with your actual App Store ID
-      Linking.openURL('https://apps.apple.com/app/okapifind/id1234567890');
+      Linking.openURL('https://apps.apple.com/app/okapifind/id6756395219');
     } else {
       // Replace with your actual Play Store package
       Linking.openURL('market://details?id=com.okapi.find');

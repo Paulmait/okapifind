@@ -244,8 +244,8 @@ export const LEGAL_CONFIG = {
 
 // App Store Configuration
 export const STORE_CONFIG = {
-  APP_STORE_ID: '123456789',
-  APP_STORE_URL: 'https://apps.apple.com/app/okapifind/id123456789',
+  APP_STORE_ID: '6756395219',
+  APP_STORE_URL: 'https://apps.apple.com/app/okapifind/id6756395219',
   PLAY_STORE_ID: 'com.okapi.find',
   PLAY_STORE_URL: 'https://play.google.com/store/apps/details?id=com.okapi.find',
   ENABLE_RATING_PROMPT: true,

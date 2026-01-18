@@ -371,7 +371,7 @@ Sessions: ${metadata.sessionCount}
   private openStorePage(): void {
     const storeUrl =
       Platform.OS === 'ios'
-        ? 'https://apps.apple.com/app/okapifind/id1234567890'
+        ? 'https://apps.apple.com/app/okapifind/id6756395219'
         : 'https://play.google.com/store/apps/details?id=com.okapi.find';
 
     Linking.openURL(storeUrl);

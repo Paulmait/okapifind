@@ -218,11 +218,9 @@ class AppUpdateService {
     if (customUrl) {
       storeUrl = customUrl;
     } else if (Platform.OS === 'ios') {
-      // Replace with your actual App Store ID
-      storeUrl = 'https://apps.apple.com/app/id1234567890';
+      storeUrl = 'https://apps.apple.com/app/okapifind/id6756395219';
     } else {
-      // Replace with your actual package name
-      storeUrl = 'https://play.google.com/store/apps/details?id=com.yourcompany.okapifind';
+      storeUrl = 'https://play.google.com/store/apps/details?id=com.okapi.find';
     }
 
     Linking.openURL(storeUrl).catch(error => {

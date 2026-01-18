@@ -321,12 +321,10 @@ class RatingService {
   private async openAppStore(): Promise<void> {
     try {
       if (Platform.OS === 'ios') {
-        // Replace with your actual App Store ID
-        const appStoreUrl = 'https://apps.apple.com/app/id1234567890?action=write-review';
+        const appStoreUrl = 'https://apps.apple.com/app/okapifind/id6756395219?action=write-review';
         await Linking.openURL(appStoreUrl);
       } else {
-        // Replace with your actual package name
-        const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.yourcompany.okapifind&showAllReviews=true';
+        const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.okapi.find&showAllReviews=true';
         await Linking.openURL(playStoreUrl);
       }
     } catch (error) {

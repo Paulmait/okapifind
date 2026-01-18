@@ -352,7 +352,7 @@ class AppRatingService {
    */
   getStoreUrl(): string {
     if (Platform.OS === 'ios') {
-      return 'https://apps.apple.com/app/okapifind/id123456789';
+      return 'https://apps.apple.com/app/okapifind/id6756395219';
     } else {
       return 'https://play.google.com/store/apps/details?id=com.okapi.find';
     }
