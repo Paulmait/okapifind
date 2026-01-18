@@ -27,6 +27,7 @@ import { ConfigDiagnostic } from './src/components/ConfigDiagnostic';
 import { MobileAppPromotion } from './src/components/MobileAppPromotion';
 import { isFirebaseConfigured } from './src/config/firebase';
 import { crossPlatformSync } from './src/services/crossPlatformSync';
+import { initializeRevenueCat } from './src/hooks/useRevenueCat';
 import './src/i18n'; // Initialize i18n
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -153,6 +154,9 @@ export default function App() {
   useEffect(() => {
     // Initialize all services on app start
     analytics.initialize();
+
+    // Initialize RevenueCat for in-app purchases (iOS/Android only)
+    initializeRevenueCat();
 
     // Initialize performance monitoring
     performance.logBundleInfo();
