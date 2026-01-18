@@ -14,7 +14,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
             color: #333;
-            background-color: #f5f5f5;
+            background-color: #0F1B2A;
             padding: 20px;
         }
         .container {
@@ -22,19 +22,47 @@
             margin: 0 auto;
             background: white;
             padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #FFD700;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .logo-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+        }
+        .logo-text {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #0F1B2A;
+        }
+        .logo-text span {
+            color: #FFD700;
         }
         h1 {
-            color: #2196F3;
+            color: #0F1B2A;
             margin-bottom: 10px;
             font-size: 2em;
         }
         h2 {
-            color: #2196F3;
+            color: #0F1B2A;
             margin-top: 30px;
             margin-bottom: 15px;
-            font-size: 1.5em;
+            font-size: 1.3em;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #FFD700;
         }
         p {
             margin-bottom: 15px;
@@ -42,7 +70,7 @@
         .last-updated {
             color: #666;
             font-size: 0.9em;
-            margin-bottom: 30px;
+            margin-bottom: 0;
         }
         ul {
             margin-left: 20px;
@@ -52,24 +80,42 @@
             margin-bottom: 8px;
         }
         a {
-            color: #2196F3;
+            color: #B8860B;
             text-decoration: none;
+            font-weight: 500;
         }
         a:hover {
             text-decoration: underline;
+            color: #FFD700;
         }
-        .logo {
-            font-size: 3em;
-            text-align: center;
-            margin-bottom: 20px;
+        .back-link {
+            display: inline-block;
+            background: #FFD700;
+            color: #0F1B2A;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .back-link:hover {
+            background: #FFC000;
+            text-decoration: none;
+        }
+        strong {
+            color: #0F1B2A;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">🚗↑</div>
-        <h1>Privacy Policy</h1>
-        <p class="last-updated">Last Updated: October 1, 2025</p>
+        <div class="header">
+            <div class="logo-container">
+                <img src="/logo.png" alt="OkapiFind" class="logo-img">
+                <div class="logo-text">Okapi<span>Find</span></div>
+            </div>
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last Updated: January 18, 2026</p>
+        </div>
 
         <h2>Introduction</h2>
         <p>Welcome to OkapiFind. We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our mobile and web application.</p>
@@ -144,7 +190,7 @@
         </p>
 
         <p style="margin-top: 40px; text-align: center;">
-            <a href="/">← Back to OkapiFind</a>
+            <a href="/" class="back-link">← Back to OkapiFind</a>
         </p>
     </div>
 </body>
