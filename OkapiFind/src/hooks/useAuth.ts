@@ -15,6 +15,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isFirebaseConfigured } from '../config/firebase';
 
 // Web-compatible storage
 const storage = Platform.OS === 'web'
@@ -32,8 +33,15 @@ const storage = Platform.OS === 'web'
     }
   : AsyncStorage;
 
-// Initialize Firestore
-const db = getFirestore(firebaseApp);
+// Initialize Firestore safely - only if Firebase is configured
+let db: ReturnType<typeof getFirestore> | null = null;
+try {
+  if (isFirebaseConfigured() && firebaseApp && typeof firebaseApp.name === 'string') {
+    db = getFirestore(firebaseApp);
+  }
+} catch (error) {
+  console.warn('Firestore initialization skipped - Firebase not configured');
+}
 
 export interface UserProfile {
   uid: string;
@@ -99,7 +107,10 @@ const useAuthStore = create<AuthState>()(
       signOutUser: async () => {
         try {
           set({ isLoading: true });
-          await signOut(firebaseAuth);
+          // Only call signOut if Firebase is properly configured
+          if (isFirebaseConfigured() && firebaseAuth && typeof firebaseAuth.signOut === 'function') {
+            await signOut(firebaseAuth);
+          }
           set({
             currentUser: null,
             userProfile: null,
@@ -110,7 +121,12 @@ const useAuthStore = create<AuthState>()(
         } catch (error: any) {
           console.error('Sign out error:', error);
           set({ error: error.message });
-          throw error;
+          // Still clear local state even if signOut fails
+          set({
+            currentUser: null,
+            userProfile: null,
+            isAuthenticated: false,
+          });
         } finally {
           set({ isLoading: false });
         }
@@ -164,6 +180,14 @@ export const useAuth = () => {
   }, []);
 
   useEffect(() => {
+    // Check if Firebase is properly configured before setting up auth listener
+    if (!isFirebaseConfigured() || !firebaseAuth || typeof firebaseAuth.onAuthStateChanged !== 'function') {
+      console.warn('Firebase not configured - running in offline/anonymous mode');
+      setLoading(false);
+      setAuthInitialized(true);
+      return;
+    }
+
     // Timeout fallback in case Firebase doesn't initialize
     const initTimeout = setTimeout(() => {
       if (!authInitialized) {
@@ -223,6 +247,22 @@ export const useAuth = () => {
   }, []);
 
   const checkOrCreateUserProfile = async (user: User) => {
+    // Skip Firestore operations if not configured
+    if (!db) {
+      console.warn('Firestore not available - using basic profile');
+      setUserProfile({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        createdAt: null,
+        lastLoginAt: null,
+        premium: false,
+        provider: user.providerData[0]?.providerId || 'unknown',
+      });
+      return;
+    }
+
     try {
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
@@ -286,6 +326,13 @@ export const useAuth = () => {
 
   const updatePremiumStatus = async (isPremium: boolean, subscriptionId?: string) => {
     if (!currentUser) return;
+    if (!db) {
+      console.warn('Firestore not available - updating local state only');
+      if (userProfile) {
+        setUserProfile({ ...userProfile, premium: isPremium, subscriptionId });
+      }
+      return;
+    }
 
     try {
       const userDocRef = doc(db, 'users', currentUser.uid);
@@ -317,6 +364,10 @@ export const useAuth = () => {
 
   const refreshUserProfile = async () => {
     if (!currentUser) return;
+    if (!db) {
+      console.warn('Firestore not available - cannot refresh profile');
+      return;
+    }
 
     try {
       const userDocRef = doc(db, 'users', currentUser.uid);
