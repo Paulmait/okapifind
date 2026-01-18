@@ -90,17 +90,55 @@ export interface SafetyShare {
 }
 
 // Initialize Supabase client with AsyncStorage for auth persistence
-const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || ''
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-})
+// Check if Supabase is configured
+export function isSupabaseConfigured(): boolean {
+  return !!(supabaseUrl && supabaseAnonKey && supabaseUrl.includes('supabase'))
+}
+
+// Create client only if configured, otherwise create a mock client
+let supabaseClient: ReturnType<typeof createClient>
+
+if (isSupabaseConfigured()) {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  })
+  console.log('✅ Supabase initialized successfully')
+} else {
+  console.warn('⚠️ Supabase not configured - some features will be limited')
+  // Create a minimal mock client that won't crash
+  supabaseClient = {
+    from: () => ({
+      select: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      insert: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      update: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      delete: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      upsert: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+    }),
+    rpc: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+    auth: {
+      getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+      signOut: () => Promise.resolve({ error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    },
+    functions: {
+      invoke: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+    },
+    channel: () => ({
+      on: () => ({ subscribe: () => ({}) }),
+      subscribe: () => ({}),
+    }),
+  } as any
+}
+
+export const supabase = supabaseClient
 
 // ============================================
 // PARKING SESSION FUNCTIONS

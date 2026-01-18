@@ -33,7 +33,26 @@
       "Bash(eas build:view:*)",
       "Bash(npm ci:*)",
       "Bash(npm install)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)",
+      "Bash(node scripts/generateAppStoreImages.js:*)",
+      "Bash(explorer \"C:\\Users\\maito\\okapifind\\OkapiFind\\app-store-assets\")",
+      "Bash(start \"\" \"C:\\Users\\maito\\okapifind\\OkapiFind\\app-store-assets\")",
+      "Bash(eas submit:list:*)",
+      "Bash(npm install:*)",
+      "Bash(ls:*)",
+      "Bash(npm test:*)",
+      "Bash(gh run:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh workflow:*)",
+      "Bash(gh api:*)",
+      "Bash(npm run build:web:*)",
+      "Bash(curl -X POST \"https://kmobwbqdtmbzdyysdxjx.supabase.co/rest/v1/rpc/exec_sql\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2J3YnFkdG1iemR5eXNkeGp4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODQ3OTQ3MSwiZXhwIjoyMDc0MDU1NDcxfQ.jbrYbe84MsEy-JRKvXqstqeYgip3Ks99s6SbDgQKqbk\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2J3YnFkdG1iemR5eXNkeGp4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODQ3OTQ3MSwiZXhwIjoyMDc0MDU1NDcxfQ.jbrYbe84MsEy-JRKvXqstqeYgip3Ks99s6SbDgQKqbk\" -H \"Content-Type: application/json\")",
+      "Bash(curl:*)",
+      "Bash(npx eas:*)",
+      "Bash(npx expo:*)",
+      "Bash(timeout 30 tail:*)"
     ]
   }
 }

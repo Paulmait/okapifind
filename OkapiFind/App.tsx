@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
@@ -133,10 +133,26 @@ export function AuthNavigator() {
 }
 
 export default function App() {
-  const { isLoading, isAuthenticated, isReady, currentUser } = useAuth();
+  const [initError, setInitError] = useState<Error | null>(null);
+
+  // Wrap useAuth in try-catch via error state
+  let authState = { isLoading: true, isAuthenticated: false, isReady: false, currentUser: null as any };
+  try {
+    authState = useAuth();
+  } catch (error) {
+    console.error('Auth initialization failed:', error);
+    if (!initError) setInitError(error as Error);
+  }
+
+  const { isLoading, isAuthenticated, isReady, currentUser } = authState;
 
   // Check if Firebase is configured - show diagnostic if not
-  const firebaseConfigured = isFirebaseConfigured();
+  let firebaseConfigured = false;
+  try {
+    firebaseConfigured = isFirebaseConfigured();
+  } catch (error) {
+    console.warn('Firebase config check failed:', error);
+  }
 
   // Debug logging for web
   useEffect(() => {
@@ -152,35 +168,77 @@ export default function App() {
   }, [isLoading, isAuthenticated, isReady, currentUser]);
 
   useEffect(() => {
-    // Initialize all services on app start
-    analytics.initialize();
+    // Initialize all services on app start with error handling
+    try {
+      analytics.initialize();
+    } catch (e) {
+      console.warn('Analytics initialization failed:', e);
+    }
 
     // Initialize RevenueCat for in-app purchases (iOS/Android only)
-    initializeRevenueCat();
+    try {
+      initializeRevenueCat();
+    } catch (e) {
+      console.warn('RevenueCat initialization failed:', e);
+    }
 
     // Initialize performance monitoring
-    performance.logBundleInfo();
-    performance.startFPSMonitoring();
-    performance.startTimer('App_initialization');
+    try {
+      performance.logBundleInfo();
+      performance.startFPSMonitoring();
+      performance.startTimer('App_initialization');
+    } catch (e) {
+      console.warn('Performance monitoring failed:', e);
+    }
 
     // Initialize feature flags
-    featureFlagService.fetchRemoteConfig();
+    try {
+      featureFlagService.fetchRemoteConfig();
+    } catch (e) {
+      console.warn('Feature flags initialization failed:', e);
+    }
 
     // Initialize offline mode
-    offlineModeService.getNetworkState();
+    try {
+      offlineModeService.getNetworkState();
+    } catch (e) {
+      console.warn('Offline mode initialization failed:', e);
+    }
 
     // Initialize cross-platform sync when user is authenticated
     if (isAuthenticated && currentUser?.uid) {
       crossPlatformSync.initialize(currentUser.uid).catch((error) => {
-        console.error('Failed to initialize cross-platform sync:', error);
+        console.warn('Failed to initialize cross-platform sync:', error);
       });
     }
 
     return () => {
-      performance.endTimer('App_initialization');
-      crossPlatformSync.stopAutoSync();
+      try {
+        performance.endTimer('App_initialization');
+        crossPlatformSync.stopAutoSync();
+      } catch (e) {
+        console.warn('Cleanup failed:', e);
+      }
     };
   }, [isAuthenticated, currentUser]);
+
+  // Show error screen if initialization failed
+  if (initError) {
+    return (
+      <SafeAreaProvider>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.logoIcon}>⚠️</Text>
+          <Text style={[styles.loadingText, { color: '#FF6B6B', fontWeight: 'bold' }]}>
+            App initialization failed
+          </Text>
+          <Text style={[styles.loadingText, { fontSize: 12, marginTop: 8 }]}>
+            {initError.message}
+          </Text>
+        </View>
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
+    );
+  }
 
   // Show diagnostic screen if Firebase not configured (especially important for web)
   if (!firebaseConfigured && Platform.OS === 'web') {
