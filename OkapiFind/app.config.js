@@ -87,7 +87,14 @@ export default {
           color: "#FFD700"
         }
       ],
-      "expo-maps"
+      "expo-maps",
+      [
+        "@sentry/react-native/expo",
+        {
+          organization: process.env.SENTRY_ORG,
+          project: process.env.SENTRY_PROJECT,
+        }
+      ]
     ],
     extra: {
       // URLs - Using GitHub Pages for legal documents

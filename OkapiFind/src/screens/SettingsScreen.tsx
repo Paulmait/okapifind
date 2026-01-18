@@ -22,6 +22,8 @@ import { RootStackParamList } from '../types/navigation';
 import { PRIVACY_POLICY_LAST_UPDATED } from '../data/privacyPolicy';
 import { TERMS_LAST_UPDATED } from '../data/termsOfService';
 import { Colors } from '../constants/colors';
+import { dataDeletionService } from '../services/dataDeletionService';
+import { paymentService } from '../services/paymentService';
 
 type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
 
@@ -153,6 +155,54 @@ const SettingsScreen: React.FC = () => {
             } catch (error: any) {
               Alert.alert('Error', error.message || 'Failed to sign out');
             }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleManageSubscription = async () => {
+    await paymentService.cancelSubscription();
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Confirm Deletion',
+              'Type DELETE to confirm account deletion',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Confirm Delete',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      const userId = currentUser?.uid || '';
+                      const result = await dataDeletionService.deleteAllUserData(userId, 'User requested');
+                      if (result.success) {
+                        Alert.alert(
+                          'Account Deleted',
+                          'Your account and all data have been permanently deleted.',
+                          [{ text: 'OK' }]
+                        );
+                      } else {
+                        Alert.alert('Error', 'Failed to delete account. Please contact support.');
+                      }
+                    } catch (error: any) {
+                      Alert.alert('Error', error.message || 'Failed to delete account');
+                    }
+                  },
+                },
+              ]
+            );
           },
         },
       ]
@@ -342,6 +392,18 @@ const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Subscription Management */}
+        {isPremium && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Subscription</Text>
+
+            <TouchableOpacity style={styles.linkRow} onPress={handleManageSubscription}>
+              <Text style={styles.linkTitle}>Manage Subscription</Text>
+              <Text style={styles.linkSubtitle}>Cancel or modify your subscription</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Account */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
@@ -357,6 +419,10 @@ const SettingsScreen: React.FC = () => {
 
               <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
                 <Text style={styles.signOutButtonText}>Sign Out</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.deleteAccountButton} onPress={handleDeleteAccount}>
+                <Text style={styles.deleteAccountButtonText}>Delete Account</Text>
               </TouchableOpacity>
             </>
           ) : (
@@ -627,6 +693,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+  deleteAccountButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#ff3b30',
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  deleteAccountButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ff3b30',
   },
   guestCard: {
     backgroundColor: '#f8f9fa',

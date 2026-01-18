@@ -1,4 +1,6 @@
 import { Platform } from 'react-native';
+import { logEvent as firebaseLogEvent, setUserId as firebaseSetUserId, setUserProperties } from 'firebase/analytics';
+import { getFirebaseAnalytics } from '../config/firebase';
 
 export enum AnalyticsEvent {
   // Paywall Events
@@ -140,8 +142,21 @@ class Analytics {
    */
   setUserId(userId: string | null) {
     this.userId = userId;
+
+    // Set user ID in Firebase Analytics
+    try {
+      const analytics = getFirebaseAnalytics();
+      if (analytics && userId) {
+        firebaseSetUserId(analytics, userId);
+      }
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('[Analytics] Failed to set user ID:', error);
+      }
+    }
+
     // Do not log user IDs in production (privacy/GDPR compliance)
-    if (process.env.NODE_ENV === 'development') {
+    if (__DEV__) {
       console.log('[Analytics] User ID set:', userId ? 'user_' + userId.slice(0, 8) : 'anonymous');
     }
   }
@@ -752,20 +767,45 @@ class Analytics {
    * Send event data to analytics service
    */
   private sendToAnalyticsService(eventData: any) {
-    // TODO: Implement actual analytics service integration
-    // Examples:
-    // - Firebase Analytics: firebase.analytics().logEvent(eventData.event, eventData.properties)
-    // - Amplitude: amplitude.getInstance().logEvent(eventData.event, eventData.properties)
-    // - Mixpanel: mixpanel.track(eventData.event, eventData.properties)
+    try {
+      const analytics = getFirebaseAnalytics();
 
-    // For now, we're just logging to console
-    // Remove or modify this in production
-    if (__DEV__) {
-      // In development, you might want to send to a local server or just log
-      return;
+      if (analytics) {
+        // Send to Firebase Analytics
+        // Firebase event names must be <= 40 chars and alphanumeric + underscores
+        const sanitizedEventName = eventData.event
+          .toLowerCase()
+          .replace(/[^a-z0-9_]/g, '_')
+          .substring(0, 40);
+
+        // Firebase properties must have string/number values, max 25 params
+        const sanitizedProperties: Record<string, string | number> = {};
+        const properties = eventData.properties || {};
+        const keys = Object.keys(properties).slice(0, 25);
+
+        for (const key of keys) {
+          const value = properties[key];
+          const sanitizedKey = key.substring(0, 40);
+
+          if (typeof value === 'string') {
+            sanitizedProperties[sanitizedKey] = value.substring(0, 100);
+          } else if (typeof value === 'number') {
+            sanitizedProperties[sanitizedKey] = value;
+          } else if (typeof value === 'boolean') {
+            sanitizedProperties[sanitizedKey] = value ? 1 : 0;
+          } else if (value !== null && value !== undefined) {
+            sanitizedProperties[sanitizedKey] = String(value).substring(0, 100);
+          }
+        }
+
+        firebaseLogEvent(analytics, sanitizedEventName, sanitizedProperties);
+      }
+    } catch (error) {
+      // Silently fail analytics - don't crash the app
+      if (__DEV__) {
+        console.warn('[Analytics] Failed to send event:', error);
+      }
     }
-
-    // Production analytics service integration would go here
   }
 
   /**

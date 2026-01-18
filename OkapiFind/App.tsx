@@ -4,6 +4,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TouchableOpacity, Text, Platform, View, ActivityIndicator, StyleSheet } from 'react-native';
+import * as Sentry from '@sentry/react-native';
+import Constants from 'expo-constants';
 
 import {
   MapScreen,
@@ -29,6 +31,22 @@ import { isFirebaseConfigured } from './src/config/firebase';
 import { crossPlatformSync } from './src/services/crossPlatformSync';
 import { initializeRevenueCat } from './src/hooks/useRevenueCat';
 import './src/i18n'; // Initialize i18n
+
+// Initialize Sentry early for crash reporting
+const sentryDsn = Constants.expoConfig?.extra?.sentryDsn ||
+                  process.env.EXPO_PUBLIC_SENTRY_DSN;
+
+if (sentryDsn && !__DEV__) {
+  Sentry.init({
+    dsn: sentryDsn,
+    debug: false,
+    environment: 'production',
+    tracesSampleRate: 0.1,
+    sampleRate: 1.0,
+    enableAutoSessionTracking: true,
+    attachStacktrace: true,
+  });
+}
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -132,7 +150,7 @@ export function AuthNavigator() {
   );
 }
 
-export default function App() {
+function App() {
   const [initError, setInitError] = useState<Error | null>(null);
 
   // Wrap useAuth in try-catch via error state
@@ -313,3 +331,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
 });
+
+// Wrap App with Sentry for enhanced error tracking
+export default Sentry.wrap(App);

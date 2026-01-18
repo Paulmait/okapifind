@@ -5,6 +5,7 @@
 
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
+import { getAnalytics, Analytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import Constants from 'expo-constants';
 
 // Firebase configuration from environment variables
@@ -52,6 +53,7 @@ function validateFirebaseConfig(): boolean {
 // Initialize Firebase
 let firebaseApp: FirebaseApp;
 let firebaseAuth: Auth;
+let firebaseAnalytics: Analytics | null = null;
 
 try {
   // Validate config before initializing
@@ -60,6 +62,17 @@ try {
   if (isValid) {
     firebaseApp = initializeApp(firebaseConfig);
     firebaseAuth = getAuth(firebaseApp);
+
+    // Initialize Analytics (only in production and if supported)
+    if (!__DEV__) {
+      isAnalyticsSupported().then((supported) => {
+        if (supported) {
+          firebaseAnalytics = getAnalytics(firebaseApp);
+          console.log('✅ Firebase Analytics initialized');
+        }
+      }).catch(console.warn);
+    }
+
     console.log('✅ Firebase initialized successfully');
   } else {
     // Create a mock app for development without crashing
@@ -75,7 +88,12 @@ try {
 }
 
 // Export Firebase instances
-export { firebaseApp, firebaseAuth };
+export { firebaseApp, firebaseAuth, firebaseAnalytics };
+
+// Get analytics instance (may be null in development or unsupported environments)
+export function getFirebaseAnalytics(): Analytics | null {
+  return firebaseAnalytics;
+}
 
 // Export configuration for debugging (in dev mode only)
 if (__DEV__) {

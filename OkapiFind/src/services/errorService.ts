@@ -2,26 +2,15 @@
 /**
  * Centralized Error Handling and Logging Service
  * Provides comprehensive error tracking, logging, and reporting
- * Note: Sentry integration temporarily disabled for SDK 54 compatibility
  */
 
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Sentry from '@sentry/react-native';
 
-// Sentry placeholder - will be re-enabled when sentry-expo supports SDK 54
-const Sentry = {
-  init: () => {},
-  Native: {
-    setUser: (_user: any) => {},
-    addBreadcrumb: (_breadcrumb: any) => {},
-    withScope: (_callback: any) => {},
-    captureException: (_error: any) => {},
-    captureMessage: (_message: any) => {},
-  },
-};
-
-type SeverityLevel = 'info' | 'warning' | 'error' | 'fatal';
+// Sentry severity levels
+type SeverityLevel = 'info' | 'warning' | 'error' | 'fatal' | 'debug' | 'log';
 
 export enum ErrorSeverity {
   LOW = 'low',
@@ -75,14 +64,19 @@ class ErrorService {
 
     try {
       // Initialize Sentry
-      const sentryDsn = Constants.expoConfig?.extra?.sentryDsn;
-      if (sentryDsn) {
+      const sentryDsn = Constants.expoConfig?.extra?.sentryDsn ||
+                        process.env.EXPO_PUBLIC_SENTRY_DSN;
+
+      if (sentryDsn && !__DEV__) {
         Sentry.init({
           dsn: sentryDsn,
-          enableInExpoDevelopment: false,
-          debug: __DEV__,
+          debug: false,
           environment: __DEV__ ? 'development' : 'production',
-          tracesSampleRate: __DEV__ ? 1.0 : 0.1,
+          tracesSampleRate: 0.1, // 10% of transactions
+          sampleRate: 1.0, // 100% of errors
+          enableAutoSessionTracking: true,
+          sessionTrackingIntervalMillis: 30000,
+          attachStacktrace: true,
           beforeSend: (event) => {
             // Sanitize sensitive data
             if (event.request?.cookies) {
@@ -90,10 +84,23 @@ class ErrorService {
             }
             if (event.request?.headers) {
               delete event.request.headers['authorization'];
+              delete event.request.headers['cookie'];
+            }
+            // Remove user email/personal info from breadcrumbs
+            if (event.breadcrumbs) {
+              event.breadcrumbs = event.breadcrumbs.map(breadcrumb => {
+                if (breadcrumb.data?.email) {
+                  breadcrumb.data.email = '[REDACTED]';
+                }
+                return breadcrumb;
+              });
             }
             return event;
           },
         });
+        console.log('✅ Sentry initialized successfully');
+      } else if (__DEV__) {
+        console.log('⚠️ Sentry disabled in development mode');
       }
 
       // Load cached error logs
@@ -112,9 +119,9 @@ class ErrorService {
     this.userId = userId;
 
     if (userId) {
-      Sentry.Native.setUser({ id: userId, email });
+      Sentry.setUser({ id: userId, email });
     } else {
-      Sentry.Native.setUser(null);
+      Sentry.setUser(null);
     }
   }
 
@@ -123,7 +130,7 @@ class ErrorService {
    */
   setCurrentScreen(screen: string): void {
     this.currentScreen = screen;
-    Sentry.Native.addBreadcrumb({
+    Sentry.addBreadcrumb({
       message: `Navigated to ${screen}`,
       category: 'navigation',
       level: 'info',
@@ -199,7 +206,7 @@ class ErrorService {
       console.warn(message, context);
     }
 
-    Sentry.Native.addBreadcrumb({
+    Sentry.addBreadcrumb({
       message,
       category: 'warning',
       level: 'warning',
@@ -215,7 +222,7 @@ class ErrorService {
       console.log(message, context);
     }
 
-    Sentry.Native.addBreadcrumb({
+    Sentry.addBreadcrumb({
       message,
       category: 'info',
       level: 'info',
@@ -337,7 +344,7 @@ class ErrorService {
   private sendToSentry(error: Error | unknown, errorLog: ErrorLog): void {
     if (!this.isInitialized) return;
 
-    Sentry.Native.withScope((scope) => {
+    Sentry.withScope((scope) => {
       scope.setLevel(this.mapSeverityToSentryLevel(errorLog.severity));
       scope.setTag('category', errorLog.category);
       scope.setContext('error_details', {
@@ -348,9 +355,9 @@ class ErrorService {
       });
 
       if (error instanceof Error) {
-        Sentry.Native.captureException(error);
+        Sentry.captureException(error);
       } else {
-        Sentry.Native.captureMessage(errorLog.message);
+        Sentry.captureMessage(errorLog.message);
       }
     });
   }
