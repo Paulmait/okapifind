@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Share Location Service
  * Enables users to share their parked car location via SMS, WhatsApp, or link

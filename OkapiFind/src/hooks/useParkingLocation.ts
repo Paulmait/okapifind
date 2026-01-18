@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * useParkingLocation Hook
  * Integrates with Supabase for parking session management

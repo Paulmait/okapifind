@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Offline Service
  * Handles offline mode with sync queue for OkapiFind

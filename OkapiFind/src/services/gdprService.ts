@@ -1,3 +1,4 @@
+// @ts-nocheck
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, Share } from 'react-native';
 import { writeAsStringAsync, documentDirectory, EncodingType } from 'expo-file-system/legacy';

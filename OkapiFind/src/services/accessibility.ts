@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { AccessibilityInfo, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 

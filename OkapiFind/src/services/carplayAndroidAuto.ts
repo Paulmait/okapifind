@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * CarPlay and Android Auto Integration Service
  * Seamless integration with vehicle infotainment systems

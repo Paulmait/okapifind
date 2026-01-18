@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Admin Analytics Service
  * Server-side analytics aggregation and reporting

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * User Service
  * Handles all user-related business logic

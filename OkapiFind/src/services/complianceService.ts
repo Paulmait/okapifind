@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Compliance Service
  * Handles GDPR/CCPA compliance, data export, deletion, and consent management

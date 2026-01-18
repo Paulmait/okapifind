@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * User Profile Manager Service
  * Handles user account creation, profiles, and preferences

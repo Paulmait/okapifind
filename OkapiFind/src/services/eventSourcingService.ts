@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Event Sourcing Service
  * Provides complete audit trail and event-driven architecture

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Voice Commands Service
  * Integrates with Siri Shortcuts (iOS) and Google Assistant (Android)

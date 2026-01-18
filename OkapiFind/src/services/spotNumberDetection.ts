@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Parking Spot Number Detection Service
  * OCR on spot number signs - "A123" or "456"

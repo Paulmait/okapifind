@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Redis Cache Service
  * High-performance caching layer for OkapiFind

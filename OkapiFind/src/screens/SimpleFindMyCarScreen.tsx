@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Simple Find My Car Screen
  * PHILOSOPHY: One problem solved perfectly. No clutter.

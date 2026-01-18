@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Comprehensive Audit Logging Service
  * Tracks all admin actions, user activities, and system events

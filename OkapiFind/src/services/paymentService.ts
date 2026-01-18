@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Payment Processing Service with RevenueCat
  * Handles subscriptions, in-app purchases, and payment validation

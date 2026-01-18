@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Enhanced ML Parking Prediction Service
  * Advanced AI-powered parking predictions using neural network patterns

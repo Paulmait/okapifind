@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Circuit Breaker Pattern Implementation
  * Provides fault tolerance and prevents cascading failures

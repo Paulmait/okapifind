@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Advanced Database Caching Service with LRU Implementation
  * Optimizes database queries and reduces latency

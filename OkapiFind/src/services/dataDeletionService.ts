@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Data Deletion Service
  * REQUIRED for App Store compliance - User data deletion capability

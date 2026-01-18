@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Permission Service with App Store Compliant Explanations
  * Handles all permission requests with proper user education

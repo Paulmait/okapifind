@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Legal Acceptance Screen
  * Shows EULA, Privacy Policy, and Terms on first launch

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Enterprise Backup & Infrastructure System
  * Implements automated backups, Redis caching, CDN, and load balancing

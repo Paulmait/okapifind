@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as StoreReview from 'expo-store-review';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';

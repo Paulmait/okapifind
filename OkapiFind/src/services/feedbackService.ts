@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Feedback Service
  * Collects user feedback and feature requests

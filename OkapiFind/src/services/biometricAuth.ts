@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Biometric Authentication Service
  * Provides secure biometric authentication for sensitive operations

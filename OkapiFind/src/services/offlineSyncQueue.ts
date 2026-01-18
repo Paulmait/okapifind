@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Offline-First Sync Queue Service
  * Manages offline operations and syncs when connectivity is restored

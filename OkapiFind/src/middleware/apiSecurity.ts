@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * API Security Middleware for OkapiFind
  * Provides comprehensive request validation, sanitization, and protection

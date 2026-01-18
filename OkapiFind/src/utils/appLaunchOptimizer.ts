@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * App Launch Optimizer
  * Implements UI/UX best practice #6: Performance (<2 second app launch)

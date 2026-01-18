@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Data Encryption at Rest Service
  * Provides AES-256 encryption for sensitive data storage

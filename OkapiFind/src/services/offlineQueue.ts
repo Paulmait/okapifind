@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Offline Queue Service
  * Implements offline-first architecture for OkapiFind

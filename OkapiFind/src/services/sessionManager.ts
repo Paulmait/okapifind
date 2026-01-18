@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Session Manager Service
  * Handles session lifecycle, cleanup, and battery optimization

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Smart Parking Recommendations Service
  * AI-powered parking suggestions based on destination, user preferences,

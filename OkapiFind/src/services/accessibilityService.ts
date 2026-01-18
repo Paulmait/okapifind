@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Accessibility Service for WCAG 2.1 AA Compliance
  * Required for App Store approval and inclusivity

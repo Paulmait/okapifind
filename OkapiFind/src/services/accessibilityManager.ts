@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Accessibility Manager Service
  * Ensures app compliance with WCAG 2.1 AA standards

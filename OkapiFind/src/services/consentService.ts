@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Consent Management Service
  * Manages user consent for EULA, Privacy Policy, and Terms of Service

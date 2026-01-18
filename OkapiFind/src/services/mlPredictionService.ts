@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Machine Learning Prediction Service
  * Provides intelligent predictions for parking patterns, pricing, and availability

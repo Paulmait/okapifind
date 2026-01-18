@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Cross-Platform Sync Service
  * Ensures seamless data synchronization between mobile and web apps

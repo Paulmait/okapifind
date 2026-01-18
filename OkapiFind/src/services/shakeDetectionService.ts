@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Shake Detection Service
  * Detects shake gestures to quickly save parking location

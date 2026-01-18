@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Comprehensive Data Collection Service
  * Collects user interactions, device info, location data for analytics

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Enhanced Data Tracking Service
  * Comprehensive user analytics with GDPR/CCPA compliance

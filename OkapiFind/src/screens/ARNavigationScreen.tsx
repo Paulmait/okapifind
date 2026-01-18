@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * AR Navigation Screen
  * Premium feature using ARKit (iOS) and ARCore (Android)

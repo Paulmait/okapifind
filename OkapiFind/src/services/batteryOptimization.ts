@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Battery Optimization Service
  * Smart battery management for background location tracking

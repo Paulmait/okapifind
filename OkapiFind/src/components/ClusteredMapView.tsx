@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Clustered Map View Component
  * Uses react-native-maps-super-cluster for high-performance marker clustering

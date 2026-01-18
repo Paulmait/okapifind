@@ -108,7 +108,7 @@ class PerformanceMonitor {
     } catch (error) {
       const metric = this.endTimer(name);
       if (metric) {
-        metric.metadata = { ...metric.metadata, error: error.message };
+        metric.metadata = { ...metric.metadata, error: (error as Error).message };
       }
       throw error;
     }

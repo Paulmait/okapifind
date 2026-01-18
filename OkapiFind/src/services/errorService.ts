@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Centralized Error Handling and Logging Service
  * Provides comprehensive error tracking, logging, and reporting

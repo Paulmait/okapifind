@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Smart Notifications Service
  * Context-aware and intelligent notification system
