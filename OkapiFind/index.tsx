@@ -1,182 +1,212 @@
 import { registerRootComponent } from 'expo';
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
-// Test imports one by one - uncomment to test
-const importTests: { name: string; status: string }[] = [];
+// Import all the modules that passed
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { Colors } from './src/constants/colors';
+import { analytics } from './src/services/analytics';
+import { ErrorBoundary } from './src/services/errorBoundary';
+import { OfflineIndicator } from './src/components/OfflineIndicator';
+import { FirebaseConfigGuard } from './src/components/FirebaseConfigGuard';
+import {
+  MapScreen,
+  GuidanceScreen,
+  SettingsScreen,
+  LegalScreen,
+  PaywallScreen,
+} from './src/utils/lazyComponents';
+import './src/i18n';
 
-// Test 1: Navigation
-try {
-  require('@react-navigation/native');
-  require('@react-navigation/stack');
-  importTests.push({ name: 'Navigation', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'Navigation', status: `❌ ${e.message}` });
-}
+const Stack = createStackNavigator();
 
-// Test 2: SafeAreaProvider
-try {
-  require('react-native-safe-area-context');
-  importTests.push({ name: 'SafeAreaContext', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'SafeAreaContext', status: `❌ ${e.message}` });
-}
+// Test stages
+type TestStage =
+  | 'initial'
+  | 'safearea'
+  | 'navigation'
+  | 'errorBoundary'
+  | 'firebaseGuard'
+  | 'fullApp';
 
-// Test 3: Colors
-try {
-  require('./src/constants/colors');
-  importTests.push({ name: 'Colors', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'Colors', status: `❌ ${e.message}` });
-}
+const RenderTest: React.FC = () => {
+  const [stage, setStage] = useState<TestStage>('initial');
+  const [error, setError] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<{stage: string; status: string}[]>([]);
 
-// Test 4: Firebase config
-try {
-  require('./src/config/firebase');
-  importTests.push({ name: 'Firebase', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'Firebase', status: `❌ ${e.message}` });
-}
+  const addResult = (stageName: string, status: string) => {
+    setTestResults(prev => [...prev, { stage: stageName, status }]);
+  };
 
-// Test 5: Analytics
-try {
-  require('./src/services/analytics');
-  importTests.push({ name: 'Analytics', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'Analytics', status: `❌ ${e.message}` });
-}
+  const runTest = async (testStage: TestStage) => {
+    try {
+      setStage(testStage);
+      addResult(testStage, '✅ Rendered');
+    } catch (e: any) {
+      setError(`Stage "${testStage}" failed: ${e.message}`);
+      addResult(testStage, `❌ ${e.message}`);
+    }
+  };
 
-// Test 6: Performance
-try {
-  require('./src/services/performance');
-  importTests.push({ name: 'Performance', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'Performance', status: `❌ ${e.message}` });
-}
+  // Initial test content
+  if (stage === 'initial') {
+    return (
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          <Text style={styles.title}>Render Test</Text>
+          <Text style={styles.subtitle}>Testing component rendering stages</Text>
 
-// Test 7: Feature Flags
-try {
-  require('./src/services/featureFlags');
-  importTests.push({ name: 'FeatureFlags', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'FeatureFlags', status: `❌ ${e.message}` });
-}
+          <TouchableOpacity style={styles.button} onPress={() => runTest('safearea')}>
+            <Text style={styles.buttonText}>Test 1: SafeAreaProvider</Text>
+          </TouchableOpacity>
 
-// Test 8: Offline Mode
-try {
-  require('./src/services/offlineMode');
-  importTests.push({ name: 'OfflineMode', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'OfflineMode', status: `❌ ${e.message}` });
-}
+          <TouchableOpacity style={styles.button} onPress={() => runTest('navigation')}>
+            <Text style={styles.buttonText}>Test 2: NavigationContainer</Text>
+          </TouchableOpacity>
 
-// Test 9: i18n
-try {
-  require('./src/i18n');
-  importTests.push({ name: 'i18n', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'i18n', status: `❌ ${e.message}` });
-}
+          <TouchableOpacity style={styles.button} onPress={() => runTest('errorBoundary')}>
+            <Text style={styles.buttonText}>Test 3: ErrorBoundary</Text>
+          </TouchableOpacity>
 
-// Test 10: Auth hook
-try {
-  require('./src/hooks/useAuth');
-  importTests.push({ name: 'useAuth', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'useAuth', status: `❌ ${e.message}` });
-}
+          <TouchableOpacity style={styles.button} onPress={() => runTest('firebaseGuard')}>
+            <Text style={styles.buttonText}>Test 4: FirebaseConfigGuard</Text>
+          </TouchableOpacity>
 
-// Test 11: RevenueCat
-try {
-  require('./src/hooks/useRevenueCat');
-  importTests.push({ name: 'RevenueCat', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'RevenueCat', status: `❌ ${e.message}` });
-}
+          <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={() => runTest('fullApp')}>
+            <Text style={styles.buttonText}>Test 5: Full App (MapScreen)</Text>
+          </TouchableOpacity>
 
-// Test 12: Error Boundary
-try {
-  require('./src/services/errorBoundary');
-  importTests.push({ name: 'ErrorBoundary', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'ErrorBoundary', status: `❌ ${e.message}` });
-}
+          {testResults.map((result, i) => (
+            <View key={i} style={styles.resultRow}>
+              <Text style={styles.resultText}>{result.stage}: {result.status}</Text>
+            </View>
+          ))}
 
-// Test 13: Cross Platform Sync
-try {
-  require('./src/services/crossPlatformSync');
-  importTests.push({ name: 'CrossPlatformSync', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'CrossPlatformSync', status: `❌ ${e.message}` });
-}
+          {error && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
 
-// Test 14: Lazy Components
-try {
-  require('./src/utils/lazyComponents');
-  importTests.push({ name: 'LazyComponents', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'LazyComponents', status: `❌ ${e.message}` });
-}
+  // Test SafeAreaProvider
+  if (stage === 'safearea') {
+    return (
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <Text style={styles.success}>✅ SafeAreaProvider works!</Text>
+          <TouchableOpacity style={styles.button} onPress={() => setStage('initial')}>
+            <Text style={styles.buttonText}>Back to Tests</Text>
+          </TouchableOpacity>
+        </View>
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
+    );
+  }
 
-// Test 15: Supabase
-try {
-  require('./src/lib/supabase-client');
-  importTests.push({ name: 'Supabase', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'Supabase', status: `❌ ${e.message}` });
-}
+  // Test NavigationContainer
+  if (stage === 'navigation') {
+    return (
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Test">
+              {() => (
+                <View style={styles.container}>
+                  <Text style={styles.success}>✅ NavigationContainer works!</Text>
+                  <TouchableOpacity style={styles.button} onPress={() => setStage('initial')}>
+                    <Text style={styles.buttonText}>Back to Tests</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </Stack.Screen>
+          </Stack.Navigator>
+        </NavigationContainer>
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
+    );
+  }
 
-// Test 16: Components
-try {
-  require('./src/components/FirebaseConfigGuard');
-  require('./src/components/OfflineIndicator');
-  importTests.push({ name: 'Components', status: '✅' });
-} catch (e: any) {
-  importTests.push({ name: 'Components', status: `❌ ${e.message}` });
-}
-
-const DiagnosticApp: React.FC = () => {
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    setReady(true);
-  }, []);
-
-  const failedTests = importTests.filter(t => t.status.startsWith('❌'));
-  const passedTests = importTests.filter(t => t.status === '✅');
-
-  return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>OkapiFind Diagnostic</Text>
-        <Text style={styles.subtitle}>Import Test Results</Text>
-
-        <Text style={styles.summary}>
-          ✅ Passed: {passedTests.length} | ❌ Failed: {failedTests.length}
-        </Text>
-
-        {importTests.map((test, index) => (
-          <View key={index} style={styles.testRow}>
-            <Text style={[
-              styles.testName,
-              test.status.startsWith('❌') && styles.failed
-            ]}>
-              {test.status.startsWith('✅') ? '✅' : '❌'} {test.name}
-            </Text>
-            {test.status.startsWith('❌') && (
-              <Text style={styles.errorText}>{test.status.slice(2)}</Text>
-            )}
+  // Test ErrorBoundary
+  if (stage === 'errorBoundary') {
+    return (
+      <ErrorBoundary screenName="Test">
+        <SafeAreaProvider>
+          <View style={styles.container}>
+            <Text style={styles.success}>✅ ErrorBoundary works!</Text>
+            <TouchableOpacity style={styles.button} onPress={() => setStage('initial')}>
+              <Text style={styles.buttonText}>Back to Tests</Text>
+            </TouchableOpacity>
           </View>
-        ))}
+          <StatusBar style="auto" />
+        </SafeAreaProvider>
+      </ErrorBoundary>
+    );
+  }
 
-        {failedTests.length === 0 && (
-          <Text style={styles.success}>
-            All imports passed! The issue may be in component rendering.
-          </Text>
-        )}
-      </ScrollView>
-    </View>
-  );
+  // Test FirebaseConfigGuard
+  if (stage === 'firebaseGuard') {
+    return (
+      <SafeAreaProvider>
+        <FirebaseConfigGuard>
+          <View style={styles.container}>
+            <Text style={styles.success}>✅ FirebaseConfigGuard works!</Text>
+            <TouchableOpacity style={styles.button} onPress={() => setStage('initial')}>
+              <Text style={styles.buttonText}>Back to Tests</Text>
+            </TouchableOpacity>
+          </View>
+        </FirebaseConfigGuard>
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
+    );
+  }
+
+  // Test Full App with MapScreen
+  if (stage === 'fullApp') {
+    return (
+      <ErrorBoundary screenName="App">
+        <SafeAreaProvider>
+          <OfflineIndicator />
+          <NavigationContainer>
+            <Stack.Navigator
+              initialRouteName="Map"
+              screenOptions={{
+                headerStyle: { backgroundColor: Colors.background },
+                headerTintColor: Colors.primary,
+              }}
+            >
+              <Stack.Screen
+                name="Map"
+                component={MapScreen}
+                options={{
+                  title: 'OkapiFind',
+                  headerTitleAlign: 'center',
+                  headerRight: () => (
+                    <TouchableOpacity style={{ marginRight: 16 }}>
+                      <Text style={{ color: Colors.primary, fontSize: 28 }}>⚙</Text>
+                    </TouchableOpacity>
+                  ),
+                }}
+              />
+              <Stack.Screen name="Guidance" component={GuidanceScreen} />
+              <Stack.Screen name="Settings" component={SettingsScreen} />
+              <Stack.Screen name="Legal" component={LegalScreen} />
+              <Stack.Screen name="Paywall" component={PaywallScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+          <StatusBar style="auto" />
+        </SafeAreaProvider>
+      </ErrorBoundary>
+    );
+  }
+
+  return null;
 };
 
 const styles = StyleSheet.create({
@@ -199,46 +229,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
   },
-  summary: {
-    fontSize: 14,
-    color: '#AAAAAA',
-    textAlign: 'center',
-    marginBottom: 20,
-    padding: 10,
-    backgroundColor: '#1a2a3a',
+  button: {
+    backgroundColor: '#2a3a4a',
+    padding: 16,
     borderRadius: 8,
-  },
-  testRow: {
     marginBottom: 12,
-    padding: 10,
-    backgroundColor: '#1a2a3a',
-    borderRadius: 8,
   },
-  testName: {
-    fontSize: 14,
+  primaryButton: {
+    backgroundColor: '#FFD700',
+  },
+  buttonText: {
     color: '#FFFFFF',
+    fontSize: 16,
+    textAlign: 'center',
     fontWeight: '600',
   },
-  failed: {
-    color: '#FF6B6B',
-  },
-  errorText: {
-    fontSize: 11,
-    color: '#FF6B6B',
-    marginTop: 4,
-    fontFamily: 'monospace',
-  },
   success: {
-    fontSize: 16,
+    fontSize: 24,
     color: '#00FF00',
     textAlign: 'center',
-    marginTop: 20,
+    marginBottom: 20,
+  },
+  resultRow: {
+    backgroundColor: '#1a2a3a',
+    padding: 10,
+    borderRadius: 6,
+    marginTop: 8,
+  },
+  resultText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  errorBox: {
+    backgroundColor: '#3a1a1a',
     padding: 15,
-    backgroundColor: '#1a3a1a',
     borderRadius: 8,
+    marginTop: 20,
+  },
+  errorText: {
+    color: '#FF6B6B',
+    fontSize: 14,
   },
 });
 
-registerRootComponent(DiagnosticApp);
+registerRootComponent(RenderTest);
