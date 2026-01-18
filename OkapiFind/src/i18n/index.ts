@@ -72,7 +72,7 @@ i18n
     react: {
       useSuspense: false, // Disable suspense for React Native
     },
-    compatibilityJSON: 'v3', // For React Native compatibility
+    compatibilityJSON: 'v4', // For React Native compatibility
   });
 
 export default i18n;
