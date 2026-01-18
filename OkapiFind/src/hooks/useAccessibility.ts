@@ -169,7 +169,7 @@ export const useKeyboardNavigation = () => {
 
 // Hook for accessible forms
 export const useAccessibleForm = () => {
-  const { getAccessibilityLabel, provideFeedback } = useAccessibility();
+  const { getAccessibilityLabel, provideFeedback, announceToScreenReader } = useAccessibility();
   const { announceError } = useAccessibleAnnouncements();
   const { t } = useTranslation();
 
@@ -214,7 +214,7 @@ export const useAccessibleForm = () => {
   const announceFormSuccess = useCallback((message: string) => {
     announceToScreenReader(message, 'medium');
     provideFeedback('success');
-  }, [provideFeedback]);
+  }, [announceToScreenReader, provideFeedback]);
 
   return {
     getFieldAccessibilityProps,

@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useSmartPOI } from '../hooks/useSmartPOI';
 import { SavedPOI, POIType } from '../services/smartPOIService';
-import { colors } from '../constants/colors';
+import { Colors } from '../constants/colors';
 
 interface SmartPOISetupProps {
   onClose?: () => void;
@@ -161,7 +161,7 @@ export function SmartPOISetup({ onClose }: SmartPOISetupProps) {
         </Text>
       </View>
       <TouchableOpacity onPress={() => handleDeletePOI(poi)} style={styles.deleteButton}>
-        <Ionicons name="trash-outline" size={20} color={colors.error} />
+        <Ionicons name="trash-outline" size={20} color={Colors.error} />
       </TouchableOpacity>
     </View>
   );
@@ -169,7 +169,7 @@ export function SmartPOISetup({ onClose }: SmartPOISetupProps) {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={Colors.primary} />
         <Text style={styles.loadingText}>Loading locations...</Text>
       </View>
     );
@@ -242,7 +242,7 @@ export function SmartPOISetup({ onClose }: SmartPOISetupProps) {
           style={styles.quickSetupButton}
           onPress={() => setShowAddModal(true)}
         >
-          <View style={[styles.quickSetupIcon, { backgroundColor: colors.primary }]}>
+          <View style={[styles.quickSetupIcon, { backgroundColor: Colors.primary }]}>
             <Ionicons name="add" size={24} color="#fff" />
           </View>
           <View style={styles.quickSetupInfo}>
@@ -279,7 +279,7 @@ export function SmartPOISetup({ onClose }: SmartPOISetupProps) {
           <Ionicons
             name={settings.autoLearnEnabled ? 'toggle' : 'toggle-outline'}
             size={40}
-            color={settings.autoLearnEnabled ? colors.primary : colors.textSecondary}
+            color={settings.autoLearnEnabled ? Colors.primary : Colors.textSecondary}
           />
         </TouchableOpacity>
 
@@ -296,7 +296,7 @@ export function SmartPOISetup({ onClose }: SmartPOISetupProps) {
           <Ionicons
             name={settings.suppressionEnabled ? 'toggle' : 'toggle-outline'}
             size={40}
-            color={settings.suppressionEnabled ? colors.primary : colors.textSecondary}
+            color={settings.suppressionEnabled ? Colors.primary : Colors.textSecondary}
           />
         </TouchableOpacity>
       </View>
@@ -334,7 +334,7 @@ export function SmartPOISetup({ onClose }: SmartPOISetupProps) {
             <TextInput
               style={styles.input}
               placeholder="Location name (e.g., Mom's House)"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={Colors.textSecondary}
               value={customName}
               onChangeText={setCustomName}
             />
@@ -403,17 +403,17 @@ export function SmartPOISetup({ onClose }: SmartPOISetupProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: Colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: Colors.background,
   },
   loadingText: {
     marginTop: 12,
-    color: colors.textSecondary,
+    color: Colors.textSecondary,
     fontSize: 16,
   },
   header: {
@@ -423,12 +423,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: colors.text,
+    color: Colors.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.textSecondary,
+    color: Colors.textSecondary,
     lineHeight: 22,
   },
   section: {
@@ -438,20 +438,20 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text,
+    color: Colors.text,
     marginBottom: 16,
   },
   quickSetupButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
   },
   quickSetupButtonActive: {
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: Colors.primary,
   },
   quickSetupIcon: {
     width: 48,
@@ -467,17 +467,17 @@ const styles = StyleSheet.create({
   quickSetupTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: Colors.text,
     marginBottom: 4,
   },
   quickSetupDescription: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: Colors.textSecondary,
   },
   poiItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -496,16 +496,16 @@ const styles = StyleSheet.create({
   poiName: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: Colors.text,
   },
   poiAddress: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: Colors.textSecondary,
     marginTop: 2,
   },
   poiStats: {
     fontSize: 11,
-    color: colors.textTertiary,
+    color: Colors.textSecondary,
     marginTop: 4,
   },
   deleteButton: {
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -525,17 +525,17 @@ const styles = StyleSheet.create({
   settingTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: Colors.text,
     marginBottom: 4,
   },
   settingDescription: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: Colors.textSecondary,
   },
   statsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     padding: 20,
   },
@@ -545,11 +545,11 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: Colors.primary,
   },
   statLabel: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: Colors.textSecondary,
     marginTop: 4,
   },
   modalOverlay: {
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: colors.background,
+    backgroundColor: Colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -567,22 +567,22 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.text,
+    color: Colors.text,
     marginBottom: 20,
     textAlign: 'center',
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: colors.text,
+    color: Colors.text,
     marginBottom: 16,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textSecondary,
+    color: Colors.textSecondary,
     marginBottom: 12,
   },
   typeSelector: {
@@ -599,14 +599,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   typeOptionSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   typeOptionText: {
     marginLeft: 6,
     fontSize: 12,
     fontWeight: '600',
-    color: colors.text,
+    color: Colors.text,
     textTransform: 'capitalize',
   },
   typeOptionTextSelected: {
@@ -624,15 +624,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   modalButtonCancel: {
-    backgroundColor: colors.surface,
+    backgroundColor: Colors.surface,
   },
   modalButtonSave: {
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.primary,
   },
   modalButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: Colors.text,
   },
   modalButtonTextSave: {
     color: '#fff',
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
   closeButton: {
     margin: 20,
     padding: 16,
-    backgroundColor: colors.primary,
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     alignItems: 'center',
   },

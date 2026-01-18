@@ -30,7 +30,7 @@ interface UseOfflineModeReturn {
   isOnline: boolean;
   isSlowConnection: boolean;
   connectionType: string | null;
-  queueAction: (action: OfflineQueue) => void;
+  queueAction: (action: Omit<OfflineQueue, 'id' | 'timestamp' | 'retryCount'>) => void;
   getCachedData: <T>(key: string) => Promise<T | null>;
   setCachedData: <T>(key: string, data: T, ttl?: number) => Promise<void>;
   syncQueue: () => Promise<void>;
@@ -213,7 +213,7 @@ export const useOfflineMode = (): UseOfflineModeReturn => {
   }, []);
 
   const handleConnectionChange = useCallback((state: NetInfoState) => {
-    const online = state.isConnected && state.isInternetReachable !== false;
+    const online = Boolean(state.isConnected && state.isInternetReachable !== false);
     setIsOnline(online);
     setConnectionType(state.type);
 

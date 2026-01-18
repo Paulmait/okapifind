@@ -48,6 +48,11 @@ class PerformanceMonitor {
     this.metrics.set(name, metric);
   }
 
+  public mark(name: string, metadata?: Record<string, any>): void {
+    // Simple mark for tracking interaction timestamps
+    this.startTimer(name, metadata);
+  }
+
   public endTimer(name: string): PerformanceMetric | null {
     if (!this.isEnabled) return null;
 
