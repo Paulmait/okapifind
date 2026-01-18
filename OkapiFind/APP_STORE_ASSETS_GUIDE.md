@@ -192,7 +192,7 @@ https://okapifind.com/privacy
 
 **Copyright:**
 ```
-© 2025 OkapiFind LLC
+© 2026 OkapiFind LLC
 ```
 
 ---

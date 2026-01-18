@@ -6,7 +6,7 @@
 export const COPYRIGHT_NOTICE = `
 COPYRIGHT NOTICE
 
-© 2025 OkapiFind. All Rights Reserved.
+© 2026 OkapiFind. All Rights Reserved.
 
 This application and all its contents, including but not limited to software, documentation, design, graphics, and logos, are the exclusive property of OkapiFind and are protected by international copyright laws.
 
@@ -96,7 +96,7 @@ All original image assets, including but not limited to:
 - UI elements
 - Marketing materials
 
-Are © 2025 OkapiFind. All Rights Reserved.
+Are © 2026 OkapiFind. All Rights Reserved.
 
 TRADEMARK NOTICE
 
@@ -139,10 +139,10 @@ MODIFICATIONS
 
 We reserve the right to modify this copyright notice at any time. Modifications will be effective immediately upon posting.
 
-Last Updated: January 1, 2025
+Last Updated: January 1, 2026
 Version: 1.0.0
 `;
 
-export const COPYRIGHT_YEAR = '2025';
+export const COPYRIGHT_YEAR = '2026';
 export const COPYRIGHT_OWNER = 'OkapiFind';
 export const COPYRIGHT_EMAIL = 'copyright@okapifind.com';
