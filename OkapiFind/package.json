@@ -145,6 +145,11 @@
   "expo": {
     "autolinking": {
       "exclude": []
+    },
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": ["react-native-tts"]
+      }
     }
   }
 }
