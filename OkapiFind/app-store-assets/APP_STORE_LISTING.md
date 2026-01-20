@@ -75,6 +75,10 @@ OkapiFind Pro ($9.99/month):
 • Priority support
 
 Download OkapiFind today and never lose your car again!
+
+📄 LEGAL
+Terms of Use: https://okapifind.com/terms
+Privacy Policy: https://okapifind.com/privacy
 ```
 
 ---
@@ -102,7 +106,21 @@ https://okapifind.com
 
 ## PRIVACY POLICY URL (Required)
 ```
-https://github.com/Paulmait/okapifind/blob/main/PRIVACY_POLICY.md
+https://okapifind.com/privacy
+```
+
+---
+
+## TERMS OF USE URL (Required for apps with subscriptions)
+```
+https://okapifind.com/terms
+```
+
+---
+
+## EULA URL (End User License Agreement)
+```
+https://okapifind.com/eula
 ```
 
 ---
@@ -137,6 +155,9 @@ Content Descriptions - Select "None" for all:
 - Medical/Treatment Information: None
 - Unrestricted Web Access: None
 - Gambling and Contests: None
+
+**IMPORTANT - Age Assurance:** Select "None"
+(App does not include Parental Controls or Age Assurance mechanisms)
 
 ---
 
@@ -274,6 +295,39 @@ Everything in Plus, plus offline maps, parking comparison, advanced statistics, 
 8. ✅ Age Rating: 4+
 9. ✅ Copyright: `© 2026 CIEN RIOS, LLC`
 10. ✅ Screenshots uploaded
+
+---
+
+---
+
+## APP STORE CONNECT FIXES (January 2026 Rejection)
+
+### Issue 1: In-App Purchases Not Submitted (Guideline 2.1)
+**Action Required in App Store Connect:**
+1. Go to App Store Connect > Your App > In-App Purchases
+2. Ensure all subscription products are created and submitted for review
+3. Add required screenshot for each IAP product
+4. Submit IAPs along with the new binary
+
+### Issue 2: Age Rating - Age Assurance (Guideline 2.3.6)
+**Action Required in App Store Connect:**
+1. Go to App Store Connect > Your App > App Information > Age Rating
+2. Find "Age Assurance" or "In-App Controls" option
+3. Set it to "None" (app doesn't include Parental Controls or Age Assurance)
+4. Save changes
+
+### Issue 3: iPad Screenshots Showing iPhone (Guideline 2.3.3)
+**FIXED - New iPad screenshots generated:**
+- Run `node scripts/generate-ipad-screenshots.js` to regenerate if needed
+- Screenshots in: `assets/app-store/ios/screenshots/ipad-13/` and `ipad-11/`
+- Upload new iPad screenshots to App Store Connect
+
+### Issue 4: Terms of Use Link Missing (Guideline 3.1.2)
+**Action Required in App Store Connect:**
+1. Go to App Store Connect > Your App > App Information
+2. Add Terms of Use URL: `https://okapifind.com/terms`
+3. OR update App Description to include the Terms link (already added above)
+4. If using custom EULA, add it in the EULA section
 
 ---
 
