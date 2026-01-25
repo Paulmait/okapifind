@@ -18,6 +18,45 @@ import { RootStackParamList } from '../types/navigation';
 import { Colors } from '../constants/colors';
 import { usePremium } from '../hooks/usePremium';
 import { logEvent, AnalyticsEvent, analytics } from '../services/analytics';
+import { isDevPremiumEnabled } from '../utils/devUtils';
+
+// Demo packages for screenshots when real packages aren't available
+interface DemoPackage {
+  identifier: string;
+  packageType: 'MONTHLY' | 'ANNUAL' | 'LIFETIME';
+  product: {
+    price: number;
+    priceString: string;
+    currencyCode: string;
+    title: string;
+  };
+  isDemo?: boolean;
+}
+
+const DEMO_PACKAGES: DemoPackage[] = [
+  {
+    identifier: 'okapi_premium_annual',
+    packageType: 'ANNUAL',
+    product: {
+      price: 29.99,
+      priceString: '$29.99',
+      currencyCode: 'USD',
+      title: 'OkapiFind Premium (Annual)',
+    },
+    isDemo: true,
+  },
+  {
+    identifier: 'okapi_premium_monthly',
+    packageType: 'MONTHLY',
+    product: {
+      price: 4.99,
+      priceString: '$4.99',
+      currencyCode: 'USD',
+      title: 'OkapiFind Premium (Monthly)',
+    },
+    isDemo: true,
+  },
+];
 
 type PaywallScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Paywall'>;
 
@@ -43,10 +82,11 @@ export default function PaywallScreen() {
   const isDarkMode = colorScheme === 'dark';
   const { subscribe, restorePurchases: restore, loadOfferings } = usePremium();
 
-  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
-  const [selectedPackage, setSelectedPackage] = useState<PurchasesPackage | null>(null);
+  const [packages, setPackages] = useState<(PurchasesPackage | DemoPackage)[]>([]);
+  const [selectedPackage, setSelectedPackage] = useState<PurchasesPackage | DemoPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
+  const [isUsingDemoPackages, setIsUsingDemoPackages] = useState(false);
 
   useEffect(() => {
     // Log paywall view event on mount
@@ -57,9 +97,10 @@ export default function PaywallScreen() {
   const loadPackages = async () => {
     try {
       const offerings = await loadOfferings();
-      if (offerings?.current?.availablePackages) {
+      if (offerings?.current?.availablePackages && offerings.current.availablePackages.length > 0) {
         const availablePackages = offerings.current.availablePackages;
         setPackages(availablePackages);
+        setIsUsingDemoPackages(false);
 
         const annualPackage = availablePackages.find(
           (pkg) => pkg.packageType === 'ANNUAL'
@@ -69,10 +110,20 @@ export default function PaywallScreen() {
         );
 
         setSelectedPackage(annualPackage || monthlyPackage || availablePackages[0]);
+      } else {
+        // No real packages available - use demo packages for screenshots
+        console.log('No packages from RevenueCat, using demo packages for UI preview');
+        setPackages(DEMO_PACKAGES);
+        setIsUsingDemoPackages(true);
+        setSelectedPackage(DEMO_PACKAGES[0]); // Select annual by default
       }
     } catch (error) {
       console.error('Error loading packages:', error);
-      Alert.alert('Error', 'Failed to load subscription options. Please try again later.');
+      // Fall back to demo packages for screenshots
+      console.log('Error loading packages, using demo packages for UI preview');
+      setPackages(DEMO_PACKAGES);
+      setIsUsingDemoPackages(true);
+      setSelectedPackage(DEMO_PACKAGES[0]);
     } finally {
       setLoading(false);
     }
@@ -81,6 +132,17 @@ export default function PaywallScreen() {
   const handlePurchase = async () => {
     if (!selectedPackage) {
       Alert.alert('Please select a subscription');
+      return;
+    }
+
+    // Check if using demo packages (for screenshots)
+    if (isUsingDemoPackages || (selectedPackage as DemoPackage).isDemo) {
+      // Demo mode - show success for screenshot purposes
+      Alert.alert(
+        'Demo Mode',
+        'This is a demo subscription screen for App Store screenshots. In production, this will process the actual purchase.',
+        [{ text: 'OK' }]
+      );
       return;
     }
 
@@ -157,13 +219,13 @@ export default function PaywallScreen() {
     navigation.navigate('Legal', { document: 'terms' });
   };
 
-  const formatPrice = (pkg: PurchasesPackage) => {
+  const formatPrice = (pkg: PurchasesPackage | DemoPackage) => {
     const price = pkg.product.priceString;
     const period = pkg.packageType === 'ANNUAL' ? '/year' : '/month';
     return `${price}${period}`;
   };
 
-  const formatSavings = (annualPkg: PurchasesPackage, monthlyPkg: PurchasesPackage) => {
+  const formatSavings = (annualPkg: PurchasesPackage | DemoPackage, monthlyPkg: PurchasesPackage | DemoPackage) => {
     const annualPrice = annualPkg.product.price;
     const monthlyPrice = monthlyPkg.product.price;
     const monthlyCostIfAnnual = annualPrice / 12;
@@ -184,9 +246,9 @@ export default function PaywallScreen() {
     );
   }
 
-  const monthlyPackage = packages.find(pkg => pkg.packageType === 'MONTHLY');
-  const annualPackage = packages.find(pkg => pkg.packageType === 'ANNUAL');
-  const lifetimePackage = packages.find(pkg => pkg.packageType === 'LIFETIME');
+  const monthlyPackage = packages.find(pkg => pkg.packageType === 'MONTHLY') as (PurchasesPackage | DemoPackage) | undefined;
+  const annualPackage = packages.find(pkg => pkg.packageType === 'ANNUAL') as (PurchasesPackage | DemoPackage) | undefined;
+  const lifetimePackage = packages.find(pkg => pkg.packageType === 'LIFETIME') as (PurchasesPackage | DemoPackage) | undefined;
 
   return (
     <SafeAreaView style={styles.container}>
