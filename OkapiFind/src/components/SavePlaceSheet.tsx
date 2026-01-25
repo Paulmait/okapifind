@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   },
   typeOptions: {
     flexDirection: 'row',
-    gap: 8,
+    marginHorizontal: -4,
   },
   typeOption: {
     flex: 1,
@@ -312,11 +312,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 8,
+    marginHorizontal: 4,
     backgroundColor: Colors.backgroundLight,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: 'transparent',
-    gap: 6,
   },
   typeOptionSelected: {
     backgroundColor: Colors.background,
@@ -325,6 +325,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: Colors.gray,
+    marginLeft: 6,
   },
   saveButton: {
     flexDirection: 'row',
@@ -334,7 +335,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     marginBottom: 12,
-    gap: 8,
   },
   saveButtonDisabled: {
     opacity: 0.5,
@@ -343,15 +343,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: Colors.buttonPrimaryText,
+    marginLeft: 8,
   },
   secondaryActions: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 24,
   },
   secondaryButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
+    marginHorizontal: 12,
   },
   secondaryButtonText: {
     fontSize: 14,

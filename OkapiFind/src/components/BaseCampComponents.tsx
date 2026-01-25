@@ -467,11 +467,11 @@ const styles = StyleSheet.create({
   sheetSecondaryButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
   },
   sheetSecondaryButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
+    marginHorizontal: 8,
   },
   sheetSecondaryButtonText: {
     fontSize: 14,
