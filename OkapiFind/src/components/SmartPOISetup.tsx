@@ -29,6 +29,7 @@ interface SmartPOISetupProps {
 const POI_ICONS: Record<POIType, keyof typeof Ionicons.glyphMap> = {
   home: 'home',
   work: 'briefcase',
+  hotel: 'bed',
   second_home: 'home-outline',
   gym: 'fitness',
   school: 'school',
@@ -37,20 +38,25 @@ const POI_ICONS: Record<POIType, keyof typeof Ionicons.glyphMap> = {
   friend_family: 'people',
   parking_lot: 'car',
   transit_hub: 'train',
+  cruise_ship: 'boat',
+  airport: 'airplane',
   custom: 'location',
 };
 
 const POI_COLORS: Record<POIType, string> = {
   home: '#4CAF50',
   work: '#2196F3',
+  hotel: '#9C27B0',
   second_home: '#8BC34A',
   gym: '#FF5722',
-  school: '#9C27B0',
+  school: '#673AB7',
   shopping: '#FF9800',
   restaurant: '#E91E63',
   friend_family: '#00BCD4',
   parking_lot: '#607D8B',
   transit_hub: '#795548',
+  cruise_ship: '#03A9F4',
+  airport: '#3F51B5',
   custom: '#9E9E9E',
 };
 

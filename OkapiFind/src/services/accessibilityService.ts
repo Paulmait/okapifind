@@ -185,35 +185,62 @@ class AccessibilityService {
 
   /**
    * Get color adjustments for color blind modes
+   * Uses WCAG 2.1 compliant accessible color palettes
    */
   getColorAdjustments(): Record<string, string> {
     switch (this.settings.colorBlindMode) {
       case 'protanopia':
-        // Red-blind adjustments
+        // Red-blind adjustments - uses blue/yellow distinction
         return {
-          red: '#FFD700',
-          green: '#00FF00',
-          error: '#FFD700',
-          success: '#00FF00',
+          success: '#0277BD', // Blue instead of green
+          error: '#E5A000', // Amber/orange instead of red
+          warning: '#9C27B0', // Purple for warning
+          info: '#00BCD4', // Cyan for info
+          primary: '#FFD700', // Gold remains visible
+          danger: '#E5A000',
         };
       case 'deuteranopia':
-        // Green-blind adjustments
+        // Green-blind adjustments - uses blue/red distinction
         return {
-          red: '#FF0000',
-          green: '#FFD700',
-          error: '#FF0000',
-          success: '#FFD700',
+          success: '#0277BD', // Blue instead of green
+          error: '#D32F2F', // Red still visible
+          warning: '#E5A000', // Amber for warning
+          info: '#00BCD4', // Cyan for info
+          primary: '#FFD700', // Gold remains visible
+          danger: '#D32F2F',
         };
       case 'tritanopia':
-        // Blue-blind adjustments
+        // Blue-yellow blind adjustments - uses red/cyan distinction
         return {
-          blue: '#00FFFF',
-          yellow: '#FF00FF',
-          primary: '#00FFFF',
+          success: '#00BFA5', // Teal/cyan instead of green
+          error: '#D32F2F', // Red remains visible
+          warning: '#FF5722', // Deep orange for warning
+          info: '#E91E63', // Pink for info (instead of blue)
+          primary: '#FF9800', // Orange instead of gold
+          danger: '#D32F2F',
         };
       default:
         return {};
     }
+  }
+
+  /**
+   * Get high contrast colors for users who need maximum distinguishability
+   */
+  getHighContrastColors(): Record<string, string> {
+    if (!this.settings.highContrast) return {};
+
+    return {
+      primary: '#FFFFFF',
+      background: '#000000',
+      text: '#FFFFFF',
+      textSecondary: '#FFFF00',
+      success: '#00FF00',
+      error: '#FF0000',
+      warning: '#FFFF00',
+      info: '#00FFFF',
+      border: '#FFFFFF',
+    };
   }
 
   /**
