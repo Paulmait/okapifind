@@ -171,6 +171,11 @@ class VoiceGuidanceService {
       return;
     }
 
+    if (!text) {
+      console.log('[VoiceGuidance] Empty text, skipping');
+      return;
+    }
+
     // Check for duplicates
     if (this.isDuplicate(text)) {
       console.log('[VoiceGuidance] Duplicate, skipping:', text);
@@ -324,6 +329,8 @@ class VoiceGuidanceService {
    * Check if text was recently spoken (deduplication)
    */
   private isDuplicate(text: string): boolean {
+    if (!text) return false;
+
     const now = Date.now();
 
     // Clean up old entries
@@ -334,7 +341,7 @@ class VoiceGuidanceService {
     // Check for match (case-insensitive, trim whitespace)
     const normalizedText = text.toLowerCase().trim();
     return this.recentlySpoken.some(
-      (entry) => entry.text.toLowerCase().trim() === normalizedText
+      (entry) => entry.text?.toLowerCase().trim() === normalizedText
     );
   }
 
