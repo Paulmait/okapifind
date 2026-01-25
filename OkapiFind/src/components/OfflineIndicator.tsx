@@ -3,35 +3,65 @@
  * Shows a banner when the device is offline
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 
 export function OfflineIndicator() {
   const [isOffline, setIsOffline] = useState(false);
-  const [slideAnim] = useState(new Animated.Value(-100));
+  const [shouldRender, setShouldRender] = useState(false);
+  const slideAnim = useRef(new Animated.Value(-100)).current;
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
       // Only consider truly offline if isConnected is explicitly false
       // isInternetReachable can be null initially, so don't treat that as offline
+      // Also require that we've received at least one network state update
       const offline = state.isConnected === false;
+
+      // Skip the first state if it reports offline (likely stale)
+      if (!hasInitialized.current) {
+        hasInitialized.current = true;
+        // Only show offline banner on first check if definitely offline
+        if (!offline) {
+          return;
+        }
+      }
 
       if (offline !== isOffline) {
         setIsOffline(offline);
 
-        // Animate banner in/out
-        Animated.spring(slideAnim, {
-          toValue: offline ? 0 : -100,
-          useNativeDriver: true,
-          tension: 50,
-          friction: 7,
-        }).start();
+        if (offline) {
+          // Show banner
+          setShouldRender(true);
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 7,
+          }).start();
+        } else {
+          // Hide banner with animation, then stop rendering
+          Animated.spring(slideAnim, {
+            toValue: -100,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 7,
+          }).start(() => {
+            setShouldRender(false);
+          });
+        }
       }
     });
 
     return () => unsubscribe();
   }, [isOffline, slideAnim]);
+
+  // Don't render anything if online - prevents any visual overlap
+  if (!shouldRender) {
+    return null;
+  }
 
   return (
     <Animated.View
@@ -41,7 +71,6 @@ export function OfflineIndicator() {
           transform: [{ translateY: slideAnim }],
         },
       ]}
-      pointerEvents={isOffline ? 'auto' : 'none'}
     >
       <View style={styles.content}>
         <Text style={styles.icon}>📶</Text>

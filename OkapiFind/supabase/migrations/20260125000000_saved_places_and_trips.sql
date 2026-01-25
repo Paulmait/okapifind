@@ -6,6 +6,14 @@
 -- 0) Ensure required extensions
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+-- Try to enable PostGIS if available (ignore error if not)
+DO $$
+BEGIN
+  CREATE EXTENSION IF NOT EXISTS "postgis";
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'PostGIS extension not available, spatial features will be limited';
+END$$;
+
 -- 1) Create trips table (minimal default-trip support)
 -- Allows users to organize saved places by trip (optional feature)
 CREATE TABLE IF NOT EXISTS public.trips (
@@ -21,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.trips (
 CREATE INDEX IF NOT EXISTS trips_user_id_idx ON public.trips(user_id);
 CREATE INDEX IF NOT EXISTS trips_is_default_idx ON public.trips(user_id, is_default) WHERE is_default = true;
 
--- 2) Create saved_places table
+-- 2) Create saved_places table (without PostGIS dependency)
 CREATE TABLE IF NOT EXISTS public.saved_places (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -31,8 +39,6 @@ CREATE TABLE IF NOT EXISTS public.saved_places (
   address TEXT NULL,
   lat DOUBLE PRECISION NOT NULL,
   lng DOUBLE PRECISION NOT NULL,
-  -- Optional: store as PostGIS geometry for geospatial queries
-  location GEOMETRY(Point, 4326) GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(lng, lat), 4326)) STORED,
   provider TEXT NULL CHECK (provider IN ('apple', 'google', 'manual')),
   provider_place_id TEXT NULL,
   geofence_radius_m INTEGER NOT NULL DEFAULT 150,
@@ -49,9 +55,21 @@ CREATE TABLE IF NOT EXISTS public.saved_places (
 CREATE INDEX IF NOT EXISTS saved_places_user_id_idx ON public.saved_places(user_id);
 CREATE INDEX IF NOT EXISTS saved_places_trip_id_idx ON public.saved_places(trip_id);
 CREATE INDEX IF NOT EXISTS saved_places_type_idx ON public.saved_places(type);
-CREATE INDEX IF NOT EXISTS saved_places_location_idx ON public.saved_places USING GIST(location);
+CREATE INDEX IF NOT EXISTS saved_places_lat_lng_idx ON public.saved_places(lat, lng);
 CREATE INDEX IF NOT EXISTS saved_places_active_hotel_idx ON public.saved_places(user_id, type)
   WHERE type = 'HOTEL' AND is_active = true;
+
+-- Add PostGIS geometry column if extension is available
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'postgis') THEN
+    ALTER TABLE public.saved_places ADD COLUMN IF NOT EXISTS location GEOMETRY(Point, 4326)
+      GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(lng, lat), 4326)) STORED;
+    CREATE INDEX IF NOT EXISTS saved_places_location_idx ON public.saved_places USING GIST(location);
+  END IF;
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'Could not add PostGIS column: %', SQLERRM;
+END$$;
 
 -- 3) Create or replace updated_at trigger function
 CREATE OR REPLACE FUNCTION public.trigger_set_updated_at()

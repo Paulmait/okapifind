@@ -179,7 +179,8 @@ const useAuthStore = create<AuthState>()(
       storage: createJSONStorage(() => storage),
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
-        userProfile: state.userProfile
+        userProfile: state.userProfile,
+        authProvider: state.authProvider,
       }),
     }
   )

@@ -3,9 +3,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { TouchableOpacity, Text, Platform, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, Platform, View, ActivityIndicator, StyleSheet, Linking } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
+import { supabaseAuthService } from './src/services/supabaseAuth.service';
 
 import {
   MapScreen,
@@ -213,6 +214,40 @@ function App() {
       });
     }
   }, [isLoading, isAuthenticated, isReady, currentUser]);
+
+  // Handle deep links for magic link authentication
+  useEffect(() => {
+    const handleDeepLink = async (event: { url: string }) => {
+      const url = event.url;
+      console.log('Deep link received:', url);
+
+      // Check if this is a magic link auth callback
+      if (url && (url.includes('auth/callback') || url.includes('access_token'))) {
+        try {
+          const success = await supabaseAuthService.handleMagicLinkCallback(url);
+          if (success) {
+            console.log('Magic link authentication successful');
+          }
+        } catch (error) {
+          console.error('Error handling magic link:', error);
+        }
+      }
+    };
+
+    // Handle initial URL (app opened via deep link)
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink({ url });
+      }
+    });
+
+    // Listen for deep links while app is running
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     // Initialize all services on app start with error handling
