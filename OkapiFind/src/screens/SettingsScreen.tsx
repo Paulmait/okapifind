@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -24,6 +24,14 @@ import { TERMS_LAST_UPDATED } from '../data/termsOfService';
 import { Colors } from '../constants/colors';
 import { dataDeletionService } from '../services/dataDeletionService';
 import { paymentService } from '../services/paymentService';
+import {
+  enableDevPremium,
+  disableDevPremium,
+  isDevPremiumEnabled,
+  isDevModeEnabled,
+  enableDevMode,
+  disableDevMode,
+} from '../utils/devUtils';
 
 type SettingsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Settings'>;
 
@@ -44,6 +52,67 @@ const SettingsScreen: React.FC = () => {
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(settings.autoSave);
   const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(settings.backgroundTracking);
   const [geofencingEnabled, setGeofencingEnabled] = useState(settings.useGeofencing);
+
+  // Developer mode state
+  const [devModeEnabled, setDevModeEnabled] = useState(false);
+  const [devPremiumEnabled, setDevPremiumEnabled] = useState(false);
+  const versionTapCount = useRef(0);
+  const versionTapTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Check dev mode on mount
+  useEffect(() => {
+    const checkDevMode = async () => {
+      const [devMode, devPremium] = await Promise.all([
+        isDevModeEnabled(),
+        isDevPremiumEnabled(),
+      ]);
+      setDevModeEnabled(devMode);
+      setDevPremiumEnabled(devPremium);
+    };
+    checkDevMode();
+  }, []);
+
+  // Handle version tap for developer mode
+  const handleVersionTap = () => {
+    versionTapCount.current += 1;
+
+    if (versionTapTimer.current) {
+      clearTimeout(versionTapTimer.current);
+    }
+
+    if (versionTapCount.current >= 7) {
+      versionTapCount.current = 0;
+      if (devModeEnabled) {
+        disableDevMode().then(() => {
+          setDevModeEnabled(false);
+          Alert.alert('Developer Mode', 'Developer mode disabled');
+        });
+      } else {
+        enableDevMode().then(() => {
+          setDevModeEnabled(true);
+          Alert.alert('Developer Mode', 'Developer mode enabled! You can now access premium testing options.');
+        });
+      }
+      return;
+    }
+
+    versionTapTimer.current = setTimeout(() => {
+      versionTapCount.current = 0;
+    }, 2000);
+  };
+
+  // Toggle dev premium mode
+  const handleToggleDevPremium = async () => {
+    if (devPremiumEnabled) {
+      await disableDevPremium();
+      setDevPremiumEnabled(false);
+      Alert.alert('Premium Test Mode', 'Premium test mode disabled. Restart app to apply changes.');
+    } else {
+      await enableDevPremium();
+      setDevPremiumEnabled(true);
+      Alert.alert('Premium Test Mode', 'Premium test mode enabled! Restart app to see premium features.');
+    }
+  };
 
   const handleToggleNotifications = async (value: boolean) => {
     setNotificationsEnabled(value);
@@ -455,11 +524,40 @@ const SettingsScreen: React.FC = () => {
           <View style={styles.aboutCard}>
             <Text style={styles.aboutTitle}>OkapiFind</Text>
             <Text style={styles.aboutSubtitle}>Never lose your car</Text>
-            <Text style={styles.aboutVersion}>Version 1.0.0</Text>
+            <TouchableOpacity onPress={handleVersionTap} activeOpacity={0.7}>
+              <Text style={styles.aboutVersion}>
+                Version 1.0.0 {devModeEnabled ? '(Dev)' : ''}
+              </Text>
+            </TouchableOpacity>
             <Text style={styles.aboutCopyright}>© 2025 Cien Rios LLC</Text>
             <Text style={styles.aboutCopyright}>All rights reserved</Text>
           </View>
         </View>
+
+        {/* Developer Options - Hidden until enabled */}
+        {devModeEnabled && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Developer Options</Text>
+
+            <View style={styles.settingRow}>
+              <View style={styles.settingInfo}>
+                <Text style={styles.settingTitle}>Premium Test Mode</Text>
+                <Text style={styles.settingDescription}>
+                  Enable premium features for testing/screenshots
+                </Text>
+              </View>
+              <Switch
+                value={devPremiumEnabled}
+                onValueChange={handleToggleDevPremium}
+                trackColor={{ false: '#ccc', true: Colors.primary }}
+              />
+            </View>
+
+            <Text style={[styles.settingDescription, { paddingHorizontal: 16, paddingTop: 8 }]}>
+              Tap "Version" 7 times to toggle developer mode
+            </Text>
+          </View>
+        )}
 
         <View style={styles.bottomPadding} />
       </ScrollView>

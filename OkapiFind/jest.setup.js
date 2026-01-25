@@ -46,6 +46,12 @@ jest.mock('expo-location', () => ({
     timestamp: Date.now(),
   }),
   watchPositionAsync: jest.fn().mockResolvedValue({ remove: jest.fn() }),
+  startLocationUpdatesAsync: jest.fn().mockResolvedValue(undefined),
+  stopLocationUpdatesAsync: jest.fn().mockResolvedValue(undefined),
+  hasStartedLocationUpdatesAsync: jest.fn().mockResolvedValue(false),
+  startGeofencingAsync: jest.fn().mockResolvedValue(undefined),
+  stopGeofencingAsync: jest.fn().mockResolvedValue(undefined),
+  hasStartedGeofencingAsync: jest.fn().mockResolvedValue(false),
   Accuracy: {
     Lowest: 1,
     Low: 2,
@@ -53,6 +59,16 @@ jest.mock('expo-location', () => ({
     High: 4,
     Highest: 5,
     BestForNavigation: 6,
+  },
+  ActivityType: {
+    Other: 1,
+    AutomotiveNavigation: 2,
+    Fitness: 3,
+    OtherNavigation: 4,
+  },
+  GeofencingEventType: {
+    Enter: 1,
+    Exit: 2,
   },
 }));
 
@@ -135,9 +151,18 @@ jest.mock('react-native-tts', () => ({
   voices: jest.fn().mockResolvedValue([]),
 }));
 
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
-);
+// Mock AsyncStorage with Jest mock functions
+const mockAsyncStorage = {
+  getItem: jest.fn(() => Promise.resolve(null)),
+  setItem: jest.fn(() => Promise.resolve()),
+  removeItem: jest.fn(() => Promise.resolve()),
+  clear: jest.fn(() => Promise.resolve()),
+  getAllKeys: jest.fn(() => Promise.resolve([])),
+  multiGet: jest.fn(() => Promise.resolve([])),
+  multiSet: jest.fn(() => Promise.resolve()),
+  multiRemove: jest.fn(() => Promise.resolve()),
+};
+jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
 
 // Mock Firebase
 jest.mock('firebase/app', () => ({
@@ -159,6 +184,13 @@ jest.mock('firebase/auth', () => ({
 }));
 
 // Sentry mock removed - sentry-expo disabled for SDK 54 compatibility
+
+// Mock NetInfo
+jest.mock('@react-native-community/netinfo', () => ({
+  fetch: jest.fn().mockResolvedValue({ isConnected: true, type: 'wifi' }),
+  addEventListener: jest.fn().mockReturnValue(() => {}),
+  useNetInfo: jest.fn().mockReturnValue({ isConnected: true, type: 'wifi' }),
+}));
 
 // Silence console during tests
 global.console = {

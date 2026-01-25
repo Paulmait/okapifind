@@ -11,6 +11,37 @@
 
 ---
 
+## STEP 0: Enable Premium Test Mode (For Screenshots)
+
+Before capturing screenshots for the IAP review, enable premium test mode on your device:
+
+### 0.1 Enable Developer Mode in the App
+
+1. Open OkapiFind on your iPhone
+2. Go to **Settings** (gear icon)
+3. Scroll down to the **About** section
+4. Tap on **"Version 1.0.0"** rapidly **7 times**
+5. You'll see an alert: "Developer mode enabled!"
+
+### 0.2 Enable Premium Test Mode
+
+1. After enabling developer mode, scroll down to see **Developer Options**
+2. Toggle **"Premium Test Mode"** to ON
+3. Close and restart the app
+4. Premium features are now unlocked for testing!
+
+### 0.3 Capture Required Screenshots
+
+With premium mode enabled, navigate to the **Paywall Screen** to capture screenshots:
+
+1. Go to Settings > Upgrade to Premium (or trigger paywall from any premium feature)
+2. Take a screenshot showing the subscription options
+3. This screenshot will be used for IAP review
+
+**Screenshot location for upload:** The captured screenshot from your device.
+
+---
+
 ## STEP 1: Fix In-App Purchases (Guideline 2.1)
 
 The app references Premium Subscriptions but the IAPs haven't been submitted for review.
@@ -188,17 +219,14 @@ assets/app-store/ios/screenshots/ipad-11/
 
 Apple requires a functional Terms of Use (EULA) link for apps with subscriptions.
 
-### 4.1 Terms of Use URL
+### 4.1 Terms of Use URL (VERIFIED LIVE)
 
-Use this URL for Terms of Service:
-```
-https://github.com/Paulmait/okapifind/blob/main/TERMS_OF_SERVICE.md
-```
+Use these URLs (verified working on Vercel):
 
-Or if you have a custom domain:
-```
-https://okapifind.com/terms
-```
+| Document | URL |
+|----------|-----|
+| **Terms of Service** | `https://okapifind.com/terms` |
+| **Privacy Policy** | `https://okapifind.com/privacy` |
 
 ### 4.2 Add to App Store Description
 
@@ -209,8 +237,8 @@ https://okapifind.com/terms
 ```
 ---
 Support: https://github.com/Paulmait/okapifind/issues
-Privacy Policy: https://github.com/Paulmait/okapifind/blob/main/PRIVACY_POLICY.md
-Terms of Service: https://github.com/Paulmait/okapifind/blob/main/TERMS_OF_SERVICE.md
+Privacy Policy: https://okapifind.com/privacy
+Terms of Service: https://okapifind.com/terms
 ```
 
 ### 4.3 Add Custom EULA (Optional but Recommended)
