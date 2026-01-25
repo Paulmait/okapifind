@@ -35,24 +35,35 @@ interface DemoPackage {
 
 const DEMO_PACKAGES: DemoPackage[] = [
   {
-    identifier: 'okapi_premium_annual',
+    identifier: 'com.okapi.find.premium.annual',
     packageType: 'ANNUAL',
     product: {
-      price: 29.99,
-      priceString: '$29.99',
+      price: 19.99,
+      priceString: '$19.99',
       currencyCode: 'USD',
       title: 'OkapiFind Premium (Annual)',
     },
     isDemo: true,
   },
   {
-    identifier: 'okapi_premium_monthly',
+    identifier: 'com.okapi.find.premium.monthly',
     packageType: 'MONTHLY',
     product: {
-      price: 4.99,
-      priceString: '$4.99',
+      price: 2.99,
+      priceString: '$2.99',
       currencyCode: 'USD',
       title: 'OkapiFind Premium (Monthly)',
+    },
+    isDemo: true,
+  },
+  {
+    identifier: 'com.okapi.find.premium.lifetime',
+    packageType: 'LIFETIME',
+    product: {
+      price: 39.99,
+      priceString: '$39.99',
+      currencyCode: 'USD',
+      title: 'OkapiFind Premium (Lifetime)',
     },
     isDemo: true,
   },
