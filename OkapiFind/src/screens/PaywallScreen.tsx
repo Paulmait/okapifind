@@ -20,55 +20,6 @@ import { usePremium } from '../hooks/usePremium';
 import { logEvent, AnalyticsEvent, analytics } from '../services/analytics';
 import { isDevPremiumEnabled } from '../utils/devUtils';
 
-// Demo packages for screenshots when real packages aren't available
-interface DemoPackage {
-  identifier: string;
-  packageType: 'MONTHLY' | 'ANNUAL' | 'LIFETIME';
-  product: {
-    price: number;
-    priceString: string;
-    currencyCode: string;
-    title: string;
-  };
-  isDemo?: boolean;
-}
-
-const DEMO_PACKAGES: DemoPackage[] = [
-  {
-    identifier: 'com.okapi.find.premium.annual',
-    packageType: 'ANNUAL',
-    product: {
-      price: 19.99,
-      priceString: '$19.99',
-      currencyCode: 'USD',
-      title: 'OkapiFind Premium (Annual)',
-    },
-    isDemo: true,
-  },
-  {
-    identifier: 'com.okapi.find.premium.monthly',
-    packageType: 'MONTHLY',
-    product: {
-      price: 2.99,
-      priceString: '$2.99',
-      currencyCode: 'USD',
-      title: 'OkapiFind Premium (Monthly)',
-    },
-    isDemo: true,
-  },
-  {
-    identifier: 'com.okapi.find.premium.lifetime',
-    packageType: 'LIFETIME',
-    product: {
-      price: 39.99,
-      priceString: '$39.99',
-      currencyCode: 'USD',
-      title: 'OkapiFind Premium (Lifetime)',
-    },
-    isDemo: true,
-  },
-];
-
 type PaywallScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Paywall'>;
 
 // v1.0 MVP Features - Matches actual implemented features
@@ -93,11 +44,11 @@ export default function PaywallScreen() {
   const isDarkMode = colorScheme === 'dark';
   const { subscribe, restorePurchases: restore, loadOfferings } = usePremium();
 
-  const [packages, setPackages] = useState<(PurchasesPackage | DemoPackage)[]>([]);
-  const [selectedPackage, setSelectedPackage] = useState<PurchasesPackage | DemoPackage | null>(null);
+  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
+  const [selectedPackage, setSelectedPackage] = useState<PurchasesPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
-  const [isUsingDemoPackages, setIsUsingDemoPackages] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     // Log paywall view event on mount
@@ -106,12 +57,12 @@ export default function PaywallScreen() {
   }, []);
 
   const loadPackages = async () => {
+    setLoadError(null);
     try {
       const offerings = await loadOfferings();
       if (offerings?.current?.availablePackages && offerings.current.availablePackages.length > 0) {
         const availablePackages = offerings.current.availablePackages;
         setPackages(availablePackages);
-        setIsUsingDemoPackages(false);
 
         const annualPackage = availablePackages.find(
           (pkg) => pkg.packageType === 'ANNUAL'
@@ -122,19 +73,13 @@ export default function PaywallScreen() {
 
         setSelectedPackage(annualPackage || monthlyPackage || availablePackages[0]);
       } else {
-        // No real packages available - use demo packages for screenshots
-        console.log('No packages from RevenueCat, using demo packages for UI preview');
-        setPackages(DEMO_PACKAGES);
-        setIsUsingDemoPackages(true);
-        setSelectedPackage(DEMO_PACKAGES[0]); // Select annual by default
+        // No packages available from RevenueCat
+        console.warn('No subscription packages available from RevenueCat');
+        setLoadError('Subscription packages are not available. Please try again later.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading packages:', error);
-      // Fall back to demo packages for screenshots
-      console.log('Error loading packages, using demo packages for UI preview');
-      setPackages(DEMO_PACKAGES);
-      setIsUsingDemoPackages(true);
-      setSelectedPackage(DEMO_PACKAGES[0]);
+      setLoadError('Unable to load subscription options. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -146,9 +91,7 @@ export default function PaywallScreen() {
       return;
     }
 
-    // Check if using demo packages - show appropriate error in production
-    if (isUsingDemoPackages || (selectedPackage as DemoPackage).isDemo) {
-      // In production, show a user-friendly error if subscription service is unavailable
+    if (loadError || packages.length === 0) {
       Alert.alert(
         'Temporarily Unavailable',
         'Subscription service is currently unavailable. Please check your internet connection and try again later.',
