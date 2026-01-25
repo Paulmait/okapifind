@@ -1,6 +1,6 @@
 import { registerRootComponent } from 'expo';
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Platform, TouchableOpacity, Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -16,8 +16,12 @@ import {
   SettingsScreen,
   LegalScreen,
   PaywallScreen,
+  SavedPlacesScreen,
+  SetHotelScreen,
+  SignInScreen,
 } from './src/utils/lazyComponents';
 import './src/i18n';
+import { supabaseAuthService } from './src/services/supabaseAuth.service';
 
 const Stack = createStackNavigator();
 
@@ -59,6 +63,40 @@ const App: React.FC = () => {
     };
 
     initializeApp();
+  }, []);
+
+  // Handle deep links for magic link authentication
+  useEffect(() => {
+    const handleDeepLink = async (event: { url: string }) => {
+      const url = event.url;
+      console.log('Deep link received:', url);
+
+      // Check if this is a magic link auth callback
+      if (url && (url.includes('auth/callback') || url.includes('access_token'))) {
+        try {
+          const success = await supabaseAuthService.handleMagicLinkCallback(url);
+          if (success) {
+            console.log('Magic link authentication successful');
+          }
+        } catch (error) {
+          console.error('Error handling magic link:', error);
+        }
+      }
+    };
+
+    // Handle initial URL (app opened via deep link)
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink({ url });
+      }
+    });
+
+    // Listen for deep links while app is running
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   // Show loading screen while initializing
@@ -154,8 +192,35 @@ const App: React.FC = () => {
                 name="Paywall"
                 component={PaywallScreen}
                 options={{
-                  title: 'Upgrade to Premium',
-                  headerBackTitle: 'Back',
+                  title: '',
+                  headerShown: false,
+                  presentation: 'modal',
+                }}
+              />
+              <Stack.Screen
+                name="SavedPlaces"
+                component={SavedPlacesScreen}
+                options={{
+                  title: 'Saved Places',
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="SetHotel"
+                component={SetHotelScreen}
+                options={{
+                  title: 'Set Hotel',
+                  headerShown: false,
+                  presentation: Platform.OS === 'ios' ? 'modal' : 'card',
+                }}
+              />
+              <Stack.Screen
+                name="SignIn"
+                component={SignInScreen}
+                options={{
+                  title: 'Sign In',
+                  headerShown: false,
+                  presentation: 'modal',
                 }}
               />
             </Stack.Navigator>
