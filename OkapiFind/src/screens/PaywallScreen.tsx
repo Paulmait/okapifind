@@ -60,13 +60,13 @@ const DEMO_PACKAGES: DemoPackage[] = [
 
 type PaywallScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Paywall'>;
 
-// v1.0 MVP Features - Only show what's actually available
+// v1.0 MVP Features - Matches actual implemented features
 const PREMIUM_FEATURES = [
-  { icon: '✓', title: 'Unlimited Parking Saves', description: 'Save as many locations as you need' },
-  { icon: '✓', title: 'Photo Notes', description: 'Add photos to remember parking details' },
-  { icon: '✓', title: 'Parking History', description: 'View all your previous parking spots' },
-  { icon: '✓', title: 'Safety Sharing', description: 'Share your location with trusted contacts' },
-  { icon: '✓', title: 'Priority Support', description: 'Get help when you need it' },
+  { icon: '📷', title: 'OCR Sign Scanner', description: 'Scan parking signs and set automatic reminders' },
+  { icon: '⏰', title: 'Parking Timer', description: 'Never forget when your meter expires' },
+  { icon: '📍', title: 'Unlimited Parking Saves', description: 'Save as many locations as you need' },
+  { icon: '📸', title: 'Photo Notes', description: 'Add photos to remember parking details' },
+  { icon: '📊', title: 'Parking History', description: 'View all your previous parking spots' },
 ];
 
 // Package type constants

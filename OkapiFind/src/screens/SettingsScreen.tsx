@@ -786,6 +786,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 8,
   },
   signOutButtonText: {
     fontSize: 16,
