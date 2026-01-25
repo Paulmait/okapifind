@@ -3,15 +3,60 @@
  * Zustand store for managing saved places state with persistence
  */
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { create, StateCreator } from 'zustand';
+import { persist, createJSONStorage, PersistOptions } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   SavedPlace,
   Trip,
   SavedPlacesState,
 } from '../types/savedPlaces.types';
-import { savedPlacesService } from '../services/savedPlacesService';
+
+// Import service lazily to prevent circular dependency issues
+let savedPlacesServiceInstance: any = null;
+const getSavedPlacesService = () => {
+  if (!savedPlacesServiceInstance) {
+    try {
+      savedPlacesServiceInstance = require('../services/savedPlacesService').savedPlacesService;
+    } catch (e) {
+      console.warn('Failed to load savedPlacesService:', e);
+      savedPlacesServiceInstance = {
+        loadPlacesFromCache: async () => [],
+        loadHotelFromCache: async () => null,
+        listSavedPlaces: async () => [],
+        getHotel: async () => null,
+        getOrCreateDefaultTrip: async () => null,
+      };
+    }
+  }
+  return savedPlacesServiceInstance;
+};
+
+// Safe storage wrapper that won't crash if AsyncStorage fails
+const safeStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    try {
+      return await AsyncStorage.getItem(name);
+    } catch (e) {
+      console.warn('AsyncStorage getItem failed:', e);
+      return null;
+    }
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    try {
+      await AsyncStorage.setItem(name, value);
+    } catch (e) {
+      console.warn('AsyncStorage setItem failed:', e);
+    }
+  },
+  removeItem: async (name: string): Promise<void> => {
+    try {
+      await AsyncStorage.removeItem(name);
+    } catch (e) {
+      console.warn('AsyncStorage removeItem failed:', e);
+    }
+  },
+};
 
 interface SavedPlacesActions {
   // Data loading
@@ -79,13 +124,13 @@ export const useSavedPlacesStore = create<SavedPlacesStore>()(
           let cachedHotel: SavedPlace | null = null;
 
           try {
-            cachedPlaces = await savedPlacesService.loadPlacesFromCache();
+            cachedPlaces = await getSavedPlacesService().loadPlacesFromCache();
           } catch (e) {
             console.warn('Failed to load places from cache:', e);
           }
 
           try {
-            cachedHotel = await savedPlacesService.loadHotelFromCache();
+            cachedHotel = await getSavedPlacesService().loadHotelFromCache();
           } catch (e) {
             console.warn('Failed to load hotel from cache:', e);
           }
@@ -112,9 +157,9 @@ export const useSavedPlacesStore = create<SavedPlacesStore>()(
       syncFromServer: async () => {
         try {
           const [places, hotel, defaultTrip] = await Promise.all([
-            savedPlacesService.listSavedPlaces(),
-            savedPlacesService.getHotel(),
-            savedPlacesService.getOrCreateDefaultTrip(),
+            getSavedPlacesService().listSavedPlaces(),
+            getSavedPlacesService().getHotel(),
+            getSavedPlacesService().getOrCreateDefaultTrip(),
           ]);
 
           set({
@@ -145,7 +190,7 @@ export const useSavedPlacesStore = create<SavedPlacesStore>()(
       // Fetch hotel specifically
       fetchHotel: async () => {
         try {
-          const hotel = await savedPlacesService.getHotel();
+          const hotel = await getSavedPlacesService().getHotel();
           set({ currentHotel: hotel });
           return hotel;
         } catch (error) {
@@ -157,7 +202,7 @@ export const useSavedPlacesStore = create<SavedPlacesStore>()(
       // Fetch all places
       fetchPlaces: async () => {
         try {
-          const places = await savedPlacesService.listSavedPlaces();
+          const places = await getSavedPlacesService().listSavedPlaces();
           set({ places });
           return places;
         } catch (error) {
@@ -227,7 +272,7 @@ export const useSavedPlacesStore = create<SavedPlacesStore>()(
     }),
     {
       name: 'okapifind-saved-places',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => safeStorage),
       partialize: (state) => ({
         // Only persist settings, not data (data comes from cache/server)
         smartSuggestionsEnabled: state.smartSuggestionsEnabled,

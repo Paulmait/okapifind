@@ -20,10 +20,10 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../types/navigation';
 import { Colors } from '../constants/colors';
-// Base Camp components
-import { TakeToHotelButton, HotelPill } from '../components/BaseCampComponents';
+// Base Camp components - DISABLED due to crash
+// import { TakeToHotelButton, HotelPill } from '../components/BaseCampComponents';
 // import { SavePlaceSheet } from '../components/SavePlaceSheet';
-import { useSavedPlaces } from '../hooks/useSavedPlaces';
+// import { useSavedPlaces } from '../hooks/useSavedPlaces';
 // import { useSmartSuggestions } from '../hooks/useSmartSuggestions';
 
 type MapScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Map'>;
@@ -64,8 +64,10 @@ const MapScreen: React.FC = () => {
   const [selectedFloor, setSelectedFloor] = useState<string>('street');
   const [customNotes, setCustomNotes] = useState<string>('');
 
-  // Saved Places hook - re-enabled with safer initialization
-  const { currentHotel, hasHotel } = useSavedPlaces();
+  // Saved Places hook - DISABLED due to crash
+  // const { currentHotel, hasHotel } = useSavedPlaces();
+  const currentHotel = null;
+  const hasHotel = false;
 
   // Smart Suggestions - temporarily disabled for debugging
   // const {
