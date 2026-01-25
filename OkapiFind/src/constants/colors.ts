@@ -45,6 +45,12 @@ export const Colors = {
   mapAccent: '#FFD700',
   mapPath: '#E5A000', // Slightly darker for better visibility
 
+  // Car indicator colors - Accessible for color blindness
+  carIndicator: '#00BFA5', // Teal - visible for red-green color blind users
+  carIndicatorLight: '#B2DFDB', // Light teal for backgrounds
+  carIndicatorDark: '#00897B', // Dark teal for contrast
+  userLocation: '#2196F3', // Blue - universally distinguishable
+
   // Shadows
   shadow: 'rgba(0, 0, 0, 0.1)',
   shadowDark: 'rgba(0, 0, 0, 0.3)',
@@ -58,6 +64,90 @@ export const BrandColors = {
   navyLight: '#1A2B3D',
   white: '#FFFFFF',
   offWhite: '#F8F9FA',
+  // Teal palette for accessibility
+  teal: '#00BFA5',
+  tealDark: '#00897B',
+  tealLight: '#B2DFDB',
+  cyan: '#00E5FF',
+};
+
+/**
+ * Dark Mode color palette
+ * Optimized for OLED screens and reduced eye strain
+ */
+export const DarkModeColors = {
+  // Backgrounds - true black for OLED power savings
+  background: '#000000',
+  backgroundElevated: '#121212',
+  backgroundCard: '#1E1E1E',
+  backgroundInput: '#2C2C2C',
+
+  // Text colors - high contrast on black
+  textPrimary: '#FFFFFF',
+  textSecondary: '#B3B3B3',
+  textMuted: '#808080',
+
+  // Accent colors - teal for accessibility
+  primary: '#00BFA5', // Teal instead of gold for dark mode
+  primaryLight: '#4DD0B6',
+  accent: '#00E5FF', // Bright cyan for highlights
+
+  // Status colors - brighter for dark backgrounds
+  success: '#00E676',
+  error: '#FF5252',
+  warning: '#FFD740',
+  info: '#40C4FF',
+
+  // Car indicator - bright teal
+  carIndicator: '#00E5FF',
+  userLocation: '#448AFF',
+
+  // Borders and separators
+  border: '#333333',
+  separator: '#2C2C2C',
+
+  // Card and surface
+  cardBackground: '#1E1E1E',
+  surface: '#121212',
+};
+
+/**
+ * Light Mode color palette (default)
+ */
+export const LightModeColors = {
+  // Backgrounds
+  background: '#FFFFFF',
+  backgroundElevated: '#F5F5F5',
+  backgroundCard: '#FFFFFF',
+  backgroundInput: '#F0F0F0',
+
+  // Text colors
+  textPrimary: '#0F1B2A',
+  textSecondary: '#666666',
+  textMuted: '#999999',
+
+  // Accent colors
+  primary: '#FFD700',
+  primaryDark: '#E5C100',
+  accent: '#00BFA5',
+
+  // Status colors
+  success: '#008A3E',
+  error: '#D32F2F',
+  warning: '#E5A000',
+  info: '#0277BD',
+
+  // Car indicator - teal for accessibility
+  carIndicator: '#00BFA5',
+  userLocation: '#2196F3',
+
+  // Borders and separators
+  border: '#E0E0E0',
+  separator: '#EEEEEE',
+
+  // Card and surface
+  cardBackground: '#FFFFFF',
+  surface: '#F5F5F5',
 };
 
 /**
@@ -129,4 +219,48 @@ export const getAccessibleColors = (
     default:
       return AccessibleColors.default;
   }
+};
+
+/**
+ * Theme type for appearance settings
+ */
+export type ThemeMode = 'light' | 'dark' | 'system';
+export type ColorBlindMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'highContrast';
+
+/**
+ * Get theme colors based on appearance mode
+ */
+export const getThemeColors = (mode: 'light' | 'dark' = 'light') => {
+  return mode === 'dark' ? DarkModeColors : LightModeColors;
+};
+
+/**
+ * Car indicator colors for different accessibility modes
+ * Teal (#00BFA5) is the default - visible for most color blind users
+ */
+export const CarIndicatorColors = {
+  default: '#00BFA5', // Teal - accessible for red-green color blindness
+  highContrast: '#00FFFF', // Bright cyan - maximum visibility
+  darkMode: '#00E5FF', // Bright cyan for dark backgrounds
+
+  // Pulse/glow effect colors
+  pulseDefault: 'rgba(0, 191, 165, 0.3)',
+  pulseHighContrast: 'rgba(0, 255, 255, 0.4)',
+  pulseDarkMode: 'rgba(0, 229, 255, 0.3)',
+};
+
+/**
+ * Get the appropriate car indicator color based on settings
+ */
+export const getCarIndicatorColor = (
+  isDarkMode: boolean = false,
+  colorBlindMode: ColorBlindMode = 'none'
+): string => {
+  if (colorBlindMode === 'highContrast') {
+    return CarIndicatorColors.highContrast;
+  }
+  if (isDarkMode) {
+    return CarIndicatorColors.darkMode;
+  }
+  return CarIndicatorColors.default;
 };

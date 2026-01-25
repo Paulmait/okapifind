@@ -146,13 +146,16 @@ export default function PaywallScreen() {
       return;
     }
 
-    // Check if using demo packages (for screenshots)
+    // Check if using demo packages - show appropriate error in production
     if (isUsingDemoPackages || (selectedPackage as DemoPackage).isDemo) {
-      // Demo mode - show success for screenshot purposes
+      // In production, show a user-friendly error if subscription service is unavailable
       Alert.alert(
-        'Demo Mode',
-        'This is a demo subscription screen for App Store screenshots. In production, this will process the actual purchase.',
-        [{ text: 'OK' }]
+        'Temporarily Unavailable',
+        'Subscription service is currently unavailable. Please check your internet connection and try again later.',
+        [
+          { text: 'Try Again', onPress: loadPackages },
+          { text: 'Cancel', style: 'cancel' }
+        ]
       );
       return;
     }
