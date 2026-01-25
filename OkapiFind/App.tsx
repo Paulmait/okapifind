@@ -14,6 +14,7 @@ import {
   LegalScreen,
   PaywallScreen,
   AuthScreen,
+  SignInScreen,
   SavedPlacesScreen,
   SetHotelScreen,
 } from './src/utils/lazyComponents';
@@ -143,6 +144,15 @@ function MainNavigator() {
           title: 'Set Hotel',
           headerShown: false,
           presentation: Platform.OS === 'ios' ? 'modal' : 'card',
+        }}
+      />
+      <Stack.Screen
+        name="SignIn"
+        component={SignInScreen}
+        options={{
+          title: 'Sign In',
+          headerShown: false,
+          presentation: 'modal',
         }}
       />
     </Stack.Navigator>

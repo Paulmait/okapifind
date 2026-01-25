@@ -52,6 +52,7 @@ export const LazySettingsScreen = React.lazy(() => import('../screens/SettingsSc
 export const LazyLegalScreen = React.lazy(() => import('../screens/LegalScreen'));
 export const LazyPaywallScreen = React.lazy(() => import('../screens/PaywallScreen'));
 export const LazyAuthScreen = React.lazy(() => import('../screens/AuthScreen'));
+export const LazySignInScreen = React.lazy(() => import('../screens/SignInScreen'));
 export const LazyOnboardingScreen = React.lazy(() => import('../screens/OnboardingScreen'));
 
 export const LazyARNavigationScreen = Platform.OS === 'web'
@@ -72,6 +73,7 @@ export const SettingsScreen = withLazyLoading(LazySettingsScreen, undefined, 'Se
 export const LegalScreen = withLazyLoading(LazyLegalScreen, undefined, 'LegalScreen');
 export const PaywallScreen = withLazyLoading(LazyPaywallScreen, undefined, 'PaywallScreen');
 export const AuthScreen = withLazyLoading(LazyAuthScreen, undefined, 'AuthScreen');
+export const SignInScreen = withLazyLoading(LazySignInScreen, undefined, 'SignInScreen');
 export const OnboardingScreen = withLazyLoading(LazyOnboardingScreen, undefined, 'OnboardingScreen');
 export const ARNavigationScreen = withLazyLoading(LazyARNavigationScreen, undefined, 'ARNavigationScreen');
 export const LiveTrackingScreen = withLazyLoading(LazyLiveTrackingScreen, undefined, 'LiveTrackingScreen');

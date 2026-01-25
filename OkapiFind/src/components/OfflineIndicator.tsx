@@ -13,7 +13,9 @@ export function OfflineIndicator() {
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
-      const offline = !state.isConnected || !state.isInternetReachable;
+      // Only consider truly offline if isConnected is explicitly false
+      // isInternetReachable can be null initially, so don't treat that as offline
+      const offline = state.isConnected === false;
 
       if (offline !== isOffline) {
         setIsOffline(offline);

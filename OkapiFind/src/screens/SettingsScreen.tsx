@@ -40,7 +40,7 @@ const SettingsScreen: React.FC = () => {
   const { clearCarLocation } = useCarLocation();
   const { isPremium } = usePremium();
   const { accessFeature } = useFeatureGate();
-  const { signOut, isAuthenticated, currentUser } = useAuth();
+  const { signOut, isAuthenticated, currentUser, userEmail, userName } = useAuth();
   const {
     settings,
     updateSettings,
@@ -480,9 +480,9 @@ const SettingsScreen: React.FC = () => {
           {isAuthenticated ? (
             <>
               <View style={styles.accountCard}>
-                <Text style={styles.accountEmail}>{currentUser?.email || 'No email'}</Text>
-                {currentUser?.displayName && (
-                  <Text style={styles.accountName}>{currentUser.displayName}</Text>
+                <Text style={styles.accountEmail}>{userEmail || 'No email'}</Text>
+                {userName && (
+                  <Text style={styles.accountName}>{userName}</Text>
                 )}
               </View>
 
@@ -505,11 +505,7 @@ const SettingsScreen: React.FC = () => {
 
               <TouchableOpacity
                 style={styles.signInButton}
-                onPress={() => Alert.alert(
-                  'Sign In',
-                  'Sign in feature will be available in Settings soon. For now, enjoy using OkapiFind!',
-                  [{ text: 'OK' }]
-                )}
+                onPress={() => navigation.navigate('SignIn')}
               >
                 <Text style={styles.signInButtonText}>Sign In for Cloud Sync</Text>
               </TouchableOpacity>

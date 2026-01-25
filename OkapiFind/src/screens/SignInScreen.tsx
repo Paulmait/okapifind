@@ -8,6 +8,9 @@ import {
   Platform,
   Alert,
   useColorScheme,
+  TextInput,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -16,6 +19,7 @@ import { RootStackParamList } from '../types/navigation';
 import { Colors } from '../constants/colors';
 import { useAuth } from '../hooks/useAuth';
 import { analytics } from '../services/analytics';
+import { supabaseAuthService } from '../services/supabaseAuth.service';
 
 type SignInScreenNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;
 
@@ -25,6 +29,46 @@ export default function SignInScreen() {
   const isDarkMode = colorScheme === 'dark';
   const { signInWithGoogle, signInWithApple, appleSignInAvailable, isLoading } = useAuth();
   const [signingIn, setSigningIn] = useState(false);
+  const [email, setEmail] = useState('');
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleSendMagicLink = async () => {
+    setEmailError(null);
+
+    if (!email.trim()) {
+      setEmailError('Please enter your email address');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      setSigningIn(true);
+      analytics.logEvent('sign_in_button_pressed', { provider: 'magic_link' });
+
+      const result = await supabaseAuthService.sendMagicLink(email.trim().toLowerCase());
+
+      if (result.success) {
+        setMagicLinkSent(true);
+        analytics.logEvent('magic_link_sent', { email_domain: email.split('@')[1] });
+      } else {
+        setEmailError(result.message);
+      }
+    } catch (error: any) {
+      setEmailError(error.message || 'Failed to send magic link');
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     try {
@@ -67,17 +111,79 @@ export default function SignInScreen() {
 
   const styles = getStyles(isDarkMode);
 
+  // Show success screen after magic link is sent
+  if (magicLinkSent) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.successContainer}>
+          <View style={styles.emailIconContainer}>
+            <Text style={styles.emailIconText}>✉️</Text>
+          </View>
+          <Text style={styles.successTitle}>Check Your Email!</Text>
+          <Text style={styles.successSubtitle}>
+            We've sent a magic sign-in link to:
+          </Text>
+          <Text style={styles.emailDisplay}>{email}</Text>
+          <Text style={styles.successInstructions}>
+            Click the link in your email to sign in instantly. No password needed!
+          </Text>
+
+          <View style={styles.tipsContainer}>
+            <Text style={styles.tipsTitle}>Didn't receive it?</Text>
+            <Text style={styles.tipItem}>• Check your spam/junk folder</Text>
+            <Text style={styles.tipItem}>• Make sure you entered the correct email</Text>
+            <Text style={styles.tipItem}>• Wait a few minutes and try again</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.resendButton}
+            onPress={handleSendMagicLink}
+            disabled={signingIn}
+          >
+            {signingIn ? (
+              <ActivityIndicator color={Colors.primary} />
+            ) : (
+              <Text style={styles.resendButtonText}>Resend Magic Link</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.tryDifferentButton}
+            onPress={() => setMagicLinkSent(false)}
+          >
+            <Text style={styles.tryDifferentText}>Use a different email</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.backToAppButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backToAppText}>Back to App</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => navigation.goBack()}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoid}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.closeButtonText}>✕</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.closeButtonText}>✕</Text>
+          </TouchableOpacity>
 
-        <View style={styles.header}>
+          <View style={styles.header}>
           <View style={styles.logoContainer}>
             <Text style={styles.logo}>🚗</Text>
             <Text style={styles.logoArrow}>↑</Text>
@@ -111,6 +217,61 @@ export default function SignInScreen() {
           />
         </View>
 
+        {/* Email Magic Link Section */}
+        <View style={styles.emailSection}>
+          <Text style={styles.sectionTitle}>Sign in with Email</Text>
+          <Text style={styles.sectionDescription}>
+            No password required - we'll send you a secure link
+          </Text>
+
+          {emailError && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{emailError}</Text>
+            </View>
+          )}
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputIcon}>📧</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email address"
+              placeholderTextColor="#999"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                setEmailError(null);
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              editable={!signingIn}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.magicLinkButton, signingIn && styles.buttonDisabled]}
+            onPress={handleSendMagicLink}
+            disabled={signingIn}
+          >
+            {signingIn ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Text style={styles.magicLinkIcon}>✨</Text>
+                <Text style={styles.magicLinkButtonText}>Send Magic Link</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Divider */}
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or continue with</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
         <View style={styles.buttonsSection}>
           {signingIn || isLoading ? (
             <View style={styles.loadingContainer}>
@@ -119,15 +280,6 @@ export default function SignInScreen() {
             </View>
           ) : (
             <>
-              <TouchableOpacity
-                style={styles.googleButton}
-                onPress={handleGoogleSignIn}
-                disabled={signingIn}
-              >
-                <Text style={styles.googleIcon}>G</Text>
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
-              </TouchableOpacity>
-
               {Platform.OS === 'ios' && appleSignInAvailable && (
                 <TouchableOpacity
                   style={styles.appleButton}
@@ -138,6 +290,15 @@ export default function SignInScreen() {
                   <Text style={styles.appleButtonText}>Continue with Apple</Text>
                 </TouchableOpacity>
               )}
+
+              <TouchableOpacity
+                style={styles.googleButton}
+                onPress={handleGoogleSignIn}
+                disabled={signingIn}
+              >
+                <Text style={styles.googleIcon}>G</Text>
+                <Text style={styles.googleButtonText}>Continue with Google</Text>
+              </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.skipButton}
@@ -154,7 +315,8 @@ export default function SignInScreen() {
           Your data is secure and will never be shared with third parties.
           Sign in is optional but recommended for the best experience.
         </Text>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -170,6 +332,14 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: isDarkMode ? Colors.background : '#FFFFFF',
+  },
+  keyboardAvoid: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
   },
   content: {
     flex: 1,
@@ -318,5 +488,187 @@ const getStyles = (isDarkMode: boolean) => StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 'auto',
     marginBottom: 20,
+  },
+  // Email Magic Link Styles
+  emailSection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: isDarkMode ? Colors.textPrimary : '#333',
+    marginBottom: 4,
+  },
+  sectionDescription: {
+    fontSize: 14,
+    color: isDarkMode ? Colors.textSecondary : '#666',
+    marginBottom: 16,
+  },
+  errorContainer: {
+    backgroundColor: '#ffebee',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ffcdd2',
+  },
+  errorText: {
+    color: '#c62828',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: isDarkMode ? '#2a2a2a' : '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: isDarkMode ? '#444' : '#e0e0e0',
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  inputIcon: {
+    fontSize: 20,
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
+    height: 56,
+    fontSize: 16,
+    color: isDarkMode ? Colors.textPrimary : '#333',
+  },
+  magicLinkButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    height: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  magicLinkIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  magicLinkButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: isDarkMode ? '#444' : '#e0e0e0',
+  },
+  dividerText: {
+    color: isDarkMode ? Colors.textSecondary : '#999',
+    fontSize: 14,
+    marginHorizontal: 16,
+  },
+  // Success Screen Styles
+  successContainer: {
+    flex: 1,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emailIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#e8f5e9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  emailIconText: {
+    fontSize: 48,
+  },
+  successTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: isDarkMode ? Colors.textPrimary : '#333',
+    marginBottom: 12,
+  },
+  successSubtitle: {
+    fontSize: 16,
+    color: isDarkMode ? Colors.textSecondary : '#666',
+    marginBottom: 8,
+  },
+  emailDisplay: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.primary,
+    marginBottom: 16,
+  },
+  successInstructions: {
+    fontSize: 15,
+    color: isDarkMode ? Colors.textSecondary : '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 32,
+    paddingHorizontal: 20,
+  },
+  tipsContainer: {
+    backgroundColor: isDarkMode ? '#2a2a2a' : '#fff',
+    borderRadius: 12,
+    padding: 20,
+    width: '100%',
+    marginBottom: 24,
+  },
+  tipsTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: isDarkMode ? Colors.textPrimary : '#333',
+    marginBottom: 12,
+  },
+  tipItem: {
+    fontSize: 14,
+    color: isDarkMode ? Colors.textSecondary : '#666',
+    marginBottom: 6,
+  },
+  resendButton: {
+    backgroundColor: isDarkMode ? '#2a2a2a' : '#fff',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    borderRadius: 12,
+    height: 50,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  resendButtonText: {
+    color: Colors.primary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  tryDifferentButton: {
+    padding: 12,
+    marginBottom: 16,
+  },
+  tryDifferentText: {
+    color: isDarkMode ? Colors.textSecondary : '#666',
+    fontSize: 15,
+    textDecorationLine: 'underline',
+  },
+  backToAppButton: {
+    padding: 12,
+  },
+  backToAppText: {
+    color: isDarkMode ? '#999' : '#999',
+    fontSize: 14,
   },
 });

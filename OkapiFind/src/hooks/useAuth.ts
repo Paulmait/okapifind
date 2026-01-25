@@ -16,6 +16,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isFirebaseConfigured } from '../config/firebase';
+import { supabaseAuthService, SupabaseUser } from '../services/supabaseAuth.service';
 
 // Web-compatible storage
 const storage = Platform.OS === 'web'
@@ -57,11 +58,14 @@ export interface UserProfile {
 
 interface AuthState {
   currentUser: User | null;
+  supabaseUser: SupabaseUser | null;
   userProfile: UserProfile | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   error: string | null;
+  authProvider: 'firebase' | 'supabase' | null;
   setCurrentUser: (user: User | null) => void;
+  setSupabaseUser: (user: SupabaseUser | null) => void;
   setUserProfile: (profile: UserProfile | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -77,15 +81,24 @@ const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       currentUser: null,
+      supabaseUser: null,
       userProfile: null,
       isLoading: true,
       isAuthenticated: false,
       error: null,
       appleSignInAvailable: false,
+      authProvider: null,
 
       setCurrentUser: (user) => set({
         currentUser: user,
-        isAuthenticated: !!user
+        isAuthenticated: !!user || !!get().supabaseUser,
+        authProvider: user ? 'firebase' : get().authProvider
+      }),
+
+      setSupabaseUser: (user) => set({
+        supabaseUser: user,
+        isAuthenticated: !!user || !!get().currentUser,
+        authProvider: user ? 'supabase' : get().authProvider
       }),
 
       setUserProfile: (profile) => set({
@@ -107,14 +120,32 @@ const useAuthStore = create<AuthState>()(
       signOutUser: async () => {
         try {
           set({ isLoading: true });
-          // Only call signOut if Firebase is properly configured
-          if (isFirebaseConfigured() && firebaseAuth && typeof firebaseAuth.signOut === 'function') {
-            await signOut(firebaseAuth);
+          const { authProvider } = get();
+
+          // Sign out from Firebase if needed
+          if ((authProvider === 'firebase' || !authProvider) && isFirebaseConfigured() && firebaseAuth && typeof firebaseAuth.signOut === 'function') {
+            try {
+              await signOut(firebaseAuth);
+            } catch (e) {
+              console.warn('Firebase sign out failed:', e);
+            }
           }
+
+          // Sign out from Supabase if needed
+          if (authProvider === 'supabase' || !authProvider) {
+            try {
+              await supabaseAuthService.signOut();
+            } catch (e) {
+              console.warn('Supabase sign out failed:', e);
+            }
+          }
+
           set({
             currentUser: null,
+            supabaseUser: null,
             userProfile: null,
             isAuthenticated: false,
+            authProvider: null,
             error: null
           });
           analytics.logEvent('user_signed_out');
@@ -124,8 +155,10 @@ const useAuthStore = create<AuthState>()(
           // Still clear local state even if signOut fails
           set({
             currentUser: null,
+            supabaseUser: null,
             userProfile: null,
             isAuthenticated: false,
+            authProvider: null,
           });
         } finally {
           set({ isLoading: false });
@@ -155,12 +188,15 @@ const useAuthStore = create<AuthState>()(
 export const useAuth = () => {
   const {
     currentUser,
+    supabaseUser,
     userProfile,
     isLoading,
     isAuthenticated,
     error,
     appleSignInAvailable,
+    authProvider,
     setCurrentUser,
+    setSupabaseUser,
     setUserProfile,
     setLoading,
     setError,
@@ -177,6 +213,56 @@ export const useAuth = () => {
     if (Platform.OS === 'ios') {
       AppleAuthentication.isAvailableAsync().then(setAppleSignInAvailable);
     }
+  }, []);
+
+  // Listen for Supabase auth state changes
+  useEffect(() => {
+    const unsubscribe = supabaseAuthService.onAuthStateChange((user) => {
+      console.log('🔵 Supabase auth state changed:', { hasUser: !!user, email: user?.email });
+
+      if (user) {
+        setSupabaseUser(user);
+        // Create a basic profile from Supabase user
+        setUserProfile({
+          uid: user.id,
+          email: user.email,
+          displayName: user.email?.split('@')[0] || null,
+          photoURL: null,
+          createdAt: user.created_at,
+          lastLoginAt: user.updated_at,
+          premium: false,
+          provider: 'magic_link',
+        });
+        analytics.setUserId(user.id);
+        analytics.logEvent('user_authenticated', {
+          provider: 'magic_link',
+          uid: user.id,
+        });
+      } else if (!currentUser) {
+        // Only clear if no Firebase user either
+        setSupabaseUser(null);
+      }
+    });
+
+    // Check for existing Supabase session on mount
+    supabaseAuthService.getCurrentUser().then((user) => {
+      if (user) {
+        console.log('🔵 Found existing Supabase session:', user.email);
+        setSupabaseUser(user);
+        setUserProfile({
+          uid: user.id,
+          email: user.email,
+          displayName: user.email?.split('@')[0] || null,
+          photoURL: null,
+          createdAt: user.created_at,
+          lastLoginAt: user.updated_at,
+          premium: false,
+          provider: 'magic_link',
+        });
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -389,9 +475,11 @@ export const useAuth = () => {
   return {
     // State
     currentUser,
+    supabaseUser,
     userProfile,
     isLoading: isLoading && !authInitialized,
     isAuthenticated,
+    authProvider,
     error,
 
     // Methods
@@ -405,8 +493,8 @@ export const useAuth = () => {
     isReady: authInitialized,
     isPremium: userProfile?.premium || false,
     appleSignInAvailable,
-    userEmail: currentUser?.email || userProfile?.email,
-    userName: currentUser?.displayName || userProfile?.displayName,
+    userEmail: currentUser?.email || supabaseUser?.email || userProfile?.email,
+    userName: currentUser?.displayName || userProfile?.displayName || (supabaseUser?.email?.split('@')[0]),
     userPhoto: currentUser?.photoURL || userProfile?.photoURL,
   };
 };
