@@ -20,10 +20,11 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../types/navigation';
 import { Colors } from '../constants/colors';
-import { TakeToHotelButton, HotelPill } from '../components/BaseCampComponents';
-import { SavePlaceSheet } from '../components/SavePlaceSheet';
-import { useSavedPlaces } from '../hooks/useSavedPlaces';
-import { useSmartSuggestions } from '../hooks/useSmartSuggestions';
+// Temporarily disabled for debugging
+// import { TakeToHotelButton, HotelPill } from '../components/BaseCampComponents';
+// import { SavePlaceSheet } from '../components/SavePlaceSheet';
+// import { useSavedPlaces } from '../hooks/useSavedPlaces';
+// import { useSmartSuggestions } from '../hooks/useSmartSuggestions';
 
 type MapScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Map'>;
 
@@ -63,16 +64,22 @@ const MapScreen: React.FC = () => {
   const [selectedFloor, setSelectedFloor] = useState<string>('street');
   const [customNotes, setCustomNotes] = useState<string>('');
 
-  // Saved Places hook
-  const { currentHotel, hasHotel } = useSavedPlaces();
+  // Saved Places hook - temporarily disabled for debugging
+  // const { currentHotel, hasHotel } = useSavedPlaces();
+  const currentHotel = null;
+  const hasHotel = false;
 
-  // Smart Suggestions
-  const {
-    currentSuggestion,
-    dismissSuggestion,
-    dismissWithDontAskAgain,
-    clearSuggestion,
-  } = useSmartSuggestions();
+  // Smart Suggestions - temporarily disabled for debugging
+  // const {
+  //   currentSuggestion,
+  //   dismissSuggestion,
+  //   dismissWithDontAskAgain,
+  //   clearSuggestion,
+  // } = useSmartSuggestions();
+  const currentSuggestion = null;
+  const dismissSuggestion = () => {};
+  const dismissWithDontAskAgain = () => {};
+  const clearSuggestion = () => {};
 
   useEffect(() => {
     let isMounted = true;
