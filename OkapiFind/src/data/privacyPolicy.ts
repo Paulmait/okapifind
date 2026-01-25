@@ -236,4 +236,4 @@ export const getPrivacyPolicy = (): string => {
 };
 
 export const PRIVACY_POLICY_VERSION = '2.0.0';
-export const PRIVACY_POLICY_LAST_UPDATED = 'September 23, 2025';
+export const PRIVACY_POLICY_LAST_UPDATED = 'January 25, 2026';

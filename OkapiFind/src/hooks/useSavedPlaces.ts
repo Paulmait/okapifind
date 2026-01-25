@@ -58,7 +58,14 @@ export function useSavedPlaces(): UseSavedPlacesReturn {
   // Hydrate store on mount if not already hydrated
   useEffect(() => {
     if (!store.isHydrated) {
-      store.hydrate();
+      // Wrap in try-catch to prevent crashes during initialization
+      try {
+        store.hydrate().catch((error) => {
+          console.warn('Failed to hydrate saved places store:', error);
+        });
+      } catch (error) {
+        console.warn('Error initiating hydration:', error);
+      }
     }
   }, [store.isHydrated]);
 

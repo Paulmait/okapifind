@@ -20,10 +20,10 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../types/navigation';
 import { Colors } from '../constants/colors';
-// Temporarily disabled for debugging
-// import { TakeToHotelButton, HotelPill } from '../components/BaseCampComponents';
+// Base Camp components
+import { TakeToHotelButton, HotelPill } from '../components/BaseCampComponents';
 // import { SavePlaceSheet } from '../components/SavePlaceSheet';
-// import { useSavedPlaces } from '../hooks/useSavedPlaces';
+import { useSavedPlaces } from '../hooks/useSavedPlaces';
 // import { useSmartSuggestions } from '../hooks/useSmartSuggestions';
 
 type MapScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Map'>;
@@ -64,10 +64,8 @@ const MapScreen: React.FC = () => {
   const [selectedFloor, setSelectedFloor] = useState<string>('street');
   const [customNotes, setCustomNotes] = useState<string>('');
 
-  // Saved Places hook - temporarily disabled for debugging
-  // const { currentHotel, hasHotel } = useSavedPlaces();
-  const currentHotel = null;
-  const hasHotel = false;
+  // Saved Places hook - re-enabled with safer initialization
+  const { currentHotel, hasHotel } = useSavedPlaces();
 
   // Smart Suggestions - temporarily disabled for debugging
   // const {
@@ -508,13 +506,13 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 12,
   },
   actionButton: {
     flex: 1,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
+    marginHorizontal: 6,
   },
   saveButton: {
     backgroundColor: '#f0f0f0',
@@ -615,7 +613,6 @@ const styles = StyleSheet.create({
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: 12,
   },
   modalCancelButton: {
     flex: 1,
@@ -623,6 +620,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#e0e0e0',
     alignItems: 'center',
+    marginRight: 6,
   },
   modalCancelButtonText: {
     fontSize: 16,
@@ -635,6 +633,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: Colors.primary,
     alignItems: 'center',
+    marginLeft: 6,
   },
   modalSaveButtonText: {
     fontSize: 16,
@@ -647,7 +646,6 @@ const styles = StyleSheet.create({
     top: Platform.OS === 'ios' ? 60 : 20,
     right: 16,
     flexDirection: 'row',
-    gap: 8,
     alignItems: 'center',
   },
   savedPlacesButton: {
@@ -662,6 +660,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
+    marginRight: 8,
   },
   hotelPillContainer: {
     position: 'absolute',

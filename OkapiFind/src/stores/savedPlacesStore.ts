@@ -74,10 +74,21 @@ export const useSavedPlacesStore = create<SavedPlacesStore>()(
           set({ isLoading: true, error: null });
 
           // Load from cache first for immediate display
-          const [cachedPlaces, cachedHotel] = await Promise.all([
-            savedPlacesService.loadPlacesFromCache(),
-            savedPlacesService.loadHotelFromCache(),
-          ]);
+          // Wrap each call individually to prevent cascading failures
+          let cachedPlaces: SavedPlace[] = [];
+          let cachedHotel: SavedPlace | null = null;
+
+          try {
+            cachedPlaces = await savedPlacesService.loadPlacesFromCache();
+          } catch (e) {
+            console.warn('Failed to load places from cache:', e);
+          }
+
+          try {
+            cachedHotel = await savedPlacesService.loadHotelFromCache();
+          } catch (e) {
+            console.warn('Failed to load hotel from cache:', e);
+          }
 
           set({
             places: cachedPlaces,
@@ -85,8 +96,10 @@ export const useSavedPlacesStore = create<SavedPlacesStore>()(
             isHydrated: true,
           });
 
-          // Then sync from server in background
-          get().syncFromServer();
+          // Then sync from server in background (don't await, let it run)
+          get().syncFromServer().catch((e) => {
+            console.warn('Background sync failed:', e);
+          });
         } catch (error) {
           console.error('Error hydrating saved places store:', error);
           set({ error: 'Failed to load saved places', isHydrated: true });

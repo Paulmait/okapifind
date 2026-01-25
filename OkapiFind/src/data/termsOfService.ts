@@ -362,4 +362,4 @@ export const getTermsOfService = (): string => {
 };
 
 export const TERMS_VERSION = '2.0.0';
-export const TERMS_LAST_UPDATED = 'September 23, 2025';
+export const TERMS_LAST_UPDATED = 'January 25, 2026';
