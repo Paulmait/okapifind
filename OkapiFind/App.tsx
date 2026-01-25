@@ -14,6 +14,8 @@ import {
   LegalScreen,
   PaywallScreen,
   AuthScreen,
+  SavedPlacesScreen,
+  SetHotelScreen,
 } from './src/utils/lazyComponents';
 import { RootStackParamList } from './src/types/navigation';
 import { Colors } from './src/constants/colors';
@@ -124,6 +126,23 @@ function MainNavigator() {
           title: '',
           headerShown: false,
           presentation: 'modal',
+        }}
+      />
+      <Stack.Screen
+        name="SavedPlaces"
+        component={SavedPlacesScreen}
+        options={{
+          title: 'Saved Places',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="SetHotel"
+        component={SetHotelScreen}
+        options={{
+          title: 'Set Hotel',
+          headerShown: false,
+          presentation: Platform.OS === 'ios' ? 'modal' : 'card',
         }}
       />
     </Stack.Navigator>

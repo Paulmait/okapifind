@@ -61,6 +61,10 @@ export const LazyARNavigationScreen = Platform.OS === 'web'
 // LiveTrackingScreen disabled - uses react-native-maps which is incompatible with SDK 54
 export const LazyLiveTrackingScreen = React.lazy(() => import('../screens/WebMapScreen'));
 
+// Saved Places screens
+export const LazySavedPlacesScreen = React.lazy(() => import('../screens/SavedPlacesScreen'));
+export const LazySetHotelScreen = React.lazy(() => import('../screens/SetHotelScreen'));
+
 // Wrapped lazy components with performance monitoring
 export const MapScreen = withLazyLoading(LazyMapScreen, undefined, 'MapScreen');
 export const GuidanceScreen = withLazyLoading(LazyGuidanceScreen, undefined, 'GuidanceScreen');
@@ -71,6 +75,8 @@ export const AuthScreen = withLazyLoading(LazyAuthScreen, undefined, 'AuthScreen
 export const OnboardingScreen = withLazyLoading(LazyOnboardingScreen, undefined, 'OnboardingScreen');
 export const ARNavigationScreen = withLazyLoading(LazyARNavigationScreen, undefined, 'ARNavigationScreen');
 export const LiveTrackingScreen = withLazyLoading(LazyLiveTrackingScreen, undefined, 'LiveTrackingScreen');
+export const SavedPlacesScreen = withLazyLoading(LazySavedPlacesScreen, undefined, 'SavedPlacesScreen');
+export const SetHotelScreen = withLazyLoading(LazySetHotelScreen, undefined, 'SetHotelScreen');
 
 const styles = StyleSheet.create({
   fallbackContainer: {

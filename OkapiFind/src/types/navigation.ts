@@ -5,13 +5,19 @@ export type RootStackParamList = {
   Auth: undefined;
   Map: undefined;
   Guidance: {
-    userLocation: {
+    userLocation?: {
       latitude: number;
       longitude: number;
     };
-    carLocation: {
+    carLocation?: {
       latitude: number;
       longitude: number;
+    };
+    destination?: {
+      latitude: number;
+      longitude: number;
+      label?: string;
+      type?: 'hotel' | 'car' | 'favorite' | 'custom';
     };
   };
   Settings: undefined;
@@ -28,6 +34,8 @@ export type RootStackParamList = {
   };
   LiveTracking: undefined;
   Onboarding: undefined;
+  SavedPlaces: undefined;
+  SetHotel: undefined;
 };
 
 export type PremiumFeature =

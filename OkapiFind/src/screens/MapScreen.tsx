@@ -15,10 +15,15 @@ import {
 import { AppleMaps } from 'expo-maps';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../types/navigation';
 import { Colors } from '../constants/colors';
+import { TakeToHotelButton, HotelPill } from '../components/BaseCampComponents';
+import { SavePlaceSheet } from '../components/SavePlaceSheet';
+import { useSavedPlaces } from '../hooks/useSavedPlaces';
+import { useSmartSuggestions } from '../hooks/useSmartSuggestions';
 
 type MapScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Map'>;
 
@@ -47,6 +52,7 @@ interface CarLocation {
 
 const MapScreen: React.FC = () => {
   const navigation = useNavigation<MapScreenNavigationProp>();
+  const isFocused = useIsFocused();
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
   const [locationPermission, setLocationPermission] = useState(false);
@@ -56,6 +62,17 @@ const MapScreen: React.FC = () => {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [selectedFloor, setSelectedFloor] = useState<string>('street');
   const [customNotes, setCustomNotes] = useState<string>('');
+
+  // Saved Places hook
+  const { currentHotel, hasHotel } = useSavedPlaces();
+
+  // Smart Suggestions
+  const {
+    currentSuggestion,
+    dismissSuggestion,
+    dismissWithDontAskAgain,
+    clearSuggestion,
+  } = useSmartSuggestions();
 
   useEffect(() => {
     let isMounted = true;
@@ -288,6 +305,53 @@ const MapScreen: React.FC = () => {
           </>
         )}
       </View>
+
+      {/* Hotel Quick Access Button */}
+      {hasHotel && (
+        <View style={styles.hotelQuickAccess}>
+          <TouchableOpacity
+            style={styles.savedPlacesButton}
+            onPress={() => navigation.navigate('SavedPlaces')}
+            accessibilityLabel="View saved places"
+          >
+            <Ionicons name="bookmark" size={20} color={Colors.primary} />
+          </TouchableOpacity>
+          <TakeToHotelButton
+            currentLat={userLocation?.coords.latitude}
+            currentLng={userLocation?.coords.longitude}
+            compact
+          />
+        </View>
+      )}
+
+      {/* Hotel Pill on Map */}
+      {hasHotel && currentHotel && userLocation && (
+        <View style={styles.hotelPillContainer}>
+          <HotelPill
+            hotel={currentHotel}
+            currentLat={userLocation.coords.latitude}
+            currentLng={userLocation.coords.longitude}
+            onPress={() => navigation.navigate('SavedPlaces')}
+          />
+        </View>
+      )}
+
+      {/* Smart Suggestions - Save Place Sheet */}
+      {currentSuggestion?.shouldSuggest && currentSuggestion.location && (
+        <SavePlaceSheet
+          visible={true}
+          lat={currentSuggestion.location.lat}
+          lng={currentSuggestion.location.lng}
+          suggestedName={currentSuggestion.nearbyPlaceName}
+          suggestedAddress={currentSuggestion.nearbyPlaceAddress}
+          onSaved={() => {
+            clearSuggestion();
+            Alert.alert('Saved!', 'Place has been saved to your favorites.');
+          }}
+          onDismiss={dismissSuggestion}
+          onDontAskAgain={dismissWithDontAskAgain}
+        />
+      )}
 
       {/* Save Location Modal with Floor Selector */}
       <Modal
@@ -569,6 +633,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: Colors.background,
+  },
+  // Hotel Quick Access styles
+  hotelQuickAccess: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 20,
+    right: 16,
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  savedPlacesButton: {
+    backgroundColor: Colors.cardBackground,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  hotelPillContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 120 : 80,
+    alignSelf: 'center',
   },
 });
 
